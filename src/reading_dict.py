@@ -127,6 +127,15 @@ READING_RULES: list[tuple[str, str]] = [
     (_term("VS"), "バーサス"),
     (r"\betc\.", "など"),
     (_term("etc"), "など"),
+
+    # === Context-dependent Kanji Readings ===
+    # 方: ホウ vs カタ - use カタ after の
+    (r"の方", "のカタ"),
+    # 何: ナン vs ナニ - use ナニ before か
+    (r"何か", "ナニか"),
+    (r"何を", "ナニを"),
+    (r"何が", "ナニが"),
+    (r"何も", "ナニも"),
 ]
 
 # Compile patterns for efficiency

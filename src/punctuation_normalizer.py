@@ -18,6 +18,7 @@ class PunctuationRule:
 
 
 # 連体修飾句パターン（〜に関する、〜における、等の後に読点）
+# 長い修飾句の後にのみ適用（min_prefix_len で制御）
 RENTAI_PATTERNS = [
     "に関する",
     "における",
@@ -28,6 +29,24 @@ RENTAI_PATTERNS = [
     "からの",
     "への",
     "としての",
+]
+
+# 副詞句パターン（直後に読点を挿入）
+# これらは長さに関係なく常に適用
+ADVERB_PATTERNS = [
+    "大規模に",
+    "小規模に",
+    "具体的に",
+    "一般的に",
+    "基本的に",
+]
+
+# 接続パターン（直後に読点を挿入、長いフレーズの後のみ）
+CONJUNCTION_PATTERNS = [
+    "というのが",
+    "というのは",
+    "ということが",
+    "ということは",
 ]
 
 # Lazy initialization
@@ -80,6 +99,32 @@ def _normalize_line(line: str, min_prefix_len: int = 8) -> str:
             r"\1\2、\3",
             line
         )
+
+    # Rule 2: Insert comma after adverb patterns (always apply)
+    for pattern in ADVERB_PATTERNS:
+        line = re.sub(
+            rf"({re.escape(pattern)})([^、。！？\s])",
+            r"\1、\2",
+            line
+        )
+
+    # Rule 3: Insert comma after conjunction patterns (with prefix check)
+    for pattern in CONJUNCTION_PATTERNS:
+        line = re.sub(
+            rf"([^、。！？]{{{min_prefix_len},}})({re.escape(pattern)})([^、。！？\s])",
+            r"\1\2、\3",
+            line
+        )
+
+    # Rule 4: Insert comma after は when preceded by long phrase
+    # 〜カタは、〜ことは、etc.
+    # Use shorter threshold (6) because kanji is more compact than kana
+    ha_prefix_len = min(min_prefix_len, 6)
+    line = re.sub(
+        rf"([^、。！？]{{{ha_prefix_len},}})(は)([^、。！？\s])",
+        r"\1\2、\3",
+        line
+    )
 
     return line
 
