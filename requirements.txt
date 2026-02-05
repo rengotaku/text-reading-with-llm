@@ -1,0 +1,7 @@
+qwen-tts
+soundfile
+pyyaml
+numpy
+requests
+fugashi
+unidic-lite

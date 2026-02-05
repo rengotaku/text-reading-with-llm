@@ -1,0 +1,33 @@
+# Text Reading with LLM - Default Configuration
+# Override per-run values via CLI args or Makefile variables
+
+# Input
+input: sample/book.md
+
+# Output
+output: output
+
+# TTS Model
+tts_model: Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice
+
+# Speaker (CustomVoice built-in speakers)
+# Chinese: Vivian, Serena, Uncle_Fu, Dylan, Eric
+# English: Ryan, Aiden
+# Japanese: Ono_Anna
+# Korean: Sohee
+speaker: Ono_Anna
+
+# Language
+language: Japanese
+
+# Voice instruction (style control for CustomVoice)
+# Examples: "落ち着いたトーンで読み上げて", "ゆっくりと丁寧に読んで"
+instruct: "落ち着いた声で丁寧に読み上げて"
+
+# Processing
+# Maximum characters per TTS chunk (too long may cause quality issues)
+max_chunk_chars: 500
+
+# Device
+device: "cuda:0"
+dtype: bfloat16
