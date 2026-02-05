@@ -205,3 +205,15 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Project-specific
+output/
+test_output/
+*.wav
+*.mp3
+
+# Serena MCP
+.serena/
+
+# Sample files
+sample/
