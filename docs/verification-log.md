@@ -261,7 +261,36 @@ Apply peak normalization to each chunk after TTS generation.
 
 Audio is now consistently at 90% peak level throughout the file.
 
-## 12. Conclusion
+## 12. Punctuation Normalization (Added 2025-02-05)
+
+### Problem
+TTS reads long modifier phrases without pause, making speech unnatural.
+```
+Before: 日本国内初のSREに関するテックカンファレンス (one breath)
+```
+
+### Solution
+Rule-based punctuation insertion using regex patterns.
+
+### Implementation
+- `src/punctuation_normalizer.py` — Pattern-based comma insertion
+- Patterns: 〜に関する、〜における、〜による、〜のための、etc.
+- Condition: Only insert comma if 8+ characters precede the pattern
+
+### Processing Order
+```
+Markdown除去 → 読点挿入 → 静的辞書 → LLM辞書 → MeCab
+```
+
+### Results
+```
+Before: 日本国内初のSREに関するテックカンファレンス
+After:  日本国内初のSREに関する、テックカンファレンス
+```
+
+Short phrases like "問いへの回答" remain unchanged (no unnecessary commas).
+
+## 13. Conclusion
 
 Pipeline is fully functional. Audio files are generated correctly from markdown input.
 

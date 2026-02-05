@@ -8,6 +8,7 @@ from pathlib import Path
 from src.dict_manager import load_dict_from_content
 from src.llm_reading_generator import apply_llm_readings
 from src.mecab_reader import convert_to_kana
+from src.punctuation_normalizer import normalize_punctuation
 from src.reading_dict import apply_reading_rules
 
 logger = logging.getLogger(__name__)
@@ -99,7 +100,9 @@ def clean_page_text(text: str) -> str:
     # Collapse multiple blank lines into one
     text = re.sub(r"\n{3,}", "\n\n", text)
 
-    # Apply reading rules for TTS pronunciation
+    # Apply TTS normalization and reading rules
+    # 0. Punctuation normalization (add commas for natural reading)
+    text = normalize_punctuation(text)
     # 1. Static dictionary first (critical terms like SRE, API, AWS)
     text = apply_reading_rules(text)
     # 2. LLM-generated dictionary (additional terms)
