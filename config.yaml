@@ -37,6 +37,15 @@ voicevox:
 max_chunk_chars: 500
 
 # ===========================================
+# Chapter Settings
+# ===========================================
+# Enable chapter-based processing (generates separate audio per chapter)
+chapters:
+  enabled: true
+  # Start page for TOC extraction (skip front matter, TOC pages, etc.)
+  start_page: 15
+
+# ===========================================
 # Legacy Qwen3-TTS Settings (deprecated)
 # ===========================================
 # tts_model: Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice

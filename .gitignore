@@ -208,6 +208,7 @@ __marimo__/
 
 # Project-specific
 output/
+data/
 test_output/
 *.wav
 *.mp3

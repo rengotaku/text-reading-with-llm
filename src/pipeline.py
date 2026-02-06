@@ -15,6 +15,7 @@ import yaml
 from src.dict_manager import get_content_hash
 from src.progress import ChunkInfo, ProgressTracker
 from src.text_cleaner import Page, init_for_content, split_into_pages, split_text_into_chunks
+from src.toc_extractor import Chapter, extract_toc, get_last_page, group_by_chapter, recalculate_end_pages, to_json
 from src.voicevox_client import (
     AOYAMA_RYUSEI_STYLE_ID,
     VoicevoxConfig,
@@ -108,56 +109,46 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="End at this page number (default: all pages)",
     )
+    # Chapter-based processing
+    parser.add_argument(
+        "--toc",
+        help="Path to TOC JSON file for chapter-based processing",
+    )
+    parser.add_argument(
+        "--generate-toc",
+        action="store_true",
+        help="Auto-generate TOC and save to output directory",
+    )
+    parser.add_argument(
+        "--toc-start-page",
+        type=int,
+        default=1,
+        help="Start page for TOC extraction (skip front matter)",
+    )
     return parser.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
+def process_pages(
+    pages: list[Page],
+    synthesizer: VoicevoxSynthesizer,
+    output_dir: Path,
+    args: argparse.Namespace,
+    output_filename: str = "combined.wav",
+    combined_output_path: Path | None = None,
+) -> list[Path]:
+    """Process pages and generate audio files.
 
-    input_path = Path(args.input)
-    if not input_path.exists():
-        logger.error("Input file not found: %s", input_path)
-        sys.exit(1)
+    Args:
+        combined_output_path: If specified, save combined audio here instead of output_dir/output_filename
 
-    # Step 1: Read and clean text
-    logger.info("Reading: %s", input_path)
-    markdown = input_path.read_text(encoding="utf-8")
+    Returns list of generated WAV file paths.
+    """
+    import numpy as np
 
-    # Generate hash-based output directory
-    content_hash = get_content_hash(markdown)
-    output_base = Path(args.output)
-    output_dir = output_base / content_hash
     pages_dir = output_dir / "pages"
     pages_dir.mkdir(parents=True, exist_ok=True)
-    logger.info("Output directory: %s", output_dir)
 
-    # Initialize text cleaner with book-specific dictionary
-    init_for_content(markdown)
-
-    pages = split_into_pages(markdown)
-    logger.info("Found %d pages", len(pages))
-
-    # Filter pages by range
-    if args.end_page:
-        pages = [p for p in pages if args.start_page <= p.number <= args.end_page]
-    else:
-        pages = [p for p in pages if p.number >= args.start_page]
-    logger.info("Processing %d pages (range: %d-%s)", len(pages), args.start_page, args.end_page or "end")
-
-    if not pages:
-        logger.warning("No pages to process")
-        sys.exit(0)
-
-    # Save cleaned text for reference
-    cleaned_text_path = output_dir / "cleaned_text.txt"
-    with open(cleaned_text_path, "w", encoding="utf-8") as f:
-        for page in pages:
-            f.write(f"=== Page {page.number} ===\n")
-            f.write(page.text)
-            f.write("\n\n")
-    logger.info("Saved cleaned text: %s", cleaned_text_path)
-
-    # Step 2: Pre-compute all chunks for progress tracking
+    # Pre-compute chunks
     page_chunks: list[tuple[Page, list[tuple[ChunkInfo, str]]]] = []
     all_chunk_infos: list[ChunkInfo] = []
     chunk_idx = 0
@@ -172,23 +163,10 @@ def main() -> None:
             chunk_idx += 1
         page_chunks.append((page, page_chunk_list))
 
-    # Step 3: Initialize VOICEVOX synthesizer
-    voicevox_dir = Path(args.voicevox_dir)
-    config = VoicevoxConfig(
-        onnxruntime_dir=voicevox_dir / "onnxruntime" / "lib",
-        open_jtalk_dict_dir=voicevox_dir / "dict" / "open_jtalk_dic_utf_8-1.11",
-        vvm_dir=voicevox_dir / "models" / "vvms",
-        style_id=args.style_id,
-        speed_scale=args.speed,
-        pitch_scale=args.pitch,
-        volume_scale=args.volume,
-    )
-    synthesizer = VoicevoxSynthesizer(config)
-    synthesizer.initialize()
-    synthesizer.load_all_models()
-    logger.info("VOICEVOX initialized (style_id=%d)", args.style_id)
+    if not all_chunk_infos:
+        return []
 
-    # Step 4: Generate audio per page with progress tracking
+    # Generate audio
     tracker = ProgressTracker(chunks=all_chunk_infos, total_pages=len(pages))
     tracker.start()
 
@@ -211,7 +189,6 @@ def main() -> None:
                 style_id=args.style_id,
                 speed_scale=args.speed,
             )
-            # Normalize each chunk to consistent volume
             waveform = normalize_audio(waveform, target_peak=0.9)
             page_audio.append(waveform)
             page_sr = sr
@@ -220,8 +197,6 @@ def main() -> None:
             tracker.on_chunk_done(chunk_info, chunk_time)
 
         if page_audio and page_sr:
-            import numpy as np
-
             combined = np.concatenate(page_audio)
             page_path = pages_dir / f"page_{page.number:04d}.wav"
             save_audio(combined, page_sr, page_path)
@@ -230,12 +205,153 @@ def main() -> None:
         page_time = time.time() - page_start
         tracker.on_page_done(page.number, page_time)
 
-    # Step 5: Concatenate all pages
+    # Concatenate all pages
     if wav_files:
-        combined_path = output_dir / "book.wav"
+        combined_path = combined_output_path or (output_dir / output_filename)
         concatenate_audio_files(wav_files, combined_path)
 
     tracker.finish()
+    return wav_files
+
+
+def generate_toc(markdown: str, start_page: int) -> list[Chapter]:
+    """Generate TOC from markdown content."""
+    entries = extract_toc(markdown)
+    entries = [e for e in entries if e.start_page >= start_page]
+    last_page = get_last_page(markdown)
+    chapters = group_by_chapter(entries)
+    recalculate_end_pages(chapters, last_page)
+    return chapters
+
+
+def main() -> None:
+    args = parse_args()
+
+    input_path = Path(args.input)
+    if not input_path.exists():
+        logger.error("Input file not found: %s", input_path)
+        sys.exit(1)
+
+    # Step 1: Read markdown
+    logger.info("Reading: %s", input_path)
+    markdown = input_path.read_text(encoding="utf-8")
+
+    # Generate hash-based output directory
+    content_hash = get_content_hash(markdown)
+    output_base = Path(args.output)
+    output_dir = output_base / content_hash
+    output_dir.mkdir(parents=True, exist_ok=True)
+    logger.info("Output directory: %s", output_dir)
+
+    # Initialize text cleaner
+    init_for_content(markdown)
+
+    all_pages = split_into_pages(markdown)
+    logger.info("Found %d pages total", len(all_pages))
+
+    # Step 2: Initialize VOICEVOX synthesizer
+    voicevox_dir = Path(args.voicevox_dir)
+    config = VoicevoxConfig(
+        onnxruntime_dir=voicevox_dir / "onnxruntime" / "lib",
+        open_jtalk_dict_dir=voicevox_dir / "dict" / "open_jtalk_dic_utf_8-1.11",
+        vvm_dir=voicevox_dir / "models" / "vvms",
+        style_id=args.style_id,
+        speed_scale=args.speed,
+        pitch_scale=args.pitch,
+        volume_scale=args.volume,
+    )
+    synthesizer = VoicevoxSynthesizer(config)
+    synthesizer.initialize()
+    synthesizer.load_all_models()
+    logger.info("VOICEVOX initialized (style_id=%d)", args.style_id)
+
+    # Step 3: Determine processing mode
+    chapters: list[Chapter] | None = None
+
+    if args.toc:
+        # Load TOC from file
+        import json
+        with open(args.toc, encoding="utf-8") as f:
+            data = json.load(f)
+        chapters = [Chapter(**c) for c in data]
+        logger.info("Loaded TOC: %d chapters", len(chapters))
+
+    elif args.generate_toc:
+        # Auto-generate TOC
+        chapters = generate_toc(markdown, args.toc_start_page)
+        toc_path = output_dir / "toc.json"
+        with open(toc_path, "w", encoding="utf-8") as f:
+            f.write(to_json(chapters))
+        logger.info("Generated TOC: %d chapters -> %s", len(chapters), toc_path)
+
+    # Step 4: Process based on mode
+    if chapters:
+        # Chapter-based processing
+        chapters_dir = output_dir / "chapters"
+        chapters_dir.mkdir(parents=True, exist_ok=True)
+
+        for chapter in chapters:
+            logger.info("=== %s (pages %d-%s) ===", chapter.title, chapter.start_page, chapter.end_page or "end")
+
+            # Filter pages for this chapter
+            end_page = chapter.end_page or max(p.number for p in all_pages)
+            chapter_pages = [p for p in all_pages if chapter.start_page <= p.number <= end_page]
+
+            if not chapter_pages:
+                logger.warning("No pages for %s", chapter.title)
+                continue
+
+            # Create chapter directory
+            chapter_dir = chapters_dir / f"chapter_{chapter.number:02d}"
+            chapter_dir.mkdir(parents=True, exist_ok=True)
+
+            # Save chapter info
+            info_path = chapter_dir / "info.json"
+            import json
+            with open(info_path, "w", encoding="utf-8") as f:
+                json.dump({
+                    "number": chapter.number,
+                    "title": chapter.title,
+                    "start_page": chapter.start_page,
+                    "end_page": chapter.end_page,
+                    "page_count": len(chapter_pages),
+                }, f, ensure_ascii=False, indent=2)
+
+            # Process pages (combined audio goes to chapters/ directly)
+            chapter_wav = chapters_dir / f"chapter_{chapter.number:02d}.wav"
+            process_pages(
+                chapter_pages,
+                synthesizer,
+                chapter_dir,
+                args,
+                combined_output_path=chapter_wav,
+            )
+
+        logger.info("Completed all chapters")
+
+    else:
+        # Single range processing (original behavior)
+        if args.end_page:
+            pages = [p for p in all_pages if args.start_page <= p.number <= args.end_page]
+        else:
+            pages = [p for p in all_pages if p.number >= args.start_page]
+        logger.info("Processing %d pages (range: %d-%s)", len(pages), args.start_page, args.end_page or "end")
+
+        if not pages:
+            logger.warning("No pages to process")
+            sys.exit(0)
+
+        # Save cleaned text
+        cleaned_text_path = output_dir / "cleaned_text.txt"
+        with open(cleaned_text_path, "w", encoding="utf-8") as f:
+            for page in pages:
+                f.write(f"=== Page {page.number} ===\n")
+                f.write(page.text)
+                f.write("\n\n")
+        logger.info("Saved cleaned text: %s", cleaned_text_path)
+
+        # Process pages
+        process_pages(pages, synthesizer, output_dir, args, output_filename="book.wav")
 
 
 if __name__ == "__main__":

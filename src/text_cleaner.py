@@ -83,8 +83,18 @@ def clean_page_text(text: str) -> str:
     # Remove horizontal rules
     text = re.sub(r"^---+\s*$", "", text, flags=re.MULTILINE)
 
-    # Remove list markers (- or *)
-    text = re.sub(r"^[\-\*]\s+", "", text, flags=re.MULTILINE)
+    # Convert consecutive list items into single line with periods
+    def convert_list_block(match: re.Match) -> str:
+        lines = match.group(0).strip().split("\n")
+        items = []
+        for line in lines:
+            content = re.sub(r"^[\-\*]\s+", "", line)
+            if content and content[-1] not in "。！？、":
+                content += "。"
+            items.append(content)
+        return "".join(items)
+
+    text = re.sub(r"(^[\-\*]\s+.+$\n?)+", convert_list_block, text, flags=re.MULTILINE)
 
     # Remove inline code backticks
     text = re.sub(r"`([^`]*)`", r"\1", text)
