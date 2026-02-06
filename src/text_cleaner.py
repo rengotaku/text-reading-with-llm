@@ -167,6 +167,13 @@ def _clean_parenthetical_english(text: str) -> str:
 
 def clean_page_text(text: str) -> str:
     """Clean a single page's text for TTS consumption."""
+    # NEW: Text cleaning for TTS (before markdown cleanup)
+    # Process in specific order to avoid interference
+    text = _clean_urls(text)                    # US1: Remove URLs
+    text = _clean_isbn(text)                    # US4: Remove ISBN
+    text = _clean_parenthetical_english(text)   # US5: Remove (English)
+    text = _normalize_references(text)          # US2/3: 図X.Y → ずXのY
+
     # Remove HTML comments (figure markers)
     text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
 
