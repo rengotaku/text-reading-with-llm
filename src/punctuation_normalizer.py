@@ -69,6 +69,15 @@ EXCLUSION_SUFFIXES = [
     "限らない",
 ]
 
+# Colon patterns for conversion (US7)
+# Time/ratio pattern to exclude:
+# - Pure digit sequences: 10:30:45, 1:2:3
+# - Ingredient ratios: 水1:砂糖2 (kanji+digit:kanji+digit...)
+TIME_RATIO_PATTERN = re.compile(r'[ァ-ヶ一-龠々]+\d+(?::[ァ-ヶ一-龠々]+\d+)+|\d+(?::\d+)+')
+# Colon patterns to convert
+COLON_FULL_PATTERN = re.compile(r'：')
+COLON_HALF_PATTERN = re.compile(r':')
+
 # Lazy initialization
 _tagger: fugashi.Tagger | None = None
 
@@ -97,9 +106,50 @@ def normalize_punctuation(text: str) -> str:
         if not line.strip():
             result_lines.append(line)
             continue
+        # Apply colon normalization before line normalization
+        line = _normalize_colons(line)
         result_lines.append(_normalize_line(line))
 
     return "\n".join(result_lines)
+
+
+def _normalize_colons(text: str) -> str:
+    """Convert colons to は、 for TTS.
+
+    Converts:
+    - 全角コロン（：）→ は、
+    - 半角コロン（:）→ は、
+
+    Excludes:
+    - 時刻パターン: 10:30
+    - 比率パターン: 1:3
+
+    Args:
+        text: Input text containing colons
+
+    Returns:
+        Text with colons converted to は、
+    """
+    # Step 1: Protect time/ratio patterns (digit:digit) with placeholders
+    time_ratio_matches = []
+    def save_time_ratio(match):
+        time_ratio_matches.append(match.group(0))
+        return f"<<TIME_RATIO_{len(time_ratio_matches)-1}>>"
+
+    text = TIME_RATIO_PATTERN.sub(save_time_ratio, text)
+
+    # Step 2: Convert remaining colons to は、
+    text = COLON_FULL_PATTERN.sub("は、", text)
+    text = COLON_HALF_PATTERN.sub("は、", text)
+
+    # Step 3: Also remove spaces after converted colons for cleaner output
+    text = re.sub(r'は、\s+', 'は、', text)
+
+    # Step 4: Restore time/ratio patterns
+    for i, original in enumerate(time_ratio_matches):
+        text = text.replace(f"<<TIME_RATIO_{i}>>", original)
+
+    return text
 
 
 def _normalize_line(line: str, min_prefix_len: int = 8) -> str:

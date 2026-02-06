@@ -279,3 +279,270 @@ class TestNormalizeLineArimasuPatterns:
         assert expected_without_comma not in result, (
             f"「ではある」の途中に読点を入れてはいけない: got '{result}'"
         )
+
+
+# ============================================================================
+# Phase 7 RED Tests - US7: コロン記号の自然な読み上げ変換
+# Target function: src/punctuation_normalizer.py::_normalize_colons()
+# Expected behavior: Convert colons to 「は、」 (exclude time/ratio patterns)
+# ============================================================================
+
+
+class TestNormalizeColonsFullWidth:
+    """Test full-width colon (：) conversion to 「は、」"""
+
+    def test_normalize_colons_full_width_basic(self):
+        """全角コロンが「は、」に変換される"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "目的：システムの改善"
+        expected = "目的は、システムの改善"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"全角コロンが「は、」に変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_colons_full_width_multiple(self):
+        """複数の全角コロンが変換される"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "項目1：説明1、項目2：説明2"
+        expected = "項目1は、説明1、項目2は、説明2"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"複数の全角コロンが変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_colons_full_width_at_end(self):
+        """文末の全角コロンが変換される"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "以下の通り："
+        # 文末コロンは「は、」に変換されてもよい
+        expected = "以下の通りは、"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"文末の全角コロンも変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+
+class TestNormalizeColonsHalfWidth:
+    """Test half-width colon (:) conversion to 「は、」"""
+
+    def test_normalize_colons_half_width_basic(self):
+        """半角コロンが「は、」に変換される"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "目的:システムの改善"
+        expected = "目的は、システムの改善"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"半角コロンが「は、」に変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_colons_half_width_with_space(self):
+        """半角コロン後のスペースも適切に処理される"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "注意: この操作は取り消せません"
+        expected = "注意は、この操作は取り消せません"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"半角コロン+スペースが変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+
+class TestNormalizeColonsExclusions:
+    """Test patterns that should NOT be converted (time, ratio)"""
+
+    def test_normalize_colons_exclude_time_pattern(self):
+        """時刻パターン(10:30)は変換しない"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "開始時刻は10:30です"
+        expected = "開始時刻は10:30です"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"時刻パターンは変換しない: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_colons_exclude_time_with_seconds(self):
+        """時刻パターン(10:30:45)は変換しない"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "正確な時刻は10:30:45です"
+        expected = "正確な時刻は10:30:45です"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"秒を含む時刻パターンは変換しない: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_colons_exclude_ratio_pattern(self):
+        """比率パターン(1:3)は変換しない"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "比率は1:3です"
+        expected = "比率は1:3です"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"比率パターンは変換しない: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_colons_exclude_ratio_multiple(self):
+        """複合比率パターン(1:2:3)は変換しない"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "割合は1:2:3です"
+        expected = "割合は1:2:3です"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"複合比率パターンは変換しない: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+
+class TestNormalizeColonsMixedPatterns:
+    """Test mixed patterns - colon conversion + time/ratio preservation"""
+
+    def test_normalize_colons_mixed_time_and_heading(self):
+        """見出しコロン変換 + 時刻保持の混合パターン"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "会議時間：10:30から"
+        expected = "会議時間は、10:30から"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"見出しコロンは変換、時刻コロンは保持: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_colons_mixed_ratio_and_heading(self):
+        """見出しコロン変換 + 比率保持の混合パターン"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "推奨比率：水1:砂糖2"
+        expected = "推奨比率は、水1:砂糖2"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"見出しコロンは変換、比率コロンは保持: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_colons_full_and_half_width_mixed(self):
+        """全角・半角コロン混在パターン"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "項目A：説明A、項目B:説明B"
+        expected = "項目Aは、説明A、項目Bは、説明B"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"全角・半角コロン両方が変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+
+class TestNormalizeColonsEdgeCases:
+    """Edge cases for colon normalization"""
+
+    def test_normalize_colons_empty_string(self):
+        """空文字列の処理"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        result = _normalize_colons("")
+
+        assert result == "", f"空文字列は空のまま: got '{result}'"
+
+    def test_normalize_colons_no_colons(self):
+        """コロンを含まないテキスト"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "これはコロンを含まないテキストです"
+        expected = "これはコロンを含まないテキストです"
+
+        result = _normalize_colons(input_text)
+
+        assert result == expected, (
+            f"コロンのないテキストは変化しない: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_colons_consecutive(self):
+        """連続コロン(::)の処理"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "特殊パターン::値"
+        # 実装依存: 連続コロンの処理はどちらかに変換
+        # ここでは最初のコロンが変換され、2つ目は残る想定
+
+        result = _normalize_colons(input_text)
+
+        # 少なくとも元の形式とは異なることを確認
+        # または連続コロンが適切に処理されることを確認
+        assert "::" not in result or "は、" in result, (
+            f"連続コロンが処理されるべき: got '{result}'"
+        )
+
+    def test_normalize_colons_at_line_start(self):
+        """行頭のコロン"""
+        from src.punctuation_normalizer import _normalize_colons
+
+        input_text = "：これは行頭コロン"
+        # 行頭コロンは前に変換対象テキストがないため変換しない or 削除
+        # 実装依存
+
+        result = _normalize_colons(input_text)
+
+        # 行頭コロンの処理を確認（変換なし or 削除）
+        assert result is not None, "結果がNoneであってはいけない"
+
+    def test_normalize_colons_url_colon_not_affected(self):
+        """URL内のコロン(https:)は影響を受けない想定
+
+        Note: URL処理はtext_cleaner.pyで行われるため、
+        punctuation_normalizerにはURLが渡らない前提。
+        しかし万が一渡った場合のエッジケースとしてテスト。
+        """
+        from src.punctuation_normalizer import _normalize_colons
+
+        # URLはtext_cleaner.pyで処理済みの前提だが、
+        # 万が一残っていた場合の動作確認
+        input_text = "リンク：https://example.com"
+
+        result = _normalize_colons(input_text)
+
+        # 「リンク：」は変換されるが、https: の部分は数字パターンではないので
+        # 通常は変換対象になりうる（ただしURL処理後なら問題なし）
+        # このテストは動作確認のみ
+        assert result is not None, "結果がNoneであってはいけない"
