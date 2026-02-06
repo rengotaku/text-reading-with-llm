@@ -82,6 +82,9 @@ COLON_HALF_PATTERN = re.compile(r':')
 OPEN_BRACKET_PATTERN = re.compile(r'[「『]')
 CLOSE_BRACKET_PATTERN = re.compile(r'[」』]')
 
+# Additional patterns for _normalize_colons (compiled for performance)
+COLON_SPACE_CLEANUP_PATTERN = re.compile(r'は、\s+')
+
 # Lazy initialization
 _tagger: fugashi.Tagger | None = None
 
@@ -149,7 +152,7 @@ def _normalize_colons(text: str) -> str:
     text = COLON_HALF_PATTERN.sub("は、", text)
 
     # Step 3: Also remove spaces after converted colons for cleaner output
-    text = re.sub(r'は、\s+', 'は、', text)
+    text = COLON_SPACE_CLEANUP_PATTERN.sub('は、', text)
 
     # Step 4: Restore time/ratio patterns
     for i, original in enumerate(time_ratio_matches):

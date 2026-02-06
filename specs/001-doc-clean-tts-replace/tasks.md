@@ -58,25 +58,25 @@
 
 ### テスト実装 (RED)
 
-- [ ] T007 [P] [US1] Implement test_clean_urls_markdown_link in tests/test_url_cleaning.py
-- [ ] T008 [P] [US1] Implement test_clean_urls_url_as_link_text in tests/test_url_cleaning.py
-- [ ] T009 [P] [US1] Implement test_clean_urls_bare_url in tests/test_url_cleaning.py
-- [ ] T010 [P] [US1] Implement test_clean_urls_multiple_urls in tests/test_url_cleaning.py
-- [ ] T011 [P] [US1] Implement test_clean_urls_idempotent in tests/test_url_cleaning.py
-- [ ] T012 Verify `make test` FAIL (RED)
-- [ ] T013 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph2-test.md
+- [x] T007 [P] [US1] Implement test_clean_urls_markdown_link in tests/test_url_cleaning.py
+- [x] T008 [P] [US1] Implement test_clean_urls_url_as_link_text in tests/test_url_cleaning.py
+- [x] T009 [P] [US1] Implement test_clean_urls_bare_url in tests/test_url_cleaning.py
+- [x] T010 [P] [US1] Implement test_clean_urls_multiple_urls in tests/test_url_cleaning.py
+- [x] T011 [P] [US1] Implement test_clean_urls_idempotent in tests/test_url_cleaning.py
+- [x] T012 Verify `make test` FAIL (RED)
+- [x] T013 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph2-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T014 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph2-test.md
-- [ ] T015 [US1] Add URL pattern constants at top of src/text_cleaner.py
-- [ ] T016 [US1] Implement _clean_urls() function in src/text_cleaner.py
-- [ ] T017 Verify `make test` PASS (GREEN)
+- [x] T014 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph2-test.md
+- [x] T015 [US1] Add URL pattern constants at top of src/text_cleaner.py
+- [x] T016 [US1] Implement _clean_urls() function in src/text_cleaner.py
+- [x] T017 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T018 Verify `make test` passes all tests (no regressions)
-- [ ] T019 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph2-output.md
+- [x] T018 Verify `make test` passes all tests (no regressions)
+- [x] T019 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph2-output.md
 
 **Checkpoint**: URL処理が単体で動作し、テスト通過を確認
 
@@ -90,29 +90,29 @@
 
 ### 入力
 
-- [ ] T020 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph2-output.md
+- [x] T020 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph2-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T021 [P] [US2] Implement test_normalize_figure_reference in tests/test_reference_normalization.py
-- [ ] T022 [P] [US2] Implement test_normalize_table_reference in tests/test_reference_normalization.py
-- [ ] T023 [P] [US3] Implement test_normalize_note_reference in tests/test_reference_normalization.py
-- [ ] T024 [P] [US2] Implement test_normalize_references_mixed in tests/test_reference_normalization.py
-- [ ] T025 Verify `make test` FAIL (RED)
-- [ ] T026 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph3-test.md
+- [x] T021 [P] [US2] Implement test_normalize_figure_reference in tests/test_reference_normalization.py
+- [x] T022 [P] [US2] Implement test_normalize_table_reference in tests/test_reference_normalization.py
+- [x] T023 [P] [US3] Implement test_normalize_note_reference in tests/test_reference_normalization.py
+- [x] T024 [P] [US2] Implement test_normalize_references_mixed in tests/test_reference_normalization.py
+- [x] T025 Verify `make test` FAIL (RED)
+- [x] T026 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph3-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T027 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph3-test.md
-- [ ] T028 [US2] Add DIGIT_READINGS constant in src/text_cleaner.py
-- [ ] T029 [US2] Add reference pattern constants in src/text_cleaner.py
-- [ ] T030 [US2] Implement _normalize_references() function in src/text_cleaner.py
-- [ ] T031 Verify `make test` PASS (GREEN)
+- [x] T027 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph3-test.md
+- [x] T028 [US2] Add DIGIT_READINGS constant in src/text_cleaner.py
+- [x] T029 [US2] Add reference pattern constants in src/text_cleaner.py
+- [x] T030 [US2] Implement _normalize_references() function in src/text_cleaner.py
+- [x] T031 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T032 Verify `make test` passes all tests (including US1 regressions)
-- [ ] T033 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph3-output.md
+- [x] T032 Verify `make test` passes all tests (including US1 regressions)
+- [x] T033 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph3-output.md
 
 **Checkpoint**: URL処理 + 参照正規化が両方動作することを確認
 
@@ -126,27 +126,27 @@
 
 ### 入力
 
-- [ ] T034 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph3-output.md
+- [x] T034 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph3-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T035 [P] [US4] Implement test_clean_isbn_with_hyphens in tests/test_isbn_cleaning.py
-- [ ] T036 [P] [US4] Implement test_clean_isbn_with_space in tests/test_isbn_cleaning.py
-- [ ] T037 [P] [US4] Implement test_clean_isbn_in_sentence in tests/test_isbn_cleaning.py
-- [ ] T038 Verify `make test` FAIL (RED)
-- [ ] T039 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph4-test.md
+- [x] T035 [P] [US4] Implement test_clean_isbn_with_hyphens in tests/test_isbn_cleaning.py
+- [x] T036 [P] [US4] Implement test_clean_isbn_with_space in tests/test_isbn_cleaning.py
+- [x] T037 [P] [US4] Implement test_clean_isbn_in_sentence in tests/test_isbn_cleaning.py
+- [x] T038 Verify `make test` FAIL (RED)
+- [x] T039 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph4-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T040 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph4-test.md
-- [ ] T041 [US4] Add ISBN_PATTERN constant in src/text_cleaner.py
-- [ ] T042 [US4] Implement _clean_isbn() function in src/text_cleaner.py
-- [ ] T043 Verify `make test` PASS (GREEN)
+- [x] T040 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph4-test.md
+- [x] T041 [US4] Add ISBN_PATTERN constant in src/text_cleaner.py
+- [x] T042 [US4] Implement _clean_isbn() function in src/text_cleaner.py
+- [x] T043 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T044 Verify `make test` passes all tests (including US1-3 regressions)
-- [ ] T045 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph4-output.md
+- [x] T044 Verify `make test` passes all tests (including US1-3 regressions)
+- [x] T045 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph4-output.md
 
 **Checkpoint**: URL + 参照 + ISBN処理が動作することを確認
 
@@ -160,28 +160,28 @@
 
 ### 入力
 
-- [ ] T046 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph4-output.md
+- [x] T046 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph4-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T047 [P] [US5] Implement test_clean_parenthetical_english_full_width in tests/test_parenthetical_cleaning.py
-- [ ] T048 [P] [US5] Implement test_clean_parenthetical_english_half_width in tests/test_parenthetical_cleaning.py
-- [ ] T049 [P] [US5] Implement test_clean_parenthetical_preserve_japanese in tests/test_parenthetical_cleaning.py
-- [ ] T050 [P] [US5] Implement test_clean_parenthetical_alphabet_term in tests/test_parenthetical_cleaning.py
-- [ ] T051 Verify `make test` FAIL (RED)
-- [ ] T052 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph5-test.md
+- [x] T047 [P] [US5] Implement test_clean_parenthetical_english_full_width in tests/test_parenthetical_cleaning.py
+- [x] T048 [P] [US5] Implement test_clean_parenthetical_english_half_width in tests/test_parenthetical_cleaning.py
+- [x] T049 [P] [US5] Implement test_clean_parenthetical_preserve_japanese in tests/test_parenthetical_cleaning.py
+- [x] T050 [P] [US5] Implement test_clean_parenthetical_alphabet_term in tests/test_parenthetical_cleaning.py
+- [x] T051 Verify `make test` FAIL (RED)
+- [x] T052 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph5-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T053 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph5-test.md
-- [ ] T054 [US5] Add parenthetical pattern constants in src/text_cleaner.py
-- [ ] T055 [US5] Implement _clean_parenthetical_english() function in src/text_cleaner.py
-- [ ] T056 Verify `make test` PASS (GREEN)
+- [x] T053 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph5-test.md
+- [x] T054 [US5] Add parenthetical pattern constants in src/text_cleaner.py
+- [x] T055 [US5] Implement _clean_parenthetical_english() function in src/text_cleaner.py
+- [x] T056 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T057 Verify `make test` passes all tests (including US1-4 regressions)
-- [ ] T058 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph5-output.md
+- [x] T057 Verify `make test` passes all tests (including US1-4 regressions)
+- [x] T058 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph5-output.md
 
 **Checkpoint**: text_cleaner.py の新規関数がすべて動作することを確認
 
@@ -195,28 +195,28 @@
 
 ### 入力
 
-- [ ] T059 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph5-output.md
+- [x] T059 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph5-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T060 [P] [US6] Implement test_normalize_line_deha_arimasen in tests/test_punctuation_rules.py
-- [ ] T061 [P] [US6] Implement test_normalize_line_deha_nai in tests/test_punctuation_rules.py
-- [ ] T062 [P] [US6] Implement test_normalize_line_mixed_ha_patterns in tests/test_punctuation_rules.py
-- [ ] T063 [P] [US6] Implement test_normalize_line_niha_naranai in tests/test_punctuation_rules.py
-- [ ] T064 Verify `make test` FAIL (RED)
-- [ ] T065 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph6-test.md
+- [x] T060 [P] [US6] Implement test_normalize_line_deha_arimasen in tests/test_punctuation_rules.py
+- [x] T061 [P] [US6] Implement test_normalize_line_deha_nai in tests/test_punctuation_rules.py
+- [x] T062 [P] [US6] Implement test_normalize_line_mixed_ha_patterns in tests/test_punctuation_rules.py
+- [x] T063 [P] [US6] Implement test_normalize_line_niha_naranai in tests/test_punctuation_rules.py
+- [x] T064 Verify `make test` FAIL (RED)
+- [x] T065 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph6-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T066 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph6-test.md
-- [ ] T067 [US6] Add EXCLUSION_SUFFIXES constant in src/punctuation_normalizer.py
-- [ ] T068 [US6] Modify _normalize_line() Rule 4 with negative lookahead in src/punctuation_normalizer.py
-- [ ] T069 Verify `make test` PASS (GREEN)
+- [x] T066 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph6-test.md
+- [x] T067 [US6] Add EXCLUSION_SUFFIXES constant in src/punctuation_normalizer.py
+- [x] T068 [US6] Modify _normalize_line() Rule 4 with negative lookahead in src/punctuation_normalizer.py
+- [x] T069 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T070 Verify `make test` passes all tests (including US1-5 regressions)
-- [ ] T071 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph6-output.md
+- [x] T070 Verify `make test` passes all tests (including US1-5 regressions)
+- [x] T071 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph6-output.md
 
 **Checkpoint**: 読点除外パターンが正しく動作することを確認
 
@@ -230,28 +230,28 @@
 
 ### 入力
 
-- [ ] T072 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph6-output.md
+- [x] T072 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph6-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T073 [P] [US7] Implement test_normalize_colons_full_width in tests/test_punctuation_rules.py
-- [ ] T074 [P] [US7] Implement test_normalize_colons_half_width in tests/test_punctuation_rules.py
-- [ ] T075 [P] [US7] Implement test_normalize_colons_exclude_time in tests/test_punctuation_rules.py
-- [ ] T076 [P] [US7] Implement test_normalize_colons_exclude_ratio in tests/test_punctuation_rules.py
-- [ ] T077 Verify `make test` FAIL (RED)
-- [ ] T078 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph7-test.md
+- [x] T073 [P] [US7] Implement test_normalize_colons_full_width in tests/test_punctuation_rules.py
+- [x] T074 [P] [US7] Implement test_normalize_colons_half_width in tests/test_punctuation_rules.py
+- [x] T075 [P] [US7] Implement test_normalize_colons_exclude_time in tests/test_punctuation_rules.py
+- [x] T076 [P] [US7] Implement test_normalize_colons_exclude_ratio in tests/test_punctuation_rules.py
+- [x] T077 Verify `make test` FAIL (RED)
+- [x] T078 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph7-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T079 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph7-test.md
-- [ ] T080 [US7] Add colon pattern constants in src/punctuation_normalizer.py
-- [ ] T081 [US7] Implement _normalize_colons() function in src/punctuation_normalizer.py
-- [ ] T082 Verify `make test` PASS (GREEN)
+- [x] T079 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph7-test.md
+- [x] T080 [US7] Add colon pattern constants in src/punctuation_normalizer.py
+- [x] T081 [US7] Implement _normalize_colons() function in src/punctuation_normalizer.py
+- [x] T082 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T083 Verify `make test` passes all tests (including US1-6 regressions)
-- [ ] T084 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph7-output.md
+- [x] T083 Verify `make test` passes all tests (including US1-6 regressions)
+- [x] T084 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph7-output.md
 
 **Checkpoint**: コロン変換が正しく動作することを確認
 
@@ -265,26 +265,26 @@
 
 ### 入力
 
-- [ ] T085 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph7-output.md
+- [x] T085 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph7-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T086 [P] [US8] Implement test_normalize_brackets_basic in tests/test_punctuation_rules.py
-- [ ] T087 [P] [US8] Implement test_normalize_brackets_with_text in tests/test_punctuation_rules.py
-- [ ] T088 [P] [US8] Implement test_normalize_brackets_consecutive in tests/test_punctuation_rules.py
-- [ ] T089 Verify `make test` FAIL (RED)
-- [ ] T090 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph8-test.md
+- [x] T086 [P] [US8] Implement test_normalize_brackets_basic in tests/test_punctuation_rules.py
+- [x] T087 [P] [US8] Implement test_normalize_brackets_with_text in tests/test_punctuation_rules.py
+- [x] T088 [P] [US8] Implement test_normalize_brackets_consecutive in tests/test_punctuation_rules.py
+- [x] T089 Verify `make test` FAIL (RED)
+- [x] T090 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph8-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T091 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph8-test.md
-- [ ] T092 [US8] Implement _normalize_brackets() function in src/punctuation_normalizer.py
-- [ ] T093 Verify `make test` PASS (GREEN)
+- [x] T091 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph8-test.md
+- [x] T092 [US8] Implement _normalize_brackets() function in src/punctuation_normalizer.py
+- [x] T093 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T094 Verify `make test` passes all tests (including US1-7 regressions)
-- [ ] T095 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph8-output.md
+- [x] T094 Verify `make test` passes all tests (including US1-7 regressions)
+- [x] T095 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph8-output.md
 
 **Checkpoint**: punctuation_normalizer.py の新規関数がすべて動作することを確認
 
@@ -298,28 +298,28 @@
 
 ### 入力
 
-- [ ] T096 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph8-output.md
+- [x] T096 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph8-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T097 [P] Implement test_clean_page_text_integration in tests/test_integration.py
-- [ ] T098 [P] Implement test_clean_page_text_processing_order in tests/test_integration.py
-- [ ] T099 [P] Implement test_clean_page_text_idempotent in tests/test_integration.py
-- [ ] T100 [P] Implement test_normalize_punctuation_integration in tests/test_integration.py
-- [ ] T101 Verify `make test` FAIL (RED)
-- [ ] T102 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph9-test.md
+- [x] T097 [P] Implement test_clean_page_text_integration in tests/test_integration.py
+- [x] T098 [P] Implement test_clean_page_text_processing_order in tests/test_integration.py
+- [x] T099 [P] Implement test_clean_page_text_idempotent in tests/test_integration.py
+- [x] T100 [P] Implement test_normalize_punctuation_integration in tests/test_integration.py
+- [x] T101 Verify `make test` FAIL (RED)
+- [x] T102 Generate RED output: specs/001-doc-clean-tts-replace/red-tests/ph9-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T103 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph9-test.md
-- [ ] T104 Modify clean_page_text() to call new functions in src/text_cleaner.py
-- [ ] T105 Modify normalize_punctuation() to call new functions in src/punctuation_normalizer.py
-- [ ] T106 Verify `make test` PASS (GREEN)
+- [x] T103 Read RED tests: specs/001-doc-clean-tts-replace/red-tests/ph9-test.md
+- [x] T104 Modify clean_page_text() to call new functions in src/text_cleaner.py
+- [x] T105 Modify normalize_punctuation() to call new functions in src/punctuation_normalizer.py
+- [x] T106 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T107 Verify `make test` passes all tests (全機能統合確認)
-- [ ] T108 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph9-output.md
+- [x] T107 Verify `make test` passes all tests (全機能統合確認)
+- [x] T108 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph9-output.md
 
 **Checkpoint**: 全機能が統合され、パイプラインが正しく動作することを確認
 
@@ -331,20 +331,20 @@
 
 ### 入力
 
-- [ ] T109 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph9-output.md
+- [x] T109 Read previous phase output: specs/001-doc-clean-tts-replace/tasks/ph9-output.md
 
 ### 実装
 
-- [ ] T110 [P] Compile regex patterns at module level for performance in src/text_cleaner.py
-- [ ] T111 [P] Compile regex patterns at module level for performance in src/punctuation_normalizer.py
-- [ ] T112 Run performance benchmark with sample/book.md
-- [ ] T113 Verify processing time increase ≤10% (SC-006)
-- [ ] T114 Run quickstart.md validation scenarios
+- [x] T110 [P] Compile regex patterns at module level for performance in src/text_cleaner.py
+- [x] T111 [P] Compile regex patterns at module level for performance in src/punctuation_normalizer.py
+- [x] T112 Run performance benchmark with sample/book.md
+- [x] T113 Verify processing time increase ≤10% (SC-006)
+- [x] T114 Run quickstart.md validation scenarios
 
 ### 検証
 
-- [ ] T115 Run `make test` to verify all tests pass after cleanup
-- [ ] T116 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph10-output.md
+- [x] T115 Run `make test` to verify all tests pass after cleanup
+- [x] T116 Generate phase output: specs/001-doc-clean-tts-replace/tasks/ph10-output.md
 
 ---
 
