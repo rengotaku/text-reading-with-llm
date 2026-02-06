@@ -78,6 +78,10 @@ TIME_RATIO_PATTERN = re.compile(r'[ァ-ヶ一-龠々]+\d+(?::[ァ-ヶ一-龠々]
 COLON_FULL_PATTERN = re.compile(r'：')
 COLON_HALF_PATTERN = re.compile(r':')
 
+# Bracket patterns for conversion (US8)
+OPEN_BRACKET_PATTERN = re.compile(r'[「『]')
+CLOSE_BRACKET_PATTERN = re.compile(r'[」』]')
+
 # Lazy initialization
 _tagger: fugashi.Tagger | None = None
 
@@ -108,6 +112,8 @@ def normalize_punctuation(text: str) -> str:
             continue
         # Apply colon normalization before line normalization
         line = _normalize_colons(line)
+        # Apply bracket normalization before line normalization
+        line = _normalize_brackets(line)
         result_lines.append(_normalize_line(line))
 
     return "\n".join(result_lines)
@@ -148,6 +154,29 @@ def _normalize_colons(text: str) -> str:
     # Step 4: Restore time/ratio patterns
     for i, original in enumerate(time_ratio_matches):
         text = text.replace(f"<<TIME_RATIO_{i}>>", original)
+
+    return text
+
+
+def _normalize_brackets(text: str) -> str:
+    """Convert Japanese quotation marks to commas for TTS.
+
+    Converts:
+    - 「 → 、
+    - 」 → 、
+    - 『 → 、
+    - 』 → 、
+
+    Args:
+        text: Input text containing Japanese quotation marks
+
+    Returns:
+        Text with quotation marks converted to commas
+    """
+    # Convert opening brackets
+    text = OPEN_BRACKET_PATTERN.sub("、", text)
+    # Convert closing brackets
+    text = CLOSE_BRACKET_PATTERN.sub("、", text)
 
     return text
 

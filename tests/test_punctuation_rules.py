@@ -546,3 +546,254 @@ class TestNormalizeColonsEdgeCases:
         # 通常は変換対象になりうる（ただしURL処理後なら問題なし）
         # このテストは動作確認のみ
         assert result is not None, "結果がNoneであってはいけない"
+
+
+# ============================================================================
+# Phase 8 RED Tests - US8: 鉤括弧の読点変換
+# Target function: src/punctuation_normalizer.py::_normalize_brackets()
+# Expected behavior: Convert 「」 brackets to 、 (commas)
+# ============================================================================
+
+
+class TestNormalizeBracketsBasic:
+    """Test basic 「」 bracket conversion to commas"""
+
+    def test_normalize_brackets_basic(self):
+        """鉤括弧が読点に変換される（基本パターン）"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "「テスト」という言葉"
+        expected = "、テスト、という言葉"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"鉤括弧が読点に変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_brackets_single_char(self):
+        """1文字だけの鉤括弧内テキスト"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "「A」を選択"
+        expected = "、A、を選択"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"1文字の鉤括弧も変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+
+class TestNormalizeBracketsWithText:
+    """Test 「」 bracket conversion with surrounding text"""
+
+    def test_normalize_brackets_with_text(self):
+        """文中の鉤括弧が読点に変換される"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "これは「重要な」ポイントです"
+        expected = "これは、重要な、ポイントです"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"文中の鉤括弧が読点に変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_brackets_conference_name(self):
+        """テックカンファレンス名の鉤括弧（spec.md US8 例）"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "テックカンファレンス「SRE NEXT」を立ち上げ"
+        expected = "テックカンファレンス、SRE NEXT、を立ち上げ"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"カンファレンス名の鉤括弧が変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_brackets_book_description(self):
+        """本の説明での鉤括弧（spec.md US8 例）"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "本書は「入門書」です"
+        expected = "本書は、入門書、です"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"本の説明の鉤括弧が変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+
+class TestNormalizeBracketsConsecutive:
+    """Test consecutive 「」 brackets"""
+
+    def test_normalize_brackets_consecutive(self):
+        """連続する鉤括弧が変換される"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "「A」と「B」がある"
+        expected = "、A、と、B、がある"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"連続する鉤括弧が変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_brackets_triple_consecutive(self):
+        """3つ連続する鉤括弧が変換される"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "「X」「Y」「Z」を選ぶ"
+        expected = "、X、、Y、、Z、を選ぶ"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"3つ連続する鉤括弧が変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+
+class TestNormalizeBracketsEdgeCases:
+    """Edge cases for bracket normalization"""
+
+    def test_normalize_brackets_at_start(self):
+        """文頭の鉤括弧"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "「注意」してください"
+        # 文頭の開き括弧は読点に変換（または読点省略）
+        expected = "、注意、してください"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"文頭の鉤括弧が変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_brackets_at_end(self):
+        """文末の鉤括弧"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "これは「テスト」"
+        expected = "これは、テスト、"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"文末の鉤括弧が変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_brackets_reference(self):
+        """参照用途の鉤括弧（spec.md US8 例）"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "「はじめに」を参照"
+        expected = "、はじめに、を参照"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"参照用途の鉤括弧が変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_brackets_empty(self):
+        """空の鉤括弧"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "これは「」です"
+        # 空括弧は「、、」になるか、または除去
+        expected = "これは、、です"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"空の鉤括弧が処理されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_brackets_nested(self):
+        """入れ子の鉤括弧（二重鉤括弧）"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "「『内側』の外側」"
+        # 二重鉤括弧も読点に変換
+        expected = "、、内側、の外側、"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"入れ子の鉤括弧が処理されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+    def test_normalize_brackets_empty_string(self):
+        """空文字列の処理"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        result = _normalize_brackets("")
+
+        assert result == "", f"空文字列は空のまま: got '{result}'"
+
+    def test_normalize_brackets_no_brackets(self):
+        """鉤括弧を含まないテキスト"""
+        from src.punctuation_normalizer import _normalize_brackets
+
+        input_text = "これは鉤括弧を含まないテキストです"
+        expected = "これは鉤括弧を含まないテキストです"
+
+        result = _normalize_brackets(input_text)
+
+        assert result == expected, (
+            f"鉤括弧のないテキストは変化しない: "
+            f"got '{result}', expected '{expected}'"
+        )
+
+
+class TestNormalizeBracketsIntegration:
+    """Integration tests - verify normalize_punctuation applies bracket conversion"""
+
+    def test_normalize_punctuation_includes_brackets(self):
+        """normalize_punctuation関数が鉤括弧変換を含む"""
+        from src.punctuation_normalizer import normalize_punctuation
+
+        input_text = "本書は「入門書」です"
+        # normalize_punctuationを通すと鉤括弧が読点に変換される
+        expected_substring = "、入門書、"
+
+        result = normalize_punctuation(input_text)
+
+        assert expected_substring in result, (
+            f"normalize_punctuationが鉤括弧変換を含むべき: "
+            f"got '{result}', expected substring '{expected_substring}'"
+        )
+
+    def test_normalize_punctuation_brackets_and_colons(self):
+        """鉤括弧とコロンの両方が変換される"""
+        from src.punctuation_normalizer import normalize_punctuation
+
+        input_text = "項目：「重要」です"
+        # コロン→「は、」、鉤括弧→読点
+        # 期待: 「項目は、、重要、です」
+        expected = "項目は、、重要、です"
+
+        result = normalize_punctuation(input_text)
+
+        assert result == expected, (
+            f"コロンと鉤括弧の両方が変換されるべき: "
+            f"got '{result}', expected '{expected}'"
+        )
