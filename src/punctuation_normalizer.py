@@ -49,6 +49,26 @@ CONJUNCTION_PATTERNS = [
     "ということは",
 ]
 
+# Exclusion suffixes for Rule 4 - don't insert comma after は when followed by these
+EXCLUSION_SUFFIXES = [
+    # では系
+    "ありません",
+    "ありませんでした",
+    "ありますが",
+    "ある",
+    "ない",
+    "なかった",
+    "なくて",
+    "ないか",
+    # には系
+    "ならない",
+    "ならなかった",
+    "至らない",
+    # とは系
+    "言えない",
+    "限らない",
+]
+
 # Lazy initialization
 _tagger: fugashi.Tagger | None = None
 
@@ -117,12 +137,14 @@ def _normalize_line(line: str, min_prefix_len: int = 8) -> str:
         )
 
     # Rule 4: Insert comma after は when preceded by long phrase
+    # Exclude patterns like ではありません, にはならない, etc.
     # 〜カタは、〜ことは、etc.
     # Use shorter threshold (6) because kanji is more compact than kana
     ha_prefix_len = min(min_prefix_len, 6)
+    exclusion_pattern = "|".join(re.escape(s) for s in EXCLUSION_SUFFIXES)
     line = re.sub(
-        rf"([^、。！？]{{{ha_prefix_len},}})(は)([^、。！？\s])",
-        r"\1\2、\3",
+        rf"([^、。！？]{{{ha_prefix_len},}})(は)(?!({exclusion_pattern}))([^、。！？\s])",
+        r"\1\2、\4",
         line
     )
 
