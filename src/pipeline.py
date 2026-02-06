@@ -1,4 +1,7 @@
-"""TTS pipeline: markdown → cleaned text → audio files."""
+"""TTS pipeline: markdown → cleaned text → audio files.
+
+VOICEVOX Core を使用した音声合成パイプライン。
+"""
 
 import argparse
 import logging
@@ -10,10 +13,12 @@ import yaml
 
 from src.progress import ChunkInfo, ProgressTracker
 from src.text_cleaner import Page, init_for_content, split_into_pages, split_text_into_chunks
-from src.tts_generator import (
+from src.voicevox_client import (
+    AOYAMA_RYUSEI_STYLE_ID,
+    VoicevoxConfig,
+    VoicevoxSynthesizer,
     concatenate_audio_files,
     generate_audio,
-    load_model,
     normalize_audio,
     save_audio,
 )
@@ -37,9 +42,10 @@ def load_config() -> dict:
 
 def parse_args() -> argparse.Namespace:
     config = load_config()
+    voicevox_config = config.get("voicevox", {})
 
     parser = argparse.ArgumentParser(
-        description="Generate TTS audio from markdown text"
+        description="Generate TTS audio from markdown text using VOICEVOX"
     )
     parser.add_argument(
         "input",
@@ -51,36 +57,37 @@ def parse_args() -> argparse.Namespace:
         default=config.get("output", "output"),
         help="Output directory (default: %(default)s)",
     )
+    # VOICEVOX settings
     parser.add_argument(
-        "--model",
-        default=config.get("tts_model", "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice"),
-        help="TTS model name (default: %(default)s)",
+        "--voicevox-dir",
+        default=voicevox_config.get("dir", "voicevox_core"),
+        help="VOICEVOX Core directory (default: %(default)s)",
     )
     parser.add_argument(
-        "--speaker",
-        default=config.get("speaker", "Ono_Anna"),
-        help="Speaker name (default: %(default)s)",
+        "--style-id",
+        type=int,
+        default=voicevox_config.get("style_id", AOYAMA_RYUSEI_STYLE_ID),
+        help="VOICEVOX style ID (default: %(default)s = 青山龍星)",
     )
     parser.add_argument(
-        "--language",
-        default=config.get("language", "Japanese"),
-        help="Language (default: %(default)s)",
+        "--speed",
+        type=float,
+        default=voicevox_config.get("speed", 1.0),
+        help="Speech speed (default: %(default)s)",
     )
     parser.add_argument(
-        "--instruct",
-        default=config.get("instruct", ""),
-        help="Voice style instruction (default: from config)",
+        "--pitch",
+        type=float,
+        default=voicevox_config.get("pitch", 0.0),
+        help="Pitch adjustment (default: %(default)s)",
     )
     parser.add_argument(
-        "--device",
-        default=config.get("device", "cuda:0"),
-        help="Device (default: %(default)s)",
+        "--volume",
+        type=float,
+        default=voicevox_config.get("volume", 1.0),
+        help="Volume (default: %(default)s)",
     )
-    parser.add_argument(
-        "--dtype",
-        default=config.get("dtype", "bfloat16"),
-        help="Data type (default: %(default)s)",
-    )
+    # Chunk settings
     parser.add_argument(
         "--max-chunk-chars",
         type=int,
@@ -159,8 +166,21 @@ def main() -> None:
             chunk_idx += 1
         page_chunks.append((page, page_chunk_list))
 
-    # Step 3: Load TTS model
-    model = load_model(args.model, args.device, args.dtype)
+    # Step 3: Initialize VOICEVOX synthesizer
+    voicevox_dir = Path(args.voicevox_dir)
+    config = VoicevoxConfig(
+        onnxruntime_dir=voicevox_dir / "onnxruntime" / "lib",
+        open_jtalk_dict_dir=voicevox_dir / "dict" / "open_jtalk_dic_utf_8-1.11",
+        vvm_dir=voicevox_dir / "models" / "vvms",
+        style_id=args.style_id,
+        speed_scale=args.speed,
+        pitch_scale=args.pitch,
+        volume_scale=args.volume,
+    )
+    synthesizer = VoicevoxSynthesizer(config)
+    synthesizer.initialize()
+    synthesizer.load_all_models()
+    logger.info("VOICEVOX initialized (style_id=%d)", args.style_id)
 
     # Step 4: Generate audio per page with progress tracking
     tracker = ProgressTracker(chunks=all_chunk_infos, total_pages=len(pages))
@@ -180,11 +200,10 @@ def main() -> None:
             chunk_start = time.time()
             logger.info("  Chunk %d/%d (%d chars): %.40s...", chunk_info.chunk_idx + 1, len(all_chunk_infos), chunk_info.char_count, chunk_text)
             waveform, sr = generate_audio(
-                model,
+                synthesizer,
                 text=chunk_text,
-                language=args.language,
-                speaker=args.speaker,
-                instruct=args.instruct,
+                style_id=args.style_id,
+                speed_scale=args.speed,
             )
             # Normalize each chunk to consistent volume
             waveform = normalize_audio(waveform, target_peak=0.9)

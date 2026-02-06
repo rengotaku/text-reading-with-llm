@@ -1,7 +1,20 @@
-qwen-tts
+# Core dependencies
 soundfile
 pyyaml
 numpy
 requests
+
+# Japanese text processing
 fugashi
 unidic-lite
+
+# VOICEVOX Core
+# Install manually from GitHub releases:
+# pip install https://github.com/VOICEVOX/voicevox_core/releases/download/0.16.3/voicevox_core-0.16.3-cp310-abi3-manylinux_2_34_x86_64.whl
+#
+# Also download required files using the official downloader:
+# https://github.com/VOICEVOX/voicevox_core/releases
+# ./download-linux-x64 --output voicevox_core
+
+# Legacy Qwen3-TTS (optional, for backward compatibility)
+# qwen-tts

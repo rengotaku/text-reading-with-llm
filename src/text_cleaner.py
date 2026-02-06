@@ -8,6 +8,7 @@ from pathlib import Path
 from src.dict_manager import load_dict_from_content
 from src.llm_reading_generator import apply_llm_readings
 from src.mecab_reader import convert_to_kana
+from src.number_normalizer import normalize_numbers
 from src.punctuation_normalizer import normalize_punctuation
 from src.reading_dict import apply_reading_rules
 
@@ -103,12 +104,14 @@ def clean_page_text(text: str) -> str:
     # Apply TTS normalization and reading rules
     # 0. Punctuation normalization (add commas for natural reading)
     text = normalize_punctuation(text)
-    # 1. Static dictionary first (critical terms like SRE, API, AWS)
+    # 1. Number normalization (123 → ひゃくにじゅうさん)
+    text = normalize_numbers(text)
+    # 2. Static dictionary (critical terms like SRE, API, AWS)
     text = apply_reading_rules(text)
-    # 2. LLM-generated dictionary (additional terms)
+    # 3. LLM-generated dictionary (additional terms)
     if _LLM_READINGS:
         text = apply_llm_readings(text, _LLM_READINGS)
-    # 3. MeCab: Convert remaining kanji to kana
+    # 4. MeCab: Convert remaining kanji to kana
     if ENABLE_KANJI_CONVERSION:
         text = convert_to_kana(text)
 
