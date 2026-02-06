@@ -20,6 +20,41 @@ _LLM_READINGS: dict[str, str] = {}
 # Enable/disable kanji → kana conversion via MeCab
 ENABLE_KANJI_CONVERSION = True
 
+# URL patterns for cleaning (US1)
+MARKDOWN_LINK_PATTERN = re.compile(r'\[([^\]]+)\]\([^)]+\)')
+# Match bare URLs but stop before Japanese characters, parentheses, and brackets
+BARE_URL_PATTERN = re.compile(r'https?://[^\s\u3000-\u9fff\uff00-\uffef）」』】\]]+')
+URL_TEXT_PATTERN = re.compile(r'^https?://')
+
+# Reference patterns for TTS normalization (US2/US3)
+REFERENCE_PATTERNS = [
+    (re.compile(r'図(\d+)[.．](\d+)'), r'ず\1の\2'),  # 図X.Y
+    (re.compile(r'図(\d+)'), r'ず\1'),               # 図X
+    (re.compile(r'表(\d+)[.．](\d+)'), r'ひょう\1の\2'),  # 表X.Y
+    (re.compile(r'表(\d+)'), r'ひょう\1'),           # 表X
+    (re.compile(r'注(\d+)[.．](\d+)'), r'ちゅう\1の\2'),  # 注X.Y
+    (re.compile(r'注(\d+)'), r'ちゅう\1'),           # 注X
+]
+
+# ISBN patterns (US4)
+# ISBN-13: 978/979 + 10 digits with optional hyphens
+# ISBN-10: 10 digits/chars with optional hyphens (last char can be X)
+ISBN_PATTERN = re.compile(
+    r'[Ii][Ss][Bb][Nn]\s*'  # ISBN prefix (case insensitive)
+    r'(?:'
+    r'97[89][-\s]?\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?\d'  # ISBN-13 with hyphens
+    r'|97[89]\d{10}'  # ISBN-13 without hyphens
+    r'|\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?[\dXx]'  # ISBN-10 with hyphens
+    r'|\d{9}[\dXx]'  # ISBN-10 without hyphens
+    r')'
+)
+
+# Parenthetical patterns for English term removal (US5)
+# Matches brackets containing only ASCII letters, numbers, spaces, hyphens, periods, commas
+# But preserves brackets containing Japanese characters or empty content
+PAREN_ENGLISH_FULL = re.compile(r'（[A-Za-z][A-Za-z0-9\s\-.,]*）')
+PAREN_ENGLISH_HALF = re.compile(r'\([A-Za-z][A-Za-z0-9\s\-.,]*\)')
+
 
 def init_for_content(markdown_content: str) -> None:
     """Initialize the text cleaner for a specific book content.
@@ -61,6 +96,73 @@ def split_into_pages(markdown: str) -> list[Page]:
         if cleaned.strip():
             pages.append(Page(number=page_num, text=cleaned))
     return pages
+
+
+def _clean_urls(text: str) -> str:
+    """Remove URLs from text for TTS.
+
+    - Markdown links: Keep link text, remove URL
+    - URL as link text: Remove entirely
+    - Bare URLs: Remove entirely
+    """
+    # Step 1: Handle Markdown links
+    def replace_markdown_link(match):
+        link_text = match.group(1)
+        # If link text is a URL, remove entirely
+        if URL_TEXT_PATTERN.match(link_text):
+            return ""
+        return link_text
+
+    text = MARKDOWN_LINK_PATTERN.sub(replace_markdown_link, text)
+
+    # Step 2: Remove bare URLs
+    text = BARE_URL_PATTERN.sub("", text)
+
+    return text
+
+
+def _normalize_references(text: str) -> str:
+    """Normalize figure/table/note references for TTS.
+
+    Converts:
+    - 図X.Y → ずXのY
+    - 表X.Y → ひょうXのY
+    - 注X.Y → ちゅうXのY
+    """
+    for pattern, replacement in REFERENCE_PATTERNS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
+def _clean_isbn(text: str) -> str:
+    """Remove ISBN numbers from text for TTS.
+
+    Removes all ISBN patterns (ISBN-10 and ISBN-13, with or without hyphens).
+    """
+    return ISBN_PATTERN.sub("", text)
+
+
+def _clean_parenthetical_english(text: str) -> str:
+    """Remove parenthetical English terms for TTS.
+
+    Removes:
+    - 全角括弧内の英語のみ: トイル（Toil）→ トイル
+    - 半角括弧内の英語のみ: トイル(Toil) → トイル
+
+    Preserves:
+    - 日本語を含む括弧: SRE（サイト信頼性）→ 保持
+    - 空括弧: （）→ 保持
+    - 数字のみ括弧: （1.0）→ 保持
+
+    Args:
+        text: Input text containing parenthetical terms
+
+    Returns:
+        Text with English-only parenthetical terms removed
+    """
+    text = PAREN_ENGLISH_FULL.sub("", text)
+    text = PAREN_ENGLISH_HALF.sub("", text)
+    return text
 
 
 def clean_page_text(text: str) -> str:
