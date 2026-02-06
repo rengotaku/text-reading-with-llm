@@ -1,6 +1,7 @@
 """TTS pipeline: markdown → cleaned text → audio files.
 
 VOICEVOX Core を使用した音声合成パイプライン。
+出力は入力ファイルのハッシュに基づいたフォルダに保存される。
 """
 
 import argparse
@@ -11,6 +12,7 @@ from pathlib import Path
 
 import yaml
 
+from src.dict_manager import get_content_hash
 from src.progress import ChunkInfo, ProgressTracker
 from src.text_cleaner import Page, init_for_content, split_into_pages, split_text_into_chunks
 from src.voicevox_client import (
@@ -117,13 +119,17 @@ def main() -> None:
         logger.error("Input file not found: %s", input_path)
         sys.exit(1)
 
-    output_dir = Path(args.output)
-    pages_dir = output_dir / "pages"
-    pages_dir.mkdir(parents=True, exist_ok=True)
-
     # Step 1: Read and clean text
     logger.info("Reading: %s", input_path)
     markdown = input_path.read_text(encoding="utf-8")
+
+    # Generate hash-based output directory
+    content_hash = get_content_hash(markdown)
+    output_base = Path(args.output)
+    output_dir = output_base / content_hash
+    pages_dir = output_dir / "pages"
+    pages_dir.mkdir(parents=True, exist_ok=True)
+    logger.info("Output directory: %s", output_dir)
 
     # Initialize text cleaner with book-specific dictionary
     init_for_content(markdown)

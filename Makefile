@@ -51,8 +51,10 @@ test: setup ## Run tests
 gen-dict: setup ## Generate reading dictionary using LLM
 	PYTHONPATH=$(CURDIR) $(PYTHON) src/generate_reading_dict.py "$(INPUT)" --model "$(LLM_MODEL)" --merge
 
-clean: ## Remove output files (keep venv)
-	rm -rf $(OUTPUT)
+clean: ## Remove generated audio files (keep venv and dictionaries)
+	find $(OUTPUT) -name "*.wav" -delete 2>/dev/null || true
+	find $(OUTPUT) -name "cleaned_text.txt" -delete 2>/dev/null || true
+	find $(OUTPUT) -type d -name "pages" -empty -delete 2>/dev/null || true
 
 clean-all: clean ## Remove output, venv, and voicevox
 	rm -rf $(VENV) $(VOICEVOX_DIR)

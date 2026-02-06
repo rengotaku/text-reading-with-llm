@@ -4,8 +4,8 @@
 # Input
 input: sample/book.md
 
-# Output
-output: output
+# Output base directory (actual output will be in data/{content_hash}/)
+output: data
 
 # ===========================================
 # VOICEVOX Settings
