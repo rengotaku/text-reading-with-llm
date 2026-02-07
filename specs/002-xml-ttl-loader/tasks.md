@@ -133,18 +133,18 @@
 
 ### Input
 
-- [ ] T046 Read setup analysis: specs/002-xml-ttl-loader/tasks/ph1-output.md
-- [ ] T047 Read previous phase output: specs/002-xml-ttl-loader/tasks/ph3-output.md
+- [x] T046 Read setup analysis: specs/002-xml-ttl-loader/tasks/ph1-output.md
+- [x] T047 Read previous phase output: specs/002-xml-ttl-loader/tasks/ph3-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T048 [P] Create test file: tests/test_xml_pipeline.py with test class skeleton
-- [ ] T049 [P] Implement test_parse_args_required_input in tests/test_xml_pipeline.py
-- [ ] T050 [P] Implement test_parse_args_defaults in tests/test_xml_pipeline.py
-- [ ] T051 [P] Implement test_file_not_found_error in tests/test_xml_pipeline.py
-- [ ] T052 [P] Implement test_invalid_xml_error in tests/test_xml_pipeline.py
-- [ ] T053 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
-- [ ] T054 Generate RED output: specs/002-xml-ttl-loader/red-tests/ph4-test.md
+- [x] T048 [P] Create test file: tests/test_xml_pipeline.py with test class skeleton
+- [x] T049 [P] Implement test_parse_args_required_input in tests/test_xml_pipeline.py
+- [x] T050 [P] Implement test_parse_args_defaults in tests/test_xml_pipeline.py
+- [x] T051 [P] Implement test_file_not_found_error in tests/test_xml_pipeline.py
+- [x] T052 [P] Implement test_invalid_xml_error in tests/test_xml_pipeline.py
+- [x] T053 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
+- [x] T054 Generate RED output: specs/002-xml-ttl-loader/red-tests/ph4-test.md
 
 ### 実装 (GREEN)
 
