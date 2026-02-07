@@ -51,7 +51,7 @@
 
 ### Input
 
-- [ ] T008 Read previous phase output: specs/002-xml-ttl-loader/tasks/ph1-output.md
+- [x] T008 Read previous phase output: specs/002-xml-ttl-loader/tasks/ph1-output.md
 
 ### テスト実装 (RED)
 
@@ -68,19 +68,19 @@
 
 ### 実装 (GREEN)
 
-- [ ] T019 Read RED tests: specs/002-xml-ttl-loader/red-tests/ph2-test.md
-- [ ] T020 [P] [US1] Create src/xml_parser.py with module docstring and imports
-- [ ] T021 [P] [US1] Implement Figure dataclass in src/xml_parser.py
-- [ ] T022 [P] [US1] Implement XmlPage dataclass in src/xml_parser.py
-- [ ] T023 [US1] Implement parse_book_xml() function in src/xml_parser.py
-- [ ] T024 [US1] Implement _extract_content_text() helper in src/xml_parser.py
-- [ ] T025 [US1] Implement to_page() conversion function in src/xml_parser.py
-- [ ] T026 Verify `make test` PASS (GREEN) - 全テストが通ることを確認
+- [x] T019 Read RED tests: specs/002-xml-ttl-loader/red-tests/ph2-test.md
+- [x] T020 [P] [US1] Create src/xml_parser.py with module docstring and imports
+- [x] T021 [P] [US1] Implement Figure dataclass in src/xml_parser.py
+- [x] T022 [P] [US1] Implement XmlPage dataclass in src/xml_parser.py
+- [x] T023 [US1] Implement parse_book_xml() function in src/xml_parser.py
+- [x] T024 [US1] Implement _extract_content_text() helper in src/xml_parser.py
+- [x] T025 [US1] Implement to_page() conversion function in src/xml_parser.py
+- [x] T026 Verify `make test` PASS (GREEN) - 全テストが通ることを確認
 
 ### 検証
 
-- [ ] T027 Verify `make test` passes all tests (no regressions)
-- [ ] T028 Generate phase output: specs/002-xml-ttl-loader/tasks/ph2-output.md
+- [x] T027 Verify `make test` passes all tests (no regressions)
+- [x] T028 Generate phase output: specs/002-xml-ttl-loader/tasks/ph2-output.md
 
 **Checkpoint**: US1 完了 - XML パーサーが基本的なテキスト抽出と Page 変換ができる状態
 
