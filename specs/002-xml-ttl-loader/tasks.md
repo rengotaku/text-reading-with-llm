@@ -33,13 +33,13 @@
 
 **Purpose**: 既存コードの理解と新規ファイルのスケルトン作成
 
-- [ ] T001 Read existing Page class in src/text_cleaner.py
-- [ ] T002 [P] Read existing process_pages() in src/pipeline.py
-- [ ] T003 [P] Read existing VoicevoxSynthesizer in src/voicevox_client.py
-- [ ] T004 [P] Read sample XML structure in sample/book.xml (first 200 lines)
-- [ ] T005 Create test fixture directory: tests/fixtures/
-- [ ] T006 [P] Create minimal test XML: tests/fixtures/sample_book.xml
-- [ ] T007 Generate phase output: specs/002-xml-ttl-loader/tasks/ph1-output.md
+- [X] T001 Read existing Page class in src/text_cleaner.py
+- [X] T002 [P] Read existing process_pages() in src/pipeline.py
+- [X] T003 [P] Read existing VoicevoxSynthesizer in src/voicevox_client.py
+- [X] T004 [P] Read sample XML structure in sample/book.xml (first 200 lines)
+- [X] T005 Create test fixture directory: tests/fixtures/
+- [X] T006 [P] Create minimal test XML: tests/fixtures/sample_book.xml
+- [X] T007 Generate phase output: specs/002-xml-ttl-loader/tasks/ph1-output.md
 
 ---
 
