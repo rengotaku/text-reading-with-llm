@@ -174,21 +174,21 @@
 
 ### Input
 
-- [ ] T067 Read setup analysis: specs/002-xml-ttl-loader/tasks/ph1-output.md
-- [ ] T068 Read previous phase output: specs/002-xml-ttl-loader/tasks/ph4-output.md
+- [x] T067 Read setup analysis: specs/002-xml-ttl-loader/tasks/ph1-output.md
+- [x] T068 Read previous phase output: specs/002-xml-ttl-loader/tasks/ph4-output.md
 
 ### 実装
 
-- [ ] T069 [P] Validate quickstart.md examples work correctly
-- [ ] T070 [P] Add docstrings to all public functions in src/xml_parser.py
-- [ ] T071 [P] Add docstrings to all public functions in src/xml_pipeline.py
-- [ ] T072 Update Makefile if needed (add xml-tts target)
+- [x] T069 [P] Validate quickstart.md examples work correctly
+- [x] T070 [P] Add docstrings to all public functions in src/xml_parser.py
+- [x] T071 [P] Add docstrings to all public functions in src/xml_pipeline.py
+- [x] T072 Update Makefile if needed (add xml-tts target)
 
 ### 検証
 
-- [ ] T073 Run `make test` to verify all tests pass after cleanup
-- [ ] T074 Run `make lint` if available
-- [ ] T075 Generate phase output: specs/002-xml-ttl-loader/tasks/ph5-output.md
+- [x] T073 Run `make test` to verify all tests pass after cleanup
+- [x] T074 Run `make lint` if available
+- [x] T075 Generate phase output: specs/002-xml-ttl-loader/tasks/ph5-output.md
 
 ---
 

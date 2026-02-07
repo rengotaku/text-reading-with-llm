@@ -38,6 +38,7 @@ python src/xml_pipeline.py --input sample/book.xml --speed 1.2
 | `--style-id` | | VOICEVOX スタイル ID | 13（青山龍星） |
 | `--speed` | | 話速（1.0 = 通常） | 1.0 |
 | `--voicevox-dir` | | VOICEVOX Core ディレクトリ | `./voicevox_core_cuda` |
+| `--max-chunk-chars` | | TTS チャンクの最大文字数 | 500 |
 
 ## 出力構造
 
