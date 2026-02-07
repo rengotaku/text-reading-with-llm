@@ -109,17 +109,17 @@
 
 ### 実装 (GREEN)
 
-- [ ] T038 Read RED tests: specs/002-xml-ttl-loader/red-tests/ph3-test.md
-- [ ] T039 [US2] Implement _should_read_aloud() helper in src/xml_parser.py
-- [ ] T040 [US2] Update parse_book_xml() to check readAloud attribute in src/xml_parser.py
-- [ ] T041 [US2] Update _extract_content_text() to skip readAloud="false" in src/xml_parser.py
-- [ ] T042 [US2] Implement figure description extraction with readAloud check in src/xml_parser.py
-- [ ] T043 Verify `make test` PASS (GREEN) - 全テストが通ることを確認
+- [x] T038 Read RED tests: specs/002-xml-ttl-loader/red-tests/ph3-test.md
+- [x] T039 [US2] Implement _should_read_aloud() helper in src/xml_parser.py
+- [x] T040 [US2] Update parse_book_xml() to check readAloud attribute in src/xml_parser.py
+- [x] T041 [US2] Update _extract_content_text() to skip readAloud="false" in src/xml_parser.py
+- [x] T042 [US2] Implement figure description extraction with readAloud check in src/xml_parser.py
+- [x] T043 Verify `make test` PASS (GREEN) - 全テストが通ることを確認
 
 ### 検証
 
-- [ ] T044 Verify `make test` passes all tests (including US1 regressions)
-- [ ] T045 Generate phase output: specs/002-xml-ttl-loader/tasks/ph3-output.md
+- [x] T044 Verify `make test` passes all tests (including US1 regressions)
+- [x] T045 Generate phase output: specs/002-xml-ttl-loader/tasks/ph3-output.md
 
 **Checkpoint**: US2 完了 - readAloud 属性に基づく要素フィルタリングが機能する状態
 

@@ -102,11 +102,33 @@ def parse_book_xml(xml_path: Union[str, Path]) -> list[XmlPage]:
     return pages
 
 
+def _should_read_aloud(elem) -> bool:
+    """Check if element should be read aloud based on readAloud attribute.
+
+    Returns True if:
+    - readAloud attribute is missing (default: read)
+    - readAloud="true"
+    - readAloud="optional"
+
+    Returns False if:
+    - readAloud="false"
+
+    Args:
+        elem: XML element to check
+
+    Returns:
+        True if element should be read aloud, False otherwise
+    """
+    read_aloud = elem.get("readAloud", "true")
+    return read_aloud != "false"
+
+
 def _extract_content_text(content_elem) -> str:
     """Extract text from content element in DOM order.
 
     Extracts text from paragraph, heading, and list/item elements
     while preserving their order in the XML document.
+    Elements with readAloud="false" are skipped.
 
     Args:
         content_elem: The <content> XML element
@@ -117,6 +139,9 @@ def _extract_content_text(content_elem) -> str:
     texts = []
 
     for child in content_elem:
+        if not _should_read_aloud(child):
+            continue
+
         if child.tag == "paragraph":
             if child.text:
                 texts.append(child.text)
