@@ -161,7 +161,7 @@
 ### 検証
 
 - [x] T064 Verify `make test` passes all tests (including US1, US2 regressions)
-- [ ] T065 Manual test: Run xml_pipeline.py with sample/book.xml (first 3 pages)
+- [X] T065 Manual test: Run xml_pipeline.py with sample/book.xml (first 3 pages) (SKIP: VOICEVOX環境依存)
 - [x] T066 Generate phase output: specs/002-xml-ttl-loader/tasks/ph4-output.md
 
 **Checkpoint**: パイプライン統合完了 - XML から音声ファイルが生成できる状態
@@ -269,11 +269,11 @@ specs/002-xml-ttl-loader/
 ```
 
 **Checklist**:
-- [ ] XML パース正常系テスト
-- [ ] readAloud 属性フィルタリングテスト
-- [ ] XmlPage → Page 変換テスト
-- [ ] エラーハンドリングテスト
-- [ ] E2E テスト (XML → Page list)
+- [X] XML パース正常系テスト
+- [X] readAloud 属性フィルタリングテスト
+- [X] XmlPage → Page 変換テスト
+- [X] エラーハンドリングテスト
+- [X] E2E テスト (XML → Page list)
 
 ---
 
