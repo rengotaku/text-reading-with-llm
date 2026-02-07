@@ -284,6 +284,15 @@ def main() -> None:
             f.write(to_json(chapters))
         logger.info("Generated TOC: %d chapters -> %s", len(chapters), toc_path)
 
+    # Save cleaned text (always, before TTS processing)
+    cleaned_text_path = output_dir / "cleaned_text.txt"
+    with open(cleaned_text_path, "w", encoding="utf-8") as f:
+        for page in all_pages:
+            f.write(f"=== Page {page.number} ===\n")
+            f.write(page.text)
+            f.write("\n\n")
+    logger.info("Saved cleaned text: %s", cleaned_text_path)
+
     # Step 4: Process based on mode
     if chapters:
         # Chapter-based processing
@@ -340,15 +349,6 @@ def main() -> None:
         if not pages:
             logger.warning("No pages to process")
             sys.exit(0)
-
-        # Save cleaned text
-        cleaned_text_path = output_dir / "cleaned_text.txt"
-        with open(cleaned_text_path, "w", encoding="utf-8") as f:
-            for page in pages:
-                f.write(f"=== Page {page.number} ===\n")
-                f.write(page.text)
-                f.write("\n\n")
-        logger.info("Saved cleaned text: %s", cleaned_text_path)
 
         # Process pages
         process_pages(pages, synthesizer, output_dir, args, output_filename="book.wav")
