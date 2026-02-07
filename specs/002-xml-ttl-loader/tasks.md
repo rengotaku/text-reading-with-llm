@@ -148,21 +148,21 @@
 
 ### 実装 (GREEN)
 
-- [ ] T055 Read RED tests: specs/002-xml-ttl-loader/red-tests/ph4-test.md
-- [ ] T056 Create src/xml_pipeline.py with module docstring and imports
-- [ ] T057 Implement parse_args() function in src/xml_pipeline.py
-- [ ] T058 Implement main() function skeleton in src/xml_pipeline.py
-- [ ] T059 Integrate xml_parser.parse_book_xml() in main()
-- [ ] T060 Integrate text_cleaner.clean_page_text() in main()
-- [ ] T061 Integrate pipeline.process_pages() in main()
-- [ ] T062 Implement error handling for file not found and invalid XML
-- [ ] T063 Verify `make test` PASS (GREEN) - 全テストが通ることを確認
+- [x] T055 Read RED tests: specs/002-xml-ttl-loader/red-tests/ph4-test.md
+- [x] T056 Create src/xml_pipeline.py with module docstring and imports
+- [x] T057 Implement parse_args() function in src/xml_pipeline.py
+- [x] T058 Implement main() function skeleton in src/xml_pipeline.py
+- [x] T059 Integrate xml_parser.parse_book_xml() in main()
+- [x] T060 Integrate text_cleaner.clean_page_text() in main()
+- [x] T061 Integrate pipeline.process_pages() in main()
+- [x] T062 Implement error handling for file not found and invalid XML
+- [x] T063 Verify `make test` PASS (GREEN) - 全テストが通ることを確認
 
 ### 検証
 
-- [ ] T064 Verify `make test` passes all tests (including US1, US2 regressions)
+- [x] T064 Verify `make test` passes all tests (including US1, US2 regressions)
 - [ ] T065 Manual test: Run xml_pipeline.py with sample/book.xml (first 3 pages)
-- [ ] T066 Generate phase output: specs/002-xml-ttl-loader/tasks/ph4-output.md
+- [x] T066 Generate phase output: specs/002-xml-ttl-loader/tasks/ph4-output.md
 
 **Checkpoint**: パイプライン統合完了 - XML から音声ファイルが生成できる状態
 
