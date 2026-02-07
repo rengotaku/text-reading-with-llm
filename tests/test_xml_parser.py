@@ -432,3 +432,190 @@ class TestEdgeCases:
             assert page.content_text.strip(), (
                 f"Page {page.number} content_text should not be empty"
             )
+
+
+# =============================================================================
+# Phase 3 RED Tests - US2: 読み上げ不要な要素をスキップする
+# =============================================================================
+
+
+class TestSkipReadAloudFalseElement:
+    """Test elements with readAloud="false" are skipped."""
+
+    def test_skip_paragraph_with_read_aloud_false(self):
+        """readAloud='false' の paragraph はスキップする"""
+        result = parse_book_xml(SAMPLE_BOOK_XML)
+        third_page = result[2]  # page 3 has readAloud="false" paragraph
+
+        assert "この段落は読み上げない" not in third_page.content_text, (
+            f"Paragraph with readAloud='false' should be skipped: "
+            f"got '{third_page.content_text}'"
+        )
+
+    def test_skip_heading_with_read_aloud_false(self):
+        """readAloud='false' の heading はスキップする"""
+        result = parse_book_xml(SAMPLE_BOOK_XML)
+        third_page = result[2]  # page 3 has readAloud="false" heading
+
+        assert "この見出しは読み上げない" not in third_page.content_text, (
+            f"Heading with readAloud='false' should be skipped: "
+            f"got '{third_page.content_text}'"
+        )
+
+    def test_include_paragraph_without_read_aloud(self):
+        """readAloud 属性なしの paragraph は抽出する"""
+        result = parse_book_xml(SAMPLE_BOOK_XML)
+        third_page = result[2]
+
+        assert "この段落は読み上げる" in third_page.content_text, (
+            f"Paragraph without readAloud should be extracted: "
+            f"got '{third_page.content_text}'"
+        )
+
+    def test_include_heading_without_read_aloud(self):
+        """readAloud 属性なしの heading は抽出する"""
+        result = parse_book_xml(SAMPLE_BOOK_XML)
+        third_page = result[2]
+
+        assert "この見出しは読み上げる" in third_page.content_text, (
+            f"Heading without readAloud should be extracted: "
+            f"got '{third_page.content_text}'"
+        )
+
+
+class TestSkipPageMetadata:
+    """Test pageMetadata elements with readAloud="false" are skipped."""
+
+    def test_page_metadata_not_in_content_text(self):
+        """pageMetadata はcontent_text に含まれない"""
+        result = parse_book_xml(SAMPLE_BOOK_XML)
+        first_page = result[0]
+
+        # pageMetadata has "1 / 1" text
+        assert "1 / 1" not in first_page.content_text, (
+            f"pageMetadata should not be in content_text: "
+            f"got '{first_page.content_text}'"
+        )
+
+    def test_page_metadata_not_in_to_page_output(self):
+        """pageMetadata は to_page() の出力に含まれない"""
+        xml_pages = parse_book_xml(SAMPLE_BOOK_XML)
+        first_xml_page = xml_pages[0]
+
+        result = to_page(first_xml_page)
+
+        # pageMetadata has "1 / 1" text
+        assert "1 / 1" not in result.text, (
+            f"pageMetadata should not be in Page text: "
+            f"got '{result.text}'"
+        )
+
+    def test_chapter_page_metadata_not_in_output(self):
+        """chapter-page type の pageMetadata もスキップされる"""
+        xml_pages = parse_book_xml(SAMPLE_BOOK_XML)
+        second_xml_page = xml_pages[1]
+
+        result = to_page(second_xml_page)
+
+        # pageMetadata has "1 / 2" text
+        assert "1 / 2" not in result.text, (
+            f"pageMetadata should not be in Page text: "
+            f"got '{result.text}'"
+        )
+
+
+class TestExtractFigureDescriptionWhenOptional:
+    """Test figure description extraction with readAloud='optional'."""
+
+    def test_figure_description_extracted_when_optional(self):
+        """readAloud='optional' の figure description は抽出する"""
+        xml_pages = parse_book_xml(SAMPLE_BOOK_XML)
+        first_xml_page = xml_pages[0]  # Has figure with readAloud="optional"
+
+        result = to_page(first_xml_page)
+
+        assert "テスト画像の説明文" in result.text, (
+            f"Figure description with readAloud='optional' should be included: "
+            f"got '{result.text}'"
+        )
+
+    def test_figure_description_skipped_when_false(self):
+        """readAloud='false' の figure description はスキップする"""
+        xml_pages = parse_book_xml(SAMPLE_BOOK_XML)
+        third_xml_page = xml_pages[2]  # Has figure with readAloud="false"
+
+        result = to_page(third_xml_page)
+
+        assert "この図の説明は読み上げない" not in result.text, (
+            f"Figure description with readAloud='false' should be skipped: "
+            f"got '{result.text}'"
+        )
+
+
+class TestSkipFigureFilePath:
+    """Test file paths in figures are never read aloud."""
+
+    def test_file_path_not_in_to_page_output(self):
+        """figure の file パスは to_page() 出力に含まれない"""
+        xml_pages = parse_book_xml(SAMPLE_BOOK_XML)
+        first_xml_page = xml_pages[0]
+
+        result = to_page(first_xml_page)
+
+        # file element has "figures/test_figure.png"
+        assert "figures/test_figure.png" not in result.text, (
+            f"Figure file path should never be in Page text: "
+            f"got '{result.text}'"
+        )
+        assert ".png" not in result.text, (
+            f"File extension should not appear in Page text: "
+            f"got '{result.text}'"
+        )
+
+    def test_skip_figure_file_path_not_in_content(self):
+        """figure の file パスは content_text にも含まれない"""
+        result = parse_book_xml(SAMPLE_BOOK_XML)
+        first_page = result[0]
+
+        # File paths should not be in content_text
+        assert "figures/test_figure.png" not in first_page.content_text, (
+            f"Figure file path should not be in content_text: "
+            f"got '{first_page.content_text}'"
+        )
+
+
+class TestIgnoreXmlComments:
+    """Test XML comments are properly ignored."""
+
+    def test_xml_comment_not_in_content_text(self):
+        """XML コメントは content_text に含まれない"""
+        result = parse_book_xml(SAMPLE_BOOK_XML)
+        third_page = result[2]  # Page 3 has XML comment
+
+        # XML comment text: "これはXMLコメントなので無視される"
+        assert "XMLコメント" not in third_page.content_text, (
+            f"XML comment should not be in content_text: "
+            f"got '{third_page.content_text}'"
+        )
+
+    def test_xml_comment_not_in_to_page_output(self):
+        """XML コメントは to_page() 出力に含まれない"""
+        xml_pages = parse_book_xml(SAMPLE_BOOK_XML)
+        third_xml_page = xml_pages[2]
+
+        result = to_page(third_xml_page)
+
+        assert "XMLコメント" not in result.text, (
+            f"XML comment should not be in Page text: "
+            f"got '{result.text}'"
+        )
+
+    def test_xml_comment_not_in_announcement(self):
+        """XML コメントは announcement にも含まれない"""
+        result = parse_book_xml(SAMPLE_BOOK_XML)
+        third_page = result[2]
+
+        assert "XMLコメント" not in third_page.announcement, (
+            f"XML comment should not be in announcement: "
+            f"got '{third_page.announcement}'"
+        )

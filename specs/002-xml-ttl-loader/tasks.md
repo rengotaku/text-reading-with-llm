@@ -94,18 +94,18 @@
 
 ### Input
 
-- [ ] T029 Read setup analysis: specs/002-xml-ttl-loader/tasks/ph1-output.md
-- [ ] T030 Read previous phase output: specs/002-xml-ttl-loader/tasks/ph2-output.md
+- [x] T029 Read setup analysis: specs/002-xml-ttl-loader/tasks/ph1-output.md
+- [x] T030 Read previous phase output: specs/002-xml-ttl-loader/tasks/ph2-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T031 [P] [US2] Implement test_skip_read_aloud_false_element in tests/test_xml_parser.py
-- [ ] T032 [P] [US2] Implement test_skip_page_metadata in tests/test_xml_parser.py
-- [ ] T033 [P] [US2] Implement test_extract_figure_description_when_optional in tests/test_xml_parser.py
-- [ ] T034 [P] [US2] Implement test_skip_figure_file_path in tests/test_xml_parser.py
-- [ ] T035 [P] [US2] Implement test_ignore_xml_comments in tests/test_xml_parser.py
-- [ ] T036 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
-- [ ] T037 Generate RED output: specs/002-xml-ttl-loader/red-tests/ph3-test.md
+- [x] T031 [P] [US2] Implement test_skip_read_aloud_false_element in tests/test_xml_parser.py
+- [x] T032 [P] [US2] Implement test_skip_page_metadata in tests/test_xml_parser.py
+- [x] T033 [P] [US2] Implement test_extract_figure_description_when_optional in tests/test_xml_parser.py
+- [x] T034 [P] [US2] Implement test_skip_figure_file_path in tests/test_xml_parser.py
+- [x] T035 [P] [US2] Implement test_ignore_xml_comments in tests/test_xml_parser.py
+- [x] T036 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
+- [x] T037 Generate RED output: specs/002-xml-ttl-loader/red-tests/ph3-test.md
 
 ### 実装 (GREEN)
 
