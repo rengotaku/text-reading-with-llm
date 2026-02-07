@@ -55,16 +55,16 @@
 
 ### テスト実装 (RED)
 
-- [ ] T009 [P] [US1] Create test file: tests/test_xml_parser.py with test class skeleton
-- [ ] T010 [P] [US1] Implement test_parse_book_xml_returns_pages in tests/test_xml_parser.py
-- [ ] T011 [P] [US1] Implement test_xmlpage_has_number_and_text in tests/test_xml_parser.py
-- [ ] T012 [P] [US1] Implement test_extract_paragraph_text in tests/test_xml_parser.py
-- [ ] T013 [P] [US1] Implement test_extract_heading_text in tests/test_xml_parser.py
-- [ ] T014 [P] [US1] Implement test_extract_list_items in tests/test_xml_parser.py
-- [ ] T015 [P] [US1] Implement test_extract_page_announcement in tests/test_xml_parser.py
-- [ ] T016 [P] [US1] Implement test_to_page_conversion in tests/test_xml_parser.py
-- [ ] T017 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
-- [ ] T018 Generate RED output: specs/002-xml-ttl-loader/red-tests/ph2-test.md
+- [x] T009 [P] [US1] Create test file: tests/test_xml_parser.py with test class skeleton
+- [x] T010 [P] [US1] Implement test_parse_book_xml_returns_pages in tests/test_xml_parser.py
+- [x] T011 [P] [US1] Implement test_xmlpage_has_number_and_text in tests/test_xml_parser.py
+- [x] T012 [P] [US1] Implement test_extract_paragraph_text in tests/test_xml_parser.py
+- [x] T013 [P] [US1] Implement test_extract_heading_text in tests/test_xml_parser.py
+- [x] T014 [P] [US1] Implement test_extract_list_items in tests/test_xml_parser.py
+- [x] T015 [P] [US1] Implement test_extract_page_announcement in tests/test_xml_parser.py
+- [x] T016 [P] [US1] Implement test_to_page_conversion in tests/test_xml_parser.py
+- [x] T017 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
+- [x] T018 Generate RED output: specs/002-xml-ttl-loader/red-tests/ph2-test.md
 
 ### 実装 (GREEN)
 
