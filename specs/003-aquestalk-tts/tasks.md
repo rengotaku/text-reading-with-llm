@@ -33,13 +33,13 @@
 
 **Purpose**: 既存コードの分析、AquesTalk10 ラッパーの設計準備
 
-- [ ] T001 Read existing VOICEVOX pipeline in src/xml_pipeline.py
-- [ ] T002 [P] Read existing text cleaner in src/text_cleaner.py
-- [ ] T003 [P] Read existing xml parser in src/xml_parser.py
-- [ ] T004 [P] Read existing pipeline utilities in src/pipeline.py
-- [ ] T005 [P] Read existing voicevox client pattern in src/voicevox_client.py
-- [ ] T006 [P] Read existing tests in tests/test_xml_pipeline.py
-- [ ] T007 Generate phase output: specs/003-aquestalk-tts/tasks/ph1-output.md
+- [X] T001 Read existing VOICEVOX pipeline in src/xml_pipeline.py
+- [X] T002 [P] Read existing text cleaner in src/text_cleaner.py
+- [X] T003 [P] Read existing xml parser in src/xml_parser.py
+- [X] T004 [P] Read existing pipeline utilities in src/pipeline.py
+- [X] T005 [P] Read existing voicevox client pattern in src/voicevox_client.py
+- [X] T006 [P] Read existing tests in tests/test_xml_pipeline.py
+- [X] T007 Generate phase output: specs/003-aquestalk-tts/tasks/ph1-output.md
 
 ---
 
