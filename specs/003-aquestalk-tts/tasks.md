@@ -69,22 +69,22 @@
 
 ### Implementation (GREEN)
 
-- [ ] T020 Read RED tests: specs/003-aquestalk-tts/red-tests/ph2-test.md
-- [ ] T021 [US1] Create AquesTalkConfig dataclass in src/aquestalk_client.py
-- [ ] T022 [US1] Create AquesTalkSynthesizer class with initialize() in src/aquestalk_client.py
-- [ ] T023 [US1] Implement synthesize() method in src/aquestalk_client.py
-- [ ] T024 [US1] Implement add_punctuation() for heading/paragraph end in src/aquestalk_client.py
-- [ ] T025 [US1] Implement convert_numbers_to_num_tags() in src/aquestalk_client.py
-- [ ] T026 [US1] Create parse_args() in src/aquestalk_pipeline.py
-- [ ] T027 [US1] Create main() with XML parsing + text cleaning in src/aquestalk_pipeline.py
-- [ ] T028 [US1] Implement page processing loop in src/aquestalk_pipeline.py
-- [ ] T029 [US1] Implement book.wav concatenation in src/aquestalk_pipeline.py
-- [ ] T030 Verify `make test` PASS (GREEN)
+- [X] T020 Read RED tests: specs/003-aquestalk-tts/red-tests/ph2-test.md
+- [X] T021 [US1] Create AquesTalkConfig dataclass in src/aquestalk_client.py
+- [X] T022 [US1] Create AquesTalkSynthesizer class with initialize() in src/aquestalk_client.py
+- [X] T023 [US1] Implement synthesize() method in src/aquestalk_client.py
+- [X] T024 [US1] Implement add_punctuation() for heading/paragraph end in src/aquestalk_client.py
+- [X] T025 [US1] Implement convert_numbers_to_num_tags() in src/aquestalk_client.py
+- [X] T026 [US1] Create parse_args() in src/aquestalk_pipeline.py
+- [X] T027 [US1] Create main() with XML parsing + text cleaning in src/aquestalk_pipeline.py
+- [X] T028 [US1] Implement page processing loop in src/aquestalk_pipeline.py
+- [X] T029 [US1] Implement book.wav concatenation in src/aquestalk_pipeline.py
+- [X] T030 Verify `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T031 Verify `make test` passes all tests (no regressions)
-- [ ] T032 Generate phase output: specs/003-aquestalk-tts/tasks/ph2-output.md
+- [X] T031 Verify `make test` passes all tests (no regressions)
+- [X] T032 Generate phase output: specs/003-aquestalk-tts/tasks/ph2-output.md
 
 **Checkpoint**: User Story 1 should be fully functional and testable independently
 
