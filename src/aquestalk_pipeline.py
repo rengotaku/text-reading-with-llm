@@ -18,6 +18,7 @@ import io
 import logging
 import sys
 from pathlib import Path
+from typing import List, Optional
 
 import numpy as np
 import soundfile as sf
@@ -45,14 +46,22 @@ logger = logging.getLogger(__name__)
 HEADING_SPEED = 80
 
 
-def parse_args(args=None):
+def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     """Parse command line arguments.
 
     Args:
         args: List of arguments (for testing). If None, uses sys.argv.
 
     Returns:
-        argparse.Namespace with parsed arguments
+        argparse.Namespace with parsed arguments containing:
+            - input: Input XML file path
+            - output: Output directory (default: ./output)
+            - start_page: Start page number (default: 1)
+            - end_page: End page number (default: None for last page)
+            - speed: Speech speed 50-300 (default: 100)
+            - voice: Voice quality 0-200 (default: 100)
+            - pitch: Pitch 50-200 (default: 100)
+            - heading_sound: Optional sound file path for headings
     """
     parser = argparse.ArgumentParser(
         description="Generate TTS audio from XML book files using AquesTalk10"
@@ -116,12 +125,21 @@ def parse_args(args=None):
 def load_heading_sound(sound_path: Path, target_sr: int = AQUESTALK_SAMPLE_RATE) -> np.ndarray:
     """Load heading sound effect and resample to target sample rate.
 
+    The sound file will be:
+    - Converted to mono if stereo
+    - Resampled to target sample rate if needed
+    - Normalized to 50% volume
+
     Args:
         sound_path: Path to sound file (MP3/WAV)
         target_sr: Target sample rate (default: 16000 for AquesTalk10)
 
     Returns:
-        Audio data as numpy array
+        Audio data as numpy array (float32, mono, normalized)
+
+    Raises:
+        FileNotFoundError: If sound file does not exist
+        RuntimeError: If sound file cannot be read
     """
     data, sr = sf.read(sound_path)
 
@@ -145,23 +163,33 @@ def load_heading_sound(sound_path: Path, target_sr: int = AQUESTALK_SAMPLE_RATE)
 
 
 def process_pages_with_heading_sound(
-    pages: list[Page],
+    pages: List[Page],
     synthesizer: AquesTalkSynthesizer,
     output_dir: Path,
-    args,
-    heading_sound: np.ndarray | None = None,
-) -> list[Path]:
+    args: argparse.Namespace,
+    heading_sound: Optional[np.ndarray] = None,
+) -> List[Path]:
     """Process pages with heading sound effects.
 
+    For each page:
+    1. Split text by HEADING_MARKER
+    2. For heading segments: insert heading sound (if provided) + synthesize with speed=80
+    3. For normal segments: synthesize with default speed
+    4. Save page audio to pages/page_NNNN.wav
+    5. Concatenate all pages into book.wav
+
     Args:
-        pages: List of Page objects
-        synthesizer: AquesTalk synthesizer
-        output_dir: Output directory
-        args: Parsed arguments
-        heading_sound: Heading sound effect audio data
+        pages: List of Page objects with cleaned text
+        synthesizer: AquesTalk synthesizer instance
+        output_dir: Output directory for WAV files
+        args: Parsed arguments with speed/voice/pitch settings
+        heading_sound: Optional heading sound effect audio data (16kHz mono)
 
     Returns:
-        List of generated WAV file paths
+        List of generated WAV file paths (pages/page_NNNN.wav)
+
+    Raises:
+        IOError: If audio file cannot be written
     """
     pages_dir = output_dir / "pages"
     pages_dir.mkdir(parents=True, exist_ok=True)
@@ -234,8 +262,18 @@ def process_pages_with_heading_sound(
     return wav_files
 
 
-def main(args=None):
-    """Main entry point.
+def main(args: Optional[List[str]] = None) -> None:
+    """Main entry point for AquesTalk TTS pipeline.
+
+    Pipeline workflow:
+    1. Parse command line arguments
+    2. Parse XML book file
+    3. Filter pages by range (start-page, end-page)
+    4. Clean text for TTS (preserve HEADING_MARKER)
+    5. Load heading sound effect if specified
+    6. Initialize AquesTalk synthesizer
+    7. Process pages and generate audio files
+    8. Concatenate pages into book.wav
 
     Args:
         args: List of arguments (for testing). If None, uses sys.argv.
@@ -243,6 +281,7 @@ def main(args=None):
     Raises:
         FileNotFoundError: If input file does not exist
         xml.etree.ElementTree.ParseError: If XML is malformed
+        ValueError: If parameters (speed/voice/pitch) are out of range
     """
     parsed = parse_args(args)
 

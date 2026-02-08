@@ -173,23 +173,23 @@
 
 ### Input
 
-- [ ] T066 Read setup analysis: specs/003-aquestalk-tts/tasks/ph1-output.md
-- [ ] T067 Read previous phase output: specs/003-aquestalk-tts/tasks/ph4-output.md
+- [X] T066 Read setup analysis: specs/003-aquestalk-tts/tasks/ph1-output.md
+- [X] T067 Read previous phase output: specs/003-aquestalk-tts/tasks/ph4-output.md
 
 ### Implementation
 
-- [ ] T068 [P] Add docstrings to all public functions in src/aquestalk_client.py
-- [ ] T069 [P] Add docstrings to all public functions in src/aquestalk_pipeline.py
-- [ ] T070 [P] Add type hints to all functions in src/aquestalk_client.py
-- [ ] T071 [P] Add type hints to all functions in src/aquestalk_pipeline.py
-- [ ] T072 Code cleanup and refactoring
-- [ ] T073 Run quickstart.md validation (manual test)
+- [X] T068 [P] Add docstrings to all public functions in src/aquestalk_client.py
+- [X] T069 [P] Add docstrings to all public functions in src/aquestalk_pipeline.py
+- [X] T070 [P] Add type hints to all functions in src/aquestalk_client.py
+- [X] T071 [P] Add type hints to all functions in src/aquestalk_pipeline.py
+- [X] T072 Code cleanup and refactoring
+- [X] T073 Run quickstart.md validation (manual test) - skipped, no quickstart.md
 
 ### Verification
 
-- [ ] T074 Run `make test` to verify all tests pass after cleanup
-- [ ] T075 Run `make coverage` to verify ≥80% coverage
-- [ ] T076 Generate phase output: specs/003-aquestalk-tts/tasks/ph5-output.md
+- [X] T074 Run `make test` to verify all tests pass after cleanup
+- [X] T075 Run `make coverage` to verify ≥80% coverage
+- [X] T076 Generate phase output: specs/003-aquestalk-tts/tasks/ph5-output.md
 
 ---
 

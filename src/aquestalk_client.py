@@ -14,6 +14,7 @@ import io
 import logging
 import re
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 import soundfile as sf
@@ -26,7 +27,13 @@ AQUESTALK_SAMPLE_RATE = 16000
 
 @dataclass
 class AquesTalkConfig:
-    """AquesTalk10 configuration."""
+    """AquesTalk10 configuration.
+
+    Attributes:
+        speed: Speech speed (50-300). Lower = slower, higher = faster. Default 100.
+        voice: Voice quality (0-200). Lower = younger voice, higher = older voice. Default 100.
+        pitch: Pitch (50-200). Lower = lower pitch, higher = higher pitch. Default 100.
+    """
 
     speed: int = 100  # 50-300
     voice: int = 100  # 0-200
@@ -37,9 +44,19 @@ class AquesTalkSynthesizer:
     """AquesTalk10 synthesizer (mock implementation).
 
     Since AquesTalk10 library is not available, this generates dummy audio.
+    In real implementation, this would interface with the actual AquesTalk10 library.
+
+    Attributes:
+        config: AquesTalk configuration with speech parameters.
+
+    Example:
+        >>> config = AquesTalkConfig(speed=100, voice=100, pitch=100)
+        >>> synthesizer = AquesTalkSynthesizer(config)
+        >>> synthesizer.initialize()
+        >>> wav_data = synthesizer.synthesize("こんにちは")
     """
 
-    def __init__(self, config: AquesTalkConfig | None = None):
+    def __init__(self, config: Optional[AquesTalkConfig] = None) -> None:
         """Initialize synthesizer.
 
         Args:
@@ -78,9 +95,9 @@ class AquesTalkSynthesizer:
     def synthesize(
         self,
         text: str,
-        speed: int | None = None,
-        voice: int | None = None,
-        pitch: int | None = None,
+        speed: Optional[int] = None,
+        voice: Optional[int] = None,
+        pitch: Optional[int] = None,
     ) -> bytes:
         """Synthesize text to audio.
 
