@@ -52,9 +52,19 @@ class AquesTalkSynthesizer:
         """Initialize the synthesizer.
 
         In real implementation, this would load AquesTalk10 library.
+
+        Raises:
+            ValueError: If config parameters are out of valid range
         """
         if self._initialized:
             return
+
+        # Validate config parameters
+        self._validate_parameters(
+            self.config.speed,
+            self.config.voice,
+            self.config.pitch
+        )
 
         logger.info("Initializing AquesTalk10 synthesizer (mock)...")
         logger.info(
@@ -65,20 +75,36 @@ class AquesTalkSynthesizer:
         )
         self._initialized = True
 
-    def synthesize(self, text: str, speed: int | None = None) -> bytes:
+    def synthesize(
+        self,
+        text: str,
+        speed: int | None = None,
+        voice: int | None = None,
+        pitch: int | None = None,
+    ) -> bytes:
         """Synthesize text to audio.
 
         Args:
             text: Text to synthesize (can include AquesTalk tags like <NUM VAL=123>)
-            speed: Override speed (default: use config.speed)
+            speed: Override speed (50-300, default: use config.speed)
+            voice: Override voice quality (0-200, default: use config.voice)
+            pitch: Override pitch (50-200, default: use config.pitch)
 
         Returns:
             WAV audio data as bytes (16kHz, mono)
+
+        Raises:
+            ValueError: If any parameter is out of valid range
         """
         self.initialize()
 
-        # Use provided speed or fall back to config
+        # Use provided values or fall back to config
         actual_speed = speed if speed is not None else self.config.speed
+        actual_voice = voice if voice is not None else self.config.voice
+        actual_pitch = pitch if pitch is not None else self.config.pitch
+
+        # Validate parameters
+        self._validate_parameters(actual_speed, actual_voice, actual_pitch)
 
         # Generate dummy audio (16kHz sine wave)
         # Length based on text length (rough approximation)
@@ -94,6 +120,29 @@ class AquesTalkSynthesizer:
         with io.BytesIO() as buffer:
             sf.write(buffer, waveform, AQUESTALK_SAMPLE_RATE, format="WAV")
             return buffer.getvalue()
+
+    def _validate_parameters(
+        self,
+        speed: int,
+        voice: int,
+        pitch: int
+    ) -> None:
+        """Validate AquesTalk10 parameters.
+
+        Args:
+            speed: Speech speed (50-300)
+            voice: Voice quality (0-200)
+            pitch: Pitch (50-200)
+
+        Raises:
+            ValueError: If any parameter is out of valid range
+        """
+        if not (50 <= speed <= 300):
+            raise ValueError(f"speed must be 50-300, got {speed}")
+        if not (0 <= voice <= 200):
+            raise ValueError(f"voice must be 0-200, got {voice}")
+        if not (50 <= pitch <= 200):
+            raise ValueError(f"pitch must be 50-200, got {pitch}")
 
 
 def convert_numbers_to_num_tags(text: str) -> str:

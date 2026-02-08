@@ -151,17 +151,17 @@
 
 ### Implementation (GREEN)
 
-- [ ] T058 Read RED tests: specs/003-aquestalk-tts/red-tests/ph4-test.md
-- [ ] T059 [US3] Add speed, voice, pitch to AquesTalkConfig in src/aquestalk_client.py
-- [ ] T060 [US3] Implement parameter validation in src/aquestalk_client.py
-- [ ] T061 [US3] Add --speed, --voice, --pitch CLI options in src/aquestalk_pipeline.py
-- [ ] T062 [US3] Pass parameters to synthesizer in src/aquestalk_pipeline.py
-- [ ] T063 Verify `make test` PASS (GREEN)
+- [X] T058 Read RED tests: specs/003-aquestalk-tts/red-tests/ph4-test.md
+- [X] T059 [US3] Add speed, voice, pitch to AquesTalkConfig in src/aquestalk_client.py
+- [X] T060 [US3] Implement parameter validation in src/aquestalk_client.py
+- [X] T061 [US3] Add --speed, --voice, --pitch CLI options in src/aquestalk_pipeline.py
+- [X] T062 [US3] Pass parameters to synthesizer in src/aquestalk_pipeline.py
+- [X] T063 Verify `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T064 Verify `make test` passes all tests (no regressions)
-- [ ] T065 Generate phase output: specs/003-aquestalk-tts/tasks/ph4-output.md
+- [X] T064 Verify `make test` passes all tests (no regressions)
+- [X] T065 Generate phase output: specs/003-aquestalk-tts/tasks/ph4-output.md
 
 **Checkpoint**: All User Stories (1, 2, 3) should work independently
 
