@@ -98,17 +98,17 @@
 
 ### Input
 
-- [ ] T033 Read setup analysis: specs/003-aquestalk-tts/tasks/ph1-output.md
-- [ ] T034 Read previous phase output: specs/003-aquestalk-tts/tasks/ph2-output.md
+- [X] T033 Read setup analysis: specs/003-aquestalk-tts/tasks/ph1-output.md
+- [X] T034 Read previous phase output: specs/003-aquestalk-tts/tasks/ph2-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T035 [P] [US2] Implement test_load_heading_sound in tests/test_aquestalk_pipeline.py
-- [ ] T036 [P] [US2] Implement test_heading_sound_insertion in tests/test_aquestalk_pipeline.py
-- [ ] T037 [P] [US2] Implement test_heading_speed_adjustment in tests/test_aquestalk_client.py
-- [ ] T038 [P] [US2] Implement test_heading_sound_file_not_found_warning in tests/test_aquestalk_pipeline.py
-- [ ] T039 Verify `make test` FAIL (RED)
-- [ ] T040 Generate RED output: specs/003-aquestalk-tts/red-tests/ph3-test.md
+- [X] T035 [P] [US2] Implement test_load_heading_sound in tests/test_aquestalk_pipeline.py
+- [X] T036 [P] [US2] Implement test_heading_sound_insertion in tests/test_aquestalk_pipeline.py
+- [X] T037 [P] [US2] Implement test_heading_speed_adjustment in tests/test_aquestalk_client.py
+- [X] T038 [P] [US2] Implement test_heading_sound_file_not_found_warning in tests/test_aquestalk_pipeline.py
+- [X] T039 Verify `make test` FAIL (RED)
+- [X] T040 Generate RED output: specs/003-aquestalk-tts/red-tests/ph3-test.md
 
 ### Implementation (GREEN)
 

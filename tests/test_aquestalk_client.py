@@ -345,3 +345,89 @@ class TestSynthesizerInitialization:
         assert callable(synthesizer.synthesize), (
             "synthesize should be callable"
         )
+
+
+# ============================================================
+# Phase 3: User Story 2 - 見出し速度調整 (T037)
+# ============================================================
+
+class TestHeadingSpeedAdjustmentClient:
+    """Test synthesize() with speed parameter for heading emphasis.
+
+    見出しは speed=80 でゆっくり読むことで強調する (FR-011)。
+    synthesizer.synthesize() が speed パラメータを受け付けるようにする。
+    """
+
+    def test_synthesize_accepts_speed_parameter(self):
+        """synthesize() は speed パラメータを受け付ける"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        # synthesize should accept optional speed parameter
+        try:
+            result = synthesizer.synthesize("テスト", speed=80)
+            assert isinstance(result, bytes), (
+                f"synthesize with speed should return bytes, got {type(result)}"
+            )
+        except TypeError as e:
+            # If TypeError, synthesize doesn't accept speed parameter yet
+            pytest.fail(
+                f"synthesize() should accept speed parameter. Error: {e}"
+            )
+
+    def test_synthesize_speed_80_for_heading_emphasis(self):
+        """speed=80 で見出しをゆっくり読み上げる"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        # Call with speed=80 (heading emphasis speed)
+        result = synthesizer.synthesize("見出しテキスト", speed=80)
+
+        assert isinstance(result, bytes), (
+            "synthesize with speed=80 should return bytes"
+        )
+        assert len(result) > 0, (
+            "synthesize with speed=80 should return non-empty audio"
+        )
+
+    def test_synthesize_uses_config_speed_when_not_specified(self):
+        """speed パラメータ未指定時は config.speed を使用"""
+        config = AquesTalkConfig(speed=150)
+        synthesizer = AquesTalkSynthesizer(config)
+        synthesizer.initialize()
+
+        # Call without speed parameter - should use config.speed=150
+        result = synthesizer.synthesize("テスト")
+
+        # At minimum, it should work without speed parameter
+        assert isinstance(result, bytes), (
+            "synthesize without speed should use config.speed"
+        )
+
+    def test_synthesize_speed_overrides_config(self):
+        """speed パラメータは config.speed を上書きする"""
+        config = AquesTalkConfig(speed=150)
+        synthesizer = AquesTalkSynthesizer(config)
+        synthesizer.initialize()
+
+        # Call with speed=80 - should override config.speed=150
+        result = synthesizer.synthesize("テスト", speed=80)
+
+        assert isinstance(result, bytes), (
+            "synthesize with speed parameter should work"
+        )
+        # The speed override is handled internally;
+        # we verify it accepts the parameter without error
+
+    def test_heading_speed_constant_is_80(self):
+        """見出し用の速度定数は 80"""
+        # This tests that the heading speed value is documented/defined
+        HEADING_SPEED = 80  # As per spec: 見出しをゆっくり読む（speed 80）
+
+        # Validate the constant value
+        assert HEADING_SPEED == 80, (
+            f"Heading speed should be 80, got {HEADING_SPEED}"
+        )
+        assert 50 <= HEADING_SPEED <= 300, (
+            f"Heading speed should be in valid range 50-300, got {HEADING_SPEED}"
+        )

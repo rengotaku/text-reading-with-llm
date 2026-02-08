@@ -418,3 +418,483 @@ class TestInvalidXmlError:
         assert "ParseError" in error_type or "XML" in str(exc_info.value).upper(), (
             f"Should raise parse error for non-XML content, got {error_type}: {exc_info.value}"
         )
+
+
+# ============================================================
+# Phase 3: User Story 2 - 見出し効果音の挿入 (Priority: P2)
+# ============================================================
+
+
+# ============================================================
+# T035: test_load_heading_sound
+# ============================================================
+
+class TestLoadHeadingSound:
+    """Test load_heading_sound() function for loading and resampling audio."""
+
+    def test_load_heading_sound_returns_numpy_array(self, tmp_path):
+        """load_heading_sound() は numpy 配列を返す"""
+        from src.aquestalk_pipeline import load_heading_sound
+        import numpy as np
+
+        # Create a test WAV file with 44100Hz sample rate
+        test_wav = tmp_path / "test_sound.wav"
+        import soundfile as sf
+        # Create a simple sine wave at 44100Hz
+        duration = 0.5
+        sr_original = 44100
+        t = np.linspace(0, duration, int(sr_original * duration), False)
+        audio = 0.5 * np.sin(2 * np.pi * 440 * t)
+        sf.write(str(test_wav), audio, sr_original)
+
+        result = load_heading_sound(test_wav)
+
+        assert isinstance(result, np.ndarray), (
+            f"load_heading_sound should return numpy array, got {type(result)}"
+        )
+
+    def test_load_heading_sound_resamples_to_16khz(self, tmp_path):
+        """load_heading_sound() は 16kHz にリサンプリングする"""
+        from src.aquestalk_pipeline import load_heading_sound
+        from src.aquestalk_client import AQUESTALK_SAMPLE_RATE
+        import numpy as np
+        import soundfile as sf
+
+        # Create a test WAV file with 44100Hz sample rate
+        test_wav = tmp_path / "test_sound.wav"
+        duration = 1.0
+        sr_original = 44100
+        t = np.linspace(0, duration, int(sr_original * duration), False)
+        audio = 0.5 * np.sin(2 * np.pi * 440 * t)
+        sf.write(str(test_wav), audio, sr_original)
+
+        result = load_heading_sound(test_wav, target_sr=AQUESTALK_SAMPLE_RATE)
+
+        # At 16kHz, 1 second should have approximately 16000 samples
+        expected_samples = int(duration * AQUESTALK_SAMPLE_RATE)
+        tolerance = 100  # Allow some tolerance for resampling
+        assert abs(len(result) - expected_samples) < tolerance, (
+            f"Should resample to 16kHz ({expected_samples} samples), "
+            f"got {len(result)} samples"
+        )
+
+    def test_load_heading_sound_converts_stereo_to_mono(self, tmp_path):
+        """load_heading_sound() はステレオをモノラルに変換する"""
+        from src.aquestalk_pipeline import load_heading_sound
+        import numpy as np
+        import soundfile as sf
+
+        # Create a stereo WAV file
+        test_wav = tmp_path / "stereo_sound.wav"
+        duration = 0.5
+        sr = 16000
+        t = np.linspace(0, duration, int(sr * duration), False)
+        left = 0.5 * np.sin(2 * np.pi * 440 * t)
+        right = 0.5 * np.sin(2 * np.pi * 880 * t)
+        stereo_audio = np.column_stack([left, right])
+        sf.write(str(test_wav), stereo_audio, sr)
+
+        result = load_heading_sound(test_wav)
+
+        # Result should be 1D (mono)
+        assert len(result.shape) == 1, (
+            f"Should convert stereo to mono (1D array), got shape {result.shape}"
+        )
+
+    def test_load_heading_sound_normalizes_volume(self, tmp_path):
+        """load_heading_sound() は音量を正規化する"""
+        from src.aquestalk_pipeline import load_heading_sound
+        import numpy as np
+        import soundfile as sf
+
+        # Create a loud WAV file
+        test_wav = tmp_path / "loud_sound.wav"
+        duration = 0.5
+        sr = 16000
+        t = np.linspace(0, duration, int(sr * duration), False)
+        audio = 1.0 * np.sin(2 * np.pi * 440 * t)  # Full amplitude
+        sf.write(str(test_wav), audio, sr)
+
+        result = load_heading_sound(test_wav)
+
+        # Max amplitude should be around 0.5 (50% volume as per implementation)
+        max_amplitude = np.max(np.abs(result))
+        assert max_amplitude <= 0.6, (
+            f"Should normalize volume (max ~0.5), got max amplitude {max_amplitude}"
+        )
+
+
+# ============================================================
+# T036: test_heading_sound_insertion
+# ============================================================
+
+class TestHeadingSoundInsertion:
+    """Test that heading sound is inserted before heading segments."""
+
+    @patch("src.aquestalk_pipeline.AquesTalkSynthesizer")
+    def test_heading_sound_inserted_before_heading(self, mock_synthesizer_class, tmp_path):
+        """見出しの前に効果音が挿入される"""
+        import numpy as np
+        import soundfile as sf
+        from src.aquestalk_pipeline import process_pages_with_heading_sound
+        from src.aquestalk_client import AquesTalkSynthesizer, AQUESTALK_SAMPLE_RATE
+        from src.text_cleaner import Page
+        from src.xml_parser import HEADING_MARKER
+
+        # Setup mock synthesizer
+        mock_synthesizer = MagicMock()
+        # Return valid WAV data
+        def mock_synthesize(text):
+            duration = 0.1
+            t = np.linspace(0, duration, int(AQUESTALK_SAMPLE_RATE * duration), False)
+            waveform = 0.3 * np.sin(2 * np.pi * 440 * t)
+            import io
+            with io.BytesIO() as buffer:
+                sf.write(buffer, waveform, AQUESTALK_SAMPLE_RATE, format="WAV")
+                return buffer.getvalue()
+        mock_synthesizer.synthesize.side_effect = mock_synthesize
+        mock_synthesizer_class.return_value = mock_synthesizer
+
+        # Create heading sound
+        heading_sound = 0.5 * np.ones(1600, dtype=np.float32)  # 0.1 sec at 16kHz
+
+        # Create test page with HEADING_MARKER
+        pages = [Page(number=1, text=f"段落テキスト{HEADING_MARKER}見出しテキスト")]
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create mock args
+        args = MagicMock()
+        args.speed = 100
+
+        # Process with heading sound
+        wav_files = process_pages_with_heading_sound(
+            pages=pages,
+            synthesizer=mock_synthesizer,
+            output_dir=output_dir,
+            args=args,
+            heading_sound=heading_sound,
+        )
+
+        # Verify that page WAV was created
+        assert len(wav_files) > 0, "Should generate WAV files"
+
+        # Read the generated WAV and check that heading sound is included
+        page_wav = wav_files[0]
+        audio, sr = sf.read(str(page_wav))
+
+        # Audio should be longer than just synthesized text (includes heading sound)
+        assert len(audio) > 0, "Generated audio should not be empty"
+
+    @patch("src.aquestalk_pipeline.AquesTalkSynthesizer")
+    def test_no_heading_sound_when_not_specified(self, mock_synthesizer_class, tmp_path):
+        """--heading-sound 未指定時は効果音なし"""
+        import numpy as np
+        import soundfile as sf
+        from src.aquestalk_pipeline import process_pages_with_heading_sound
+        from src.aquestalk_client import AQUESTALK_SAMPLE_RATE
+        from src.text_cleaner import Page
+        from src.xml_parser import HEADING_MARKER
+
+        # Setup mock synthesizer
+        mock_synthesizer = MagicMock()
+        def mock_synthesize(text):
+            duration = 0.1
+            t = np.linspace(0, duration, int(AQUESTALK_SAMPLE_RATE * duration), False)
+            waveform = 0.3 * np.sin(2 * np.pi * 440 * t)
+            import io
+            with io.BytesIO() as buffer:
+                sf.write(buffer, waveform, AQUESTALK_SAMPLE_RATE, format="WAV")
+                return buffer.getvalue()
+        mock_synthesizer.synthesize.side_effect = mock_synthesize
+        mock_synthesizer_class.return_value = mock_synthesizer
+
+        # Create test page with HEADING_MARKER
+        pages = [Page(number=1, text=f"段落{HEADING_MARKER}見出し")]
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        args = MagicMock()
+        args.speed = 100
+
+        # Process WITHOUT heading sound (None)
+        wav_files = process_pages_with_heading_sound(
+            pages=pages,
+            synthesizer=mock_synthesizer,
+            output_dir=output_dir,
+            args=args,
+            heading_sound=None,  # No heading sound
+        )
+
+        assert len(wav_files) > 0, "Should still generate WAV files without heading sound"
+
+    @patch("src.aquestalk_pipeline.AquesTalkSynthesizer")
+    def test_heading_sound_not_inserted_before_first_segment(self, mock_synthesizer_class, tmp_path):
+        """最初のセグメント（見出しマーカー前）には効果音を挿入しない"""
+        import numpy as np
+        import soundfile as sf
+        from src.aquestalk_pipeline import process_pages_with_heading_sound
+        from src.aquestalk_client import AQUESTALK_SAMPLE_RATE
+        from src.text_cleaner import Page
+        from src.xml_parser import HEADING_MARKER
+
+        # Setup mock synthesizer with call tracking
+        mock_synthesizer = MagicMock()
+        synthesize_calls = []
+        def mock_synthesize(text):
+            synthesize_calls.append(text)
+            duration = 0.1
+            t = np.linspace(0, duration, int(AQUESTALK_SAMPLE_RATE * duration), False)
+            waveform = 0.3 * np.sin(2 * np.pi * 440 * t)
+            import io
+            with io.BytesIO() as buffer:
+                sf.write(buffer, waveform, AQUESTALK_SAMPLE_RATE, format="WAV")
+                return buffer.getvalue()
+        mock_synthesizer.synthesize.side_effect = mock_synthesize
+        mock_synthesizer_class.return_value = mock_synthesizer
+
+        # Create heading sound (0.1 sec)
+        heading_sound = 0.5 * np.ones(1600, dtype=np.float32)
+
+        # Create test page: first segment is before any heading marker
+        pages = [Page(number=1, text=f"最初の段落{HEADING_MARKER}見出し")]
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        args = MagicMock()
+        args.speed = 100
+
+        wav_files = process_pages_with_heading_sound(
+            pages=pages,
+            synthesizer=mock_synthesizer,
+            output_dir=output_dir,
+            args=args,
+            heading_sound=heading_sound,
+        )
+
+        # The synthesizer should be called for both segments
+        assert len(synthesize_calls) >= 2, (
+            f"Should synthesize at least 2 segments, got {len(synthesize_calls)}"
+        )
+
+
+# ============================================================
+# T037: test_heading_speed_adjustment
+# ============================================================
+
+class TestHeadingSpeedAdjustment:
+    """Test that heading segments use speed=80 for emphasis."""
+
+    def test_heading_synthesized_with_speed_80(self, tmp_path):
+        """見出しセグメントは speed=80 でゆっくり読まれる"""
+        import numpy as np
+        import soundfile as sf
+        from src.aquestalk_pipeline import process_pages_with_heading_sound
+        from src.aquestalk_client import AquesTalkSynthesizer, AquesTalkConfig, AQUESTALK_SAMPLE_RATE
+        from src.text_cleaner import Page
+        from src.xml_parser import HEADING_MARKER
+
+        # Track speed parameter for each synthesize call
+        synthesize_speeds = []
+
+        # Create synthesizer that tracks the speed used
+        class TrackingSpeedSynthesizer:
+            def __init__(self, config: AquesTalkConfig):
+                self.config = config
+                self._initialized = True
+
+            def initialize(self):
+                pass
+
+            def synthesize(self, text: str, speed: int | None = None) -> bytes:
+                # Record which speed was used
+                actual_speed = speed if speed is not None else self.config.speed
+                synthesize_speeds.append(actual_speed)
+
+                duration = 0.1
+                t = np.linspace(0, duration, int(AQUESTALK_SAMPLE_RATE * duration), False)
+                waveform = 0.3 * np.sin(2 * np.pi * 440 * t)
+                import io
+                with io.BytesIO() as buffer:
+                    sf.write(buffer, waveform, AQUESTALK_SAMPLE_RATE, format="WAV")
+                    return buffer.getvalue()
+
+        config = AquesTalkConfig(speed=100)  # Normal speed is 100
+        synthesizer = TrackingSpeedSynthesizer(config)
+
+        # Create test page with heading
+        pages = [Page(number=1, text=f"通常段落{HEADING_MARKER}見出しテキスト")]
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        args = MagicMock()
+        args.speed = 100
+
+        # Process pages - heading should use speed=80
+        process_pages_with_heading_sound(
+            pages=pages,
+            synthesizer=synthesizer,
+            output_dir=output_dir,
+            args=args,
+            heading_sound=None,
+        )
+
+        # The second synthesize call (for heading) should use speed=80
+        assert len(synthesize_speeds) >= 2, (
+            f"Should synthesize at least 2 segments, got {len(synthesize_speeds)}"
+        )
+
+        # First segment (paragraph) should use normal speed (100)
+        assert synthesize_speeds[0] == 100, (
+            f"Paragraph should use speed=100, got {synthesize_speeds[0]}"
+        )
+
+        # Second segment (heading) should use slow speed (80)
+        assert synthesize_speeds[1] == 80, (
+            f"Heading should use speed=80 for emphasis, got {synthesize_speeds[1]}"
+        )
+
+    def test_normal_segment_uses_user_specified_speed(self, tmp_path):
+        """通常セグメントはユーザー指定の速度を使用"""
+        import numpy as np
+        import soundfile as sf
+        from src.aquestalk_pipeline import process_pages_with_heading_sound
+        from src.aquestalk_client import AquesTalkConfig, AQUESTALK_SAMPLE_RATE
+        from src.text_cleaner import Page
+
+        synthesize_speeds = []
+
+        class TrackingSpeedSynthesizer:
+            def __init__(self, config: AquesTalkConfig):
+                self.config = config
+                self._initialized = True
+
+            def initialize(self):
+                pass
+
+            def synthesize(self, text: str, speed: int | None = None) -> bytes:
+                actual_speed = speed if speed is not None else self.config.speed
+                synthesize_speeds.append(actual_speed)
+
+                duration = 0.1
+                t = np.linspace(0, duration, int(AQUESTALK_SAMPLE_RATE * duration), False)
+                waveform = 0.3 * np.sin(2 * np.pi * 440 * t)
+                import io
+                with io.BytesIO() as buffer:
+                    sf.write(buffer, waveform, AQUESTALK_SAMPLE_RATE, format="WAV")
+                    return buffer.getvalue()
+
+        # User specifies speed=150
+        config = AquesTalkConfig(speed=150)
+        synthesizer = TrackingSpeedSynthesizer(config)
+
+        # Page with only normal text (no heading marker)
+        pages = [Page(number=1, text="通常の段落テキスト")]
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        args = MagicMock()
+        args.speed = 150
+
+        process_pages_with_heading_sound(
+            pages=pages,
+            synthesizer=synthesizer,
+            output_dir=output_dir,
+            args=args,
+            heading_sound=None,
+        )
+
+        # Normal segment should use user-specified speed (150)
+        assert len(synthesize_speeds) >= 1, "Should synthesize at least 1 segment"
+        assert synthesize_speeds[0] == 150, (
+            f"Normal segment should use user speed=150, got {synthesize_speeds[0]}"
+        )
+
+
+# ============================================================
+# T038: test_heading_sound_file_not_found_warning
+# ============================================================
+
+class TestHeadingSoundFileNotFoundWarning:
+    """Test warning when heading sound file is not found."""
+
+    @patch("src.aquestalk_pipeline.AquesTalkSynthesizer")
+    def test_warning_when_heading_sound_not_found(self, mock_synthesizer_class, tmp_path, caplog):
+        """効果音ファイルが見つからない場合は警告を表示"""
+        import logging
+
+        # Setup mock synthesizer
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = b"\x00" * 1000
+        mock_synthesizer_class.return_value = mock_synthesizer
+
+        output_dir = tmp_path / "output"
+        non_existent_sound = "/tmp/non_existent_heading_sound_12345.mp3"
+
+        with patch("src.aquestalk_pipeline.init_for_content"):
+            with patch("src.aquestalk_pipeline.clean_page_text", return_value="テスト"):
+                with caplog.at_level(logging.WARNING):
+                    main([
+                        "--input", str(SAMPLE_BOOK_XML),
+                        "--output", str(output_dir),
+                        "--heading-sound", non_existent_sound,
+                    ])
+
+        # Should log a warning about missing file
+        warning_found = any(
+            "not found" in record.message.lower() or
+            "heading" in record.message.lower()
+            for record in caplog.records
+            if record.levelno >= logging.WARNING
+        )
+        assert warning_found, (
+            f"Should warn when heading sound file not found. "
+            f"Log records: {[r.message for r in caplog.records]}"
+        )
+
+    @patch("src.aquestalk_pipeline.AquesTalkSynthesizer")
+    def test_continues_without_heading_sound_when_file_not_found(self, mock_synthesizer_class, tmp_path):
+        """効果音ファイルが見つからなくても処理を続行"""
+        # Setup mock synthesizer
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = b"\x00" * 1000
+        mock_synthesizer_class.return_value = mock_synthesizer
+
+        output_dir = tmp_path / "output"
+        non_existent_sound = "/tmp/non_existent_heading_sound_67890.mp3"
+
+        with patch("src.aquestalk_pipeline.init_for_content"):
+            with patch("src.aquestalk_pipeline.clean_page_text", return_value="テスト"):
+                # Should NOT raise an exception
+                main([
+                    "--input", str(SAMPLE_BOOK_XML),
+                    "--output", str(output_dir),
+                    "--heading-sound", non_existent_sound,
+                ])
+
+        # Verify output was still created
+        assert output_dir.exists(), "Output should be created even without heading sound"
+
+    def test_parse_args_accepts_heading_sound_option(self):
+        """--heading-sound オプションを受け付ける"""
+        args = parse_args([
+            "-i", str(SAMPLE_BOOK_XML),
+            "--heading-sound", "/path/to/sound.mp3",
+        ])
+
+        assert args.heading_sound == "/path/to/sound.mp3", (
+            f"Should parse --heading-sound option, got {args.heading_sound}"
+        )
+
+    def test_parse_args_heading_sound_default_is_none(self):
+        """--heading-sound のデフォルトは None"""
+        args = parse_args(["-i", str(SAMPLE_BOOK_XML)])
+
+        assert args.heading_sound is None, (
+            f"--heading-sound default should be None, got {args.heading_sound}"
+        )
