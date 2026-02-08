@@ -14,6 +14,10 @@ from src.reading_dict import apply_reading_rules
 
 logger = logging.getLogger(__name__)
 
+# Placeholder for HEADING_MARKER during text cleaning
+# Using a unique string that won't appear in normal text
+_HEADING_PLACEHOLDER = "__HEADING_MARKER_PLACEHOLDER__"
+
 # LLM-generated dictionary (set per-book via init_for_content)
 _LLM_READINGS: dict[str, str] = {}
 
@@ -180,8 +184,17 @@ def _clean_parenthetical_english(text: str) -> str:
     return text
 
 
-def clean_page_text(text: str) -> str:
-    """Clean a single page's text for TTS consumption."""
+def clean_page_text(text: str, heading_marker: str | None = None) -> str:
+    """Clean a single page's text for TTS consumption.
+
+    Args:
+        text: Text to clean
+        heading_marker: Optional marker to preserve through cleaning (e.g., HEADING_MARKER)
+    """
+    # Preserve heading marker through text cleaning (MeCab strips Unicode private use area)
+    if heading_marker and heading_marker in text:
+        text = text.replace(heading_marker, _HEADING_PLACEHOLDER)
+
     # NEW: Text cleaning for TTS (before markdown cleanup)
     # Process in specific order to avoid interference
     text = _clean_urls(text)                    # US1: Remove URLs
@@ -248,6 +261,10 @@ def clean_page_text(text: str) -> str:
     # 4. MeCab: Convert remaining kanji to kana
     if ENABLE_KANJI_CONVERSION:
         text = convert_to_kana(text)
+
+    # Restore heading marker if it was preserved
+    if heading_marker and _HEADING_PLACEHOLDER in text:
+        text = text.replace(_HEADING_PLACEHOLDER, heading_marker)
 
     return text.strip()
 

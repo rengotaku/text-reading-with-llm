@@ -124,7 +124,8 @@ def _should_read_aloud(elem) -> bool:
 
 
 # Marker for heading elements (used to insert sound effects)
-HEADING_MARKER = "[HEADING]"
+# Using Unicode private use area character to avoid text cleaner interference
+HEADING_MARKER = "\uE000HEADING\uE000"
 
 
 def _extract_content_text(content_elem) -> str:

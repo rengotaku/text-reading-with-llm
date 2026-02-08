@@ -255,10 +255,10 @@ def main(args=None):
     combined_text = "\n".join(p.text for p in pages_raw)
     init_for_content(combined_text)
 
-    # Clean page text
+    # Clean page text (preserve HEADING_MARKER through text cleaning)
     pages = []
     for page in pages_raw:
-        cleaned_text = clean_page_text(page.text)
+        cleaned_text = clean_page_text(page.text, heading_marker=HEADING_MARKER)
         if cleaned_text.strip():
             pages.append(Page(number=page.number, text=cleaned_text))
 
@@ -271,12 +271,14 @@ def main(args=None):
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Output directory: %s", output_dir)
 
-    # Save cleaned text
+    # Save cleaned text (without HEADING_MARKER for readability)
     cleaned_text_path = output_dir / "cleaned_text.txt"
     with open(cleaned_text_path, "w", encoding="utf-8") as f:
         for page in pages:
             f.write(f"=== Page {page.number} ===\n")
-            f.write(page.text)
+            # Remove HEADING_MARKER for display, replace with newline for readability
+            display_text = page.text.replace(HEADING_MARKER, "\n[見出し] ")
+            f.write(display_text)
             f.write("\n\n")
     logger.info("Saved cleaned text: %s", cleaned_text_path)
 
