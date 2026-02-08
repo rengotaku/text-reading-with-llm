@@ -289,11 +289,11 @@ Each `phN-test.md` should contain:
 ```
 
 **Checklist**:
-- [ ] Input parsing tests (XML → Page objects)
-- [ ] Text transformation tests (cleaner + punctuation + NUM tags)
-- [ ] Audio synthesis tests (AquesTalk API wrapper)
-- [ ] Output generation tests (WAV file creation)
-- [ ] End-to-End tests (XML → book.wav)
+- [X] Input parsing tests (XML → Page objects)
+- [X] Text transformation tests (cleaner + punctuation + NUM tags)
+- [X] Audio synthesis tests (AquesTalk API wrapper)
+- [X] Output generation tests (WAV file creation)
+- [X] End-to-End tests (XML → book.wav)
 
 ---
 
