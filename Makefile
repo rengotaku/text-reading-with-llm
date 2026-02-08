@@ -21,7 +21,7 @@ DATA_DIR ?= data/72a2534e9e81
 
 LLM_MODEL ?= gpt-oss:20b
 
-.PHONY: help setup setup-voicevox run run-simple toc organize test clean clean-all gen-dict
+.PHONY: help setup setup-voicevox run run-simple xml-tts toc organize test clean clean-all gen-dict
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -49,6 +49,9 @@ run: ## Run TTS pipeline with chapter splitting
 
 run-simple: ## Run TTS pipeline without chapter splitting
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.pipeline "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
+
+xml-tts: ## Run XML to TTS pipeline (for XML book files)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i sample/book.xml -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED) --heading-sound sample/heading-sound.mp3
 
 toc: ## Generate TOC JSON for input file
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.toc_extractor "$(INPUT)" --group-chapters --start-page $(TOC_START_PAGE) -o $(DATA_DIR)/toc.json

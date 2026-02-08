@@ -14,11 +14,65 @@ from src.reading_dict import apply_reading_rules
 
 logger = logging.getLogger(__name__)
 
+# Placeholder for HEADING_MARKER during text cleaning
+# Using a unique string that won't appear in normal text
+_HEADING_PLACEHOLDER = "__HEADING_MARKER_PLACEHOLDER__"
+
 # LLM-generated dictionary (set per-book via init_for_content)
 _LLM_READINGS: dict[str, str] = {}
 
 # Enable/disable kanji → kana conversion via MeCab
 ENABLE_KANJI_CONVERSION = True
+
+# URL patterns for cleaning (US1)
+MARKDOWN_LINK_PATTERN = re.compile(r'\[([^\]]+)\]\([^)]+\)')
+# Match bare URLs but stop before Japanese characters, parentheses, and brackets
+BARE_URL_PATTERN = re.compile(r'https?://[^\s\u3000-\u9fff\uff00-\uffef）」』】\]]+')
+URL_TEXT_PATTERN = re.compile(r'^https?://')
+
+# Reference patterns for TTS normalization (US2/US3)
+REFERENCE_PATTERNS = [
+    (re.compile(r'図(\d+)[.．](\d+)'), r'ず\1の\2'),  # 図X.Y
+    (re.compile(r'図(\d+)'), r'ず\1'),               # 図X
+    (re.compile(r'表(\d+)[.．](\d+)'), r'ひょう\1の\2'),  # 表X.Y
+    (re.compile(r'表(\d+)'), r'ひょう\1'),           # 表X
+    (re.compile(r'注(\d+)[.．](\d+)'), r'ちゅう\1の\2'),  # 注X.Y
+    (re.compile(r'注(\d+)'), r'ちゅう\1'),           # 注X
+]
+
+# ISBN patterns (US4)
+# ISBN-13: 978/979 + 10 digits with optional hyphens
+# ISBN-10: 10 digits/chars with optional hyphens (last char can be X)
+ISBN_PATTERN = re.compile(
+    r'[Ii][Ss][Bb][Nn]\s*'  # ISBN prefix (case insensitive)
+    r'(?:'
+    r'97[89][-\s]?\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?\d'  # ISBN-13 with hyphens
+    r'|97[89]\d{10}'  # ISBN-13 without hyphens
+    r'|\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?[\dXx]'  # ISBN-10 with hyphens
+    r'|\d{9}[\dXx]'  # ISBN-10 without hyphens
+    r')'
+)
+
+# Parenthetical patterns for English term removal (US5)
+# Matches brackets containing only ASCII letters, numbers, spaces, hyphens, periods, commas
+# But preserves brackets containing Japanese characters or empty content
+PAREN_ENGLISH_FULL = re.compile(r'（[A-Za-z][A-Za-z0-9\s\-.,]*）')
+PAREN_ENGLISH_HALF = re.compile(r'\([A-Za-z][A-Za-z0-9\s\-.,]*\)')
+
+# Markdown cleanup patterns (compiled for performance)
+HTML_COMMENT_PATTERN = re.compile(r"<!--.*?-->", flags=re.DOTALL)
+FIGURE_DESC_PATTERN = re.compile(r"^図は、.*$", flags=re.MULTILINE)
+PAGE_NUMBER_PATTERN = re.compile(r"^.*?\d+\s*/\s*\d+\s*$", flags=re.MULTILINE)
+HEADING_PATTERN = re.compile(r"^#{1,6}\s+", flags=re.MULTILINE)
+BOLD_ITALIC_PATTERN = re.compile(r"\*{1,3}(.*?)\*{1,3}")
+HORIZONTAL_RULE_PATTERN = re.compile(r"^---+\s*$", flags=re.MULTILINE)
+LIST_MARKER_PATTERN = re.compile(r"^[\-\*]\s+")
+LIST_BLOCK_PATTERN = re.compile(r"(^[\-\*]\s+.+$\n?)+", flags=re.MULTILINE)
+INLINE_CODE_PATTERN = re.compile(r"`([^`]*)`")
+CODE_BLOCK_PATTERN = re.compile(r"```.*?```", flags=re.DOTALL)
+TRAILING_WHITESPACE_PATTERN = re.compile(r"[ \t]+$", flags=re.MULTILINE)
+DOUBLE_SPACE_PATTERN = re.compile(r"  $", flags=re.MULTILINE)
+MULTIPLE_NEWLINES_PATTERN = re.compile(r"\n{3,}")
 
 
 def init_for_content(markdown_content: str) -> None:
@@ -63,53 +117,136 @@ def split_into_pages(markdown: str) -> list[Page]:
     return pages
 
 
-def clean_page_text(text: str) -> str:
-    """Clean a single page's text for TTS consumption."""
+def _clean_urls(text: str) -> str:
+    """Remove URLs from text for TTS.
+
+    - Markdown links: Keep link text, remove URL
+    - URL as link text: Remove entirely
+    - Bare URLs: Remove entirely
+    """
+    # Step 1: Handle Markdown links
+    def replace_markdown_link(match):
+        link_text = match.group(1)
+        # If link text is a URL, remove entirely
+        if URL_TEXT_PATTERN.match(link_text):
+            return ""
+        return link_text
+
+    text = MARKDOWN_LINK_PATTERN.sub(replace_markdown_link, text)
+
+    # Step 2: Remove bare URLs
+    text = BARE_URL_PATTERN.sub("", text)
+
+    return text
+
+
+def _normalize_references(text: str) -> str:
+    """Normalize figure/table/note references for TTS.
+
+    Converts:
+    - 図X.Y → ずXのY
+    - 表X.Y → ひょうXのY
+    - 注X.Y → ちゅうXのY
+    """
+    for pattern, replacement in REFERENCE_PATTERNS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
+def _clean_isbn(text: str) -> str:
+    """Remove ISBN numbers from text for TTS.
+
+    Removes all ISBN patterns (ISBN-10 and ISBN-13, with or without hyphens).
+    """
+    return ISBN_PATTERN.sub("", text)
+
+
+def _clean_parenthetical_english(text: str) -> str:
+    """Remove parenthetical English terms for TTS.
+
+    Removes:
+    - 全角括弧内の英語のみ: トイル（Toil）→ トイル
+    - 半角括弧内の英語のみ: トイル(Toil) → トイル
+
+    Preserves:
+    - 日本語を含む括弧: SRE（サイト信頼性）→ 保持
+    - 空括弧: （）→ 保持
+    - 数字のみ括弧: （1.0）→ 保持
+
+    Args:
+        text: Input text containing parenthetical terms
+
+    Returns:
+        Text with English-only parenthetical terms removed
+    """
+    text = PAREN_ENGLISH_FULL.sub("", text)
+    text = PAREN_ENGLISH_HALF.sub("", text)
+    return text
+
+
+def clean_page_text(text: str, heading_marker: str | None = None) -> str:
+    """Clean a single page's text for TTS consumption.
+
+    Args:
+        text: Text to clean
+        heading_marker: Optional marker to preserve through cleaning (e.g., HEADING_MARKER)
+    """
+    # Preserve heading marker through text cleaning (MeCab strips Unicode private use area)
+    if heading_marker and heading_marker in text:
+        text = text.replace(heading_marker, _HEADING_PLACEHOLDER)
+
+    # NEW: Text cleaning for TTS (before markdown cleanup)
+    # Process in specific order to avoid interference
+    text = _clean_urls(text)                    # US1: Remove URLs
+    text = _clean_isbn(text)                    # US4: Remove ISBN
+    text = _clean_parenthetical_english(text)   # US5: Remove (English)
+    text = _normalize_references(text)          # US2/3: 図X.Y → ずXのY
+
     # Remove HTML comments (figure markers)
-    text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+    text = HTML_COMMENT_PATTERN.sub("", text)
 
     # Remove figure description paragraphs (lines starting with 図は、)
-    text = re.sub(r"^図は、.*$", "", text, flags=re.MULTILINE)
+    text = FIGURE_DESC_PATTERN.sub("", text)
 
     # Remove page number markers like "1 / 1", "はじめに 1 / 3"
-    text = re.sub(r"^.*?\d+\s*/\s*\d+\s*$", "", text, flags=re.MULTILINE)
+    text = PAGE_NUMBER_PATTERN.sub("", text)
 
     # Remove markdown heading markers but keep text
-    text = re.sub(r"^#{1,6}\s+", "", text, flags=re.MULTILINE)
+    text = HEADING_PATTERN.sub("", text)
 
     # Remove bold/italic markers
-    text = re.sub(r"\*{1,3}(.*?)\*{1,3}", r"\1", text)
+    text = BOLD_ITALIC_PATTERN.sub(r"\1", text)
 
     # Remove horizontal rules
-    text = re.sub(r"^---+\s*$", "", text, flags=re.MULTILINE)
+    text = HORIZONTAL_RULE_PATTERN.sub("", text)
 
     # Convert consecutive list items into single line with periods
     def convert_list_block(match: re.Match) -> str:
         lines = match.group(0).strip().split("\n")
         items = []
         for line in lines:
-            content = re.sub(r"^[\-\*]\s+", "", line)
+            content = LIST_MARKER_PATTERN.sub("", line)
             if content and content[-1] not in "。！？、":
                 content += "。"
             items.append(content)
         return "".join(items)
 
-    text = re.sub(r"(^[\-\*]\s+.+$\n?)+", convert_list_block, text, flags=re.MULTILINE)
+    text = LIST_BLOCK_PATTERN.sub(convert_list_block, text)
 
     # Remove inline code backticks
-    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = INLINE_CODE_PATTERN.sub(r"\1", text)
 
     # Remove code blocks
-    text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+    text = CODE_BLOCK_PATTERN.sub("", text)
 
     # Remove trailing whitespace from lines
-    text = re.sub(r"[ \t]+$", "", text, flags=re.MULTILINE)
+    text = TRAILING_WHITESPACE_PATTERN.sub("", text)
 
     # Remove markdown line breaks (trailing double space)
-    text = re.sub(r"  $", "", text, flags=re.MULTILINE)
+    text = DOUBLE_SPACE_PATTERN.sub("", text)
 
     # Collapse multiple blank lines into one
-    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = MULTIPLE_NEWLINES_PATTERN.sub("\n\n", text)
 
     # Apply TTS normalization and reading rules
     # 0. Punctuation normalization (add commas for natural reading)
@@ -124,6 +261,10 @@ def clean_page_text(text: str) -> str:
     # 4. MeCab: Convert remaining kanji to kana
     if ENABLE_KANJI_CONVERSION:
         text = convert_to_kana(text)
+
+    # Restore heading marker if it was preserved
+    if heading_marker and _HEADING_PLACEHOLDER in text:
+        text = text.replace(_HEADING_PLACEHOLDER, heading_marker)
 
     return text.strip()
 

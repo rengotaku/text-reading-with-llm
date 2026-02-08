@@ -49,6 +49,42 @@ CONJUNCTION_PATTERNS = [
     "ということは",
 ]
 
+# Exclusion suffixes for Rule 4 - don't insert comma after は when followed by these
+EXCLUSION_SUFFIXES = [
+    # では系
+    "ありません",
+    "ありませんでした",
+    "ありますが",
+    "ある",
+    "ない",
+    "なかった",
+    "なくて",
+    "ないか",
+    # には系
+    "ならない",
+    "ならなかった",
+    "至らない",
+    # とは系
+    "言えない",
+    "限らない",
+]
+
+# Colon patterns for conversion (US7)
+# Time/ratio pattern to exclude:
+# - Pure digit sequences: 10:30:45, 1:2:3
+# - Ingredient ratios: 水1:砂糖2 (kanji+digit:kanji+digit...)
+TIME_RATIO_PATTERN = re.compile(r'[ァ-ヶ一-龠々]+\d+(?::[ァ-ヶ一-龠々]+\d+)+|\d+(?::\d+)+')
+# Colon patterns to convert
+COLON_FULL_PATTERN = re.compile(r'：')
+COLON_HALF_PATTERN = re.compile(r':')
+
+# Bracket patterns for conversion (US8)
+OPEN_BRACKET_PATTERN = re.compile(r'[「『]')
+CLOSE_BRACKET_PATTERN = re.compile(r'[」』]')
+
+# Additional patterns for _normalize_colons (compiled for performance)
+COLON_SPACE_CLEANUP_PATTERN = re.compile(r'は、\s+')
+
 # Lazy initialization
 _tagger: fugashi.Tagger | None = None
 
@@ -77,9 +113,75 @@ def normalize_punctuation(text: str) -> str:
         if not line.strip():
             result_lines.append(line)
             continue
+        # Apply colon normalization before line normalization
+        line = _normalize_colons(line)
+        # Apply bracket normalization before line normalization
+        line = _normalize_brackets(line)
         result_lines.append(_normalize_line(line))
 
     return "\n".join(result_lines)
+
+
+def _normalize_colons(text: str) -> str:
+    """Convert colons to は、 for TTS.
+
+    Converts:
+    - 全角コロン（：）→ は、
+    - 半角コロン（:）→ は、
+
+    Excludes:
+    - 時刻パターン: 10:30
+    - 比率パターン: 1:3
+
+    Args:
+        text: Input text containing colons
+
+    Returns:
+        Text with colons converted to は、
+    """
+    # Step 1: Protect time/ratio patterns (digit:digit) with placeholders
+    time_ratio_matches = []
+    def save_time_ratio(match):
+        time_ratio_matches.append(match.group(0))
+        return f"<<TIME_RATIO_{len(time_ratio_matches)-1}>>"
+
+    text = TIME_RATIO_PATTERN.sub(save_time_ratio, text)
+
+    # Step 2: Convert remaining colons to は、
+    text = COLON_FULL_PATTERN.sub("は、", text)
+    text = COLON_HALF_PATTERN.sub("は、", text)
+
+    # Step 3: Also remove spaces after converted colons for cleaner output
+    text = COLON_SPACE_CLEANUP_PATTERN.sub('は、', text)
+
+    # Step 4: Restore time/ratio patterns
+    for i, original in enumerate(time_ratio_matches):
+        text = text.replace(f"<<TIME_RATIO_{i}>>", original)
+
+    return text
+
+
+def _normalize_brackets(text: str) -> str:
+    """Convert Japanese quotation marks to commas for TTS.
+
+    Converts:
+    - 「 → 、
+    - 」 → 、
+    - 『 → 、
+    - 』 → 、
+
+    Args:
+        text: Input text containing Japanese quotation marks
+
+    Returns:
+        Text with quotation marks converted to commas
+    """
+    # Convert opening brackets
+    text = OPEN_BRACKET_PATTERN.sub("、", text)
+    # Convert closing brackets
+    text = CLOSE_BRACKET_PATTERN.sub("、", text)
+
+    return text
 
 
 def _normalize_line(line: str, min_prefix_len: int = 8) -> str:
@@ -117,12 +219,14 @@ def _normalize_line(line: str, min_prefix_len: int = 8) -> str:
         )
 
     # Rule 4: Insert comma after は when preceded by long phrase
+    # Exclude patterns like ではありません, にはならない, etc.
     # 〜カタは、〜ことは、etc.
     # Use shorter threshold (6) because kanji is more compact than kana
     ha_prefix_len = min(min_prefix_len, 6)
+    exclusion_pattern = "|".join(re.escape(s) for s in EXCLUSION_SUFFIXES)
     line = re.sub(
-        rf"([^、。！？]{{{ha_prefix_len},}})(は)([^、。！？\s])",
-        r"\1\2、\3",
+        rf"([^、。！？]{{{ha_prefix_len},}})(は)(?!({exclusion_pattern}))([^、。！？\s])",
+        r"\1\2、\4",
         line
     )
 

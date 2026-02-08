@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <metadata>
+        <title>Test Book</title>
+    </metadata>
+    <page number="1" sourceFile="page_0001.png">
+        <pageAnnouncement format="simple">1ページ</pageAnnouncement>
+        <content>
+            <paragraph>これはテスト用のパラグラフです。</paragraph>
+            <heading level="1">テスト見出し</heading>
+            <paragraph>2つ目のパラグラフ。</paragraph>
+        </content>
+        <figure readAloud="optional">
+            <file readAloud="false">figures/test_figure.png</file>
+            <description>テスト画像の説明文。</description>
+        </figure>
+        <pageMetadata type="chapter-page" readAloud="false">1 / 1</pageMetadata>
+    </page>
+    <page number="2" sourceFile="page_0002.png">
+        <pageAnnouncement format="simple">2ページ</pageAnnouncement>
+        <content>
+            <heading level="1">第1章 はじめに</heading>
+            <paragraph>この章では基本的な概念を説明します。</paragraph>
+            <list>
+                <item>項目1</item>
+                <item>項目2</item>
+                <item>項目3</item>
+            </list>
+        </content>
+        <pageMetadata type="chapter-page" readAloud="false">1 / 2</pageMetadata>
+    </page>
+    <page number="3" sourceFile="page_0003.png">
+        <pageAnnouncement format="simple">3ページ</pageAnnouncement>
+        <content>
+            <paragraph readAloud="false">この段落は読み上げない。</paragraph>
+            <paragraph>この段落は読み上げる。</paragraph>
+            <heading level="2" readAloud="false">この見出しは読み上げない</heading>
+            <heading level="2">この見出しは読み上げる</heading>
+        </content>
+        <!-- これはXMLコメントなので無視される -->
+        <figure readAloud="false">
+            <file readAloud="false">figures/skip_figure.png</file>
+            <description>この図の説明は読み上げない。</description>
+        </figure>
+    </page>
+</book>
