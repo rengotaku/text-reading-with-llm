@@ -431,3 +431,365 @@ class TestHeadingSpeedAdjustmentClient:
         assert 50 <= HEADING_SPEED <= 300, (
             f"Heading speed should be in valid range 50-300, got {HEADING_SPEED}"
         )
+
+
+# ============================================================
+# Phase 4: User Story 3 - 音声パラメータの調整 (Priority: P3)
+# ============================================================
+
+
+# ============================================================
+# T052: test_voice_parameter
+# ============================================================
+
+class TestVoiceParameter:
+    """Test synthesize() with voice parameter for voice quality adjustment.
+
+    AquesTalk10 voice parameter: 0-200 (default: 100)
+    声質を調整するパラメータ。
+    """
+
+    def test_synthesize_accepts_voice_parameter(self):
+        """synthesize() は voice パラメータを受け付ける"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        # synthesize should accept optional voice parameter
+        try:
+            result = synthesizer.synthesize("テスト", voice=80)
+            assert isinstance(result, bytes), (
+                f"synthesize with voice should return bytes, got {type(result)}"
+            )
+        except TypeError as e:
+            # If TypeError, synthesize doesn't accept voice parameter yet
+            pytest.fail(
+                f"synthesize() should accept voice parameter. Error: {e}"
+            )
+
+    def test_synthesize_voice_0_minimum(self):
+        """voice=0 の最小値で音声生成"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        result = synthesizer.synthesize("テスト", voice=0)
+
+        assert isinstance(result, bytes), (
+            "synthesize with voice=0 should return bytes"
+        )
+        assert len(result) > 0, (
+            "synthesize with voice=0 should return non-empty audio"
+        )
+
+    def test_synthesize_voice_200_maximum(self):
+        """voice=200 の最大値で音声生成"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        result = synthesizer.synthesize("テスト", voice=200)
+
+        assert isinstance(result, bytes), (
+            "synthesize with voice=200 should return bytes"
+        )
+        assert len(result) > 0, (
+            "synthesize with voice=200 should return non-empty audio"
+        )
+
+    def test_synthesize_uses_config_voice_when_not_specified(self):
+        """voice パラメータ未指定時は config.voice を使用"""
+        config = AquesTalkConfig(voice=150)
+        synthesizer = AquesTalkSynthesizer(config)
+        synthesizer.initialize()
+
+        # Call without voice parameter - should use config.voice=150
+        result = synthesizer.synthesize("テスト")
+
+        assert isinstance(result, bytes), (
+            "synthesize without voice should use config.voice"
+        )
+
+    def test_synthesize_voice_overrides_config(self):
+        """voice パラメータは config.voice を上書きする"""
+        config = AquesTalkConfig(voice=150)
+        synthesizer = AquesTalkSynthesizer(config)
+        synthesizer.initialize()
+
+        # Call with voice=80 - should override config.voice=150
+        result = synthesizer.synthesize("テスト", voice=80)
+
+        assert isinstance(result, bytes), (
+            "synthesize with voice parameter should work"
+        )
+
+
+# ============================================================
+# T053: test_pitch_parameter
+# ============================================================
+
+class TestPitchParameter:
+    """Test synthesize() with pitch parameter for pitch adjustment.
+
+    AquesTalk10 pitch parameter: 50-200 (default: 100)
+    ピッチ（声の高さ）を調整するパラメータ。
+    """
+
+    def test_synthesize_accepts_pitch_parameter(self):
+        """synthesize() は pitch パラメータを受け付ける"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        # synthesize should accept optional pitch parameter
+        try:
+            result = synthesizer.synthesize("テスト", pitch=120)
+            assert isinstance(result, bytes), (
+                f"synthesize with pitch should return bytes, got {type(result)}"
+            )
+        except TypeError as e:
+            # If TypeError, synthesize doesn't accept pitch parameter yet
+            pytest.fail(
+                f"synthesize() should accept pitch parameter. Error: {e}"
+            )
+
+    def test_synthesize_pitch_50_minimum(self):
+        """pitch=50 の最小値で音声生成"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        result = synthesizer.synthesize("テスト", pitch=50)
+
+        assert isinstance(result, bytes), (
+            "synthesize with pitch=50 should return bytes"
+        )
+        assert len(result) > 0, (
+            "synthesize with pitch=50 should return non-empty audio"
+        )
+
+    def test_synthesize_pitch_200_maximum(self):
+        """pitch=200 の最大値で音声生成"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        result = synthesizer.synthesize("テスト", pitch=200)
+
+        assert isinstance(result, bytes), (
+            "synthesize with pitch=200 should return bytes"
+        )
+        assert len(result) > 0, (
+            "synthesize with pitch=200 should return non-empty audio"
+        )
+
+    def test_synthesize_uses_config_pitch_when_not_specified(self):
+        """pitch パラメータ未指定時は config.pitch を使用"""
+        config = AquesTalkConfig(pitch=120)
+        synthesizer = AquesTalkSynthesizer(config)
+        synthesizer.initialize()
+
+        # Call without pitch parameter - should use config.pitch=120
+        result = synthesizer.synthesize("テスト")
+
+        assert isinstance(result, bytes), (
+            "synthesize without pitch should use config.pitch"
+        )
+
+    def test_synthesize_pitch_overrides_config(self):
+        """pitch パラメータは config.pitch を上書きする"""
+        config = AquesTalkConfig(pitch=120)
+        synthesizer = AquesTalkSynthesizer(config)
+        synthesizer.initialize()
+
+        # Call with pitch=80 - should override config.pitch=120
+        result = synthesizer.synthesize("テスト", pitch=80)
+
+        assert isinstance(result, bytes), (
+            "synthesize with pitch parameter should work"
+        )
+
+
+# ============================================================
+# T054: test_parameter_validation
+# ============================================================
+
+class TestParameterValidation:
+    """Test parameter validation for AquesTalk10 parameters.
+
+    Valid ranges:
+    - speed: 50-300 (default: 100)
+    - voice: 0-200 (default: 100)
+    - pitch: 50-200 (default: 100)
+    """
+
+    def test_speed_below_minimum_raises_error(self):
+        """speed が 50 未満の場合はエラー"""
+        config = AquesTalkConfig(speed=49)  # Below minimum 50
+        synthesizer = AquesTalkSynthesizer(config)
+
+        with pytest.raises(ValueError) as exc_info:
+            synthesizer.initialize()
+
+        assert "speed" in str(exc_info.value).lower(), (
+            f"Error should mention 'speed': {exc_info.value}"
+        )
+
+    def test_speed_above_maximum_raises_error(self):
+        """speed が 300 超の場合はエラー"""
+        config = AquesTalkConfig(speed=301)  # Above maximum 300
+        synthesizer = AquesTalkSynthesizer(config)
+
+        with pytest.raises(ValueError) as exc_info:
+            synthesizer.initialize()
+
+        assert "speed" in str(exc_info.value).lower(), (
+            f"Error should mention 'speed': {exc_info.value}"
+        )
+
+    def test_voice_below_minimum_raises_error(self):
+        """voice が 0 未満の場合はエラー"""
+        config = AquesTalkConfig(voice=-1)  # Below minimum 0
+        synthesizer = AquesTalkSynthesizer(config)
+
+        with pytest.raises(ValueError) as exc_info:
+            synthesizer.initialize()
+
+        assert "voice" in str(exc_info.value).lower(), (
+            f"Error should mention 'voice': {exc_info.value}"
+        )
+
+    def test_voice_above_maximum_raises_error(self):
+        """voice が 200 超の場合はエラー"""
+        config = AquesTalkConfig(voice=201)  # Above maximum 200
+        synthesizer = AquesTalkSynthesizer(config)
+
+        with pytest.raises(ValueError) as exc_info:
+            synthesizer.initialize()
+
+        assert "voice" in str(exc_info.value).lower(), (
+            f"Error should mention 'voice': {exc_info.value}"
+        )
+
+    def test_pitch_below_minimum_raises_error(self):
+        """pitch が 50 未満の場合はエラー"""
+        config = AquesTalkConfig(pitch=49)  # Below minimum 50
+        synthesizer = AquesTalkSynthesizer(config)
+
+        with pytest.raises(ValueError) as exc_info:
+            synthesizer.initialize()
+
+        assert "pitch" in str(exc_info.value).lower(), (
+            f"Error should mention 'pitch': {exc_info.value}"
+        )
+
+    def test_pitch_above_maximum_raises_error(self):
+        """pitch が 200 超の場合はエラー"""
+        config = AquesTalkConfig(pitch=201)  # Above maximum 200
+        synthesizer = AquesTalkSynthesizer(config)
+
+        with pytest.raises(ValueError) as exc_info:
+            synthesizer.initialize()
+
+        assert "pitch" in str(exc_info.value).lower(), (
+            f"Error should mention 'pitch': {exc_info.value}"
+        )
+
+    def test_valid_parameters_no_error(self):
+        """有効なパラメータ範囲内ではエラーなし"""
+        # Test boundary values
+        config = AquesTalkConfig(speed=50, voice=0, pitch=50)
+        synthesizer = AquesTalkSynthesizer(config)
+
+        # Should not raise
+        synthesizer.initialize()
+        assert synthesizer._initialized, "Should initialize with valid min params"
+
+        # Test maximum values
+        config = AquesTalkConfig(speed=300, voice=200, pitch=200)
+        synthesizer = AquesTalkSynthesizer(config)
+        synthesizer.initialize()
+        assert synthesizer._initialized, "Should initialize with valid max params"
+
+    def test_synthesize_speed_parameter_validation(self):
+        """synthesize() の speed パラメータもバリデーション"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        # Invalid speed parameter should raise error
+        with pytest.raises(ValueError) as exc_info:
+            synthesizer.synthesize("テスト", speed=49)
+
+        assert "speed" in str(exc_info.value).lower(), (
+            f"Error should mention 'speed': {exc_info.value}"
+        )
+
+    def test_synthesize_voice_parameter_validation(self):
+        """synthesize() の voice パラメータもバリデーション"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        # Invalid voice parameter should raise error
+        with pytest.raises(ValueError) as exc_info:
+            synthesizer.synthesize("テスト", voice=-1)
+
+        assert "voice" in str(exc_info.value).lower(), (
+            f"Error should mention 'voice': {exc_info.value}"
+        )
+
+    def test_synthesize_pitch_parameter_validation(self):
+        """synthesize() の pitch パラメータもバリデーション"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        # Invalid pitch parameter should raise error
+        with pytest.raises(ValueError) as exc_info:
+            synthesizer.synthesize("テスト", pitch=201)
+
+        assert "pitch" in str(exc_info.value).lower(), (
+            f"Error should mention 'pitch': {exc_info.value}"
+        )
+
+
+class TestCombinedParameters:
+    """Test synthesize() with multiple parameters combined."""
+
+    def test_synthesize_with_all_parameters(self):
+        """synthesize() は speed, voice, pitch を同時に受け付ける"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        try:
+            result = synthesizer.synthesize(
+                "テスト",
+                speed=120,
+                voice=80,
+                pitch=90
+            )
+            assert isinstance(result, bytes), (
+                f"synthesize with all params should return bytes, got {type(result)}"
+            )
+            assert len(result) > 0, (
+                "synthesize with all params should return non-empty audio"
+            )
+        except TypeError as e:
+            pytest.fail(
+                f"synthesize() should accept speed, voice, pitch parameters. Error: {e}"
+            )
+
+    def test_synthesize_with_partial_parameters(self):
+        """synthesize() は一部のパラメータのみでも動作"""
+        synthesizer = AquesTalkSynthesizer()
+        synthesizer.initialize()
+
+        # Only speed
+        result1 = synthesizer.synthesize("テスト", speed=120)
+        assert isinstance(result1, bytes), "Should work with only speed"
+
+        # Only voice (once voice parameter is implemented)
+        try:
+            result2 = synthesizer.synthesize("テスト", voice=80)
+            assert isinstance(result2, bytes), "Should work with only voice"
+        except TypeError:
+            pytest.fail("synthesize() should accept voice parameter")
+
+        # Only pitch (once pitch parameter is implemented)
+        try:
+            result3 = synthesizer.synthesize("テスト", pitch=90)
+            assert isinstance(result3, bytes), "Should work with only pitch"
+        except TypeError:
+            pytest.fail("synthesize() should accept pitch parameter")

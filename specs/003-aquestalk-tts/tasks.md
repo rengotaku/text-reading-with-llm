@@ -136,18 +136,18 @@
 
 ### Input
 
-- [ ] T049 Read setup analysis: specs/003-aquestalk-tts/tasks/ph1-output.md
-- [ ] T050 Read previous phase output: specs/003-aquestalk-tts/tasks/ph3-output.md
+- [X] T049 Read setup analysis: specs/003-aquestalk-tts/tasks/ph1-output.md
+- [X] T050 Read previous phase output: specs/003-aquestalk-tts/tasks/ph3-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T051 [P] [US3] Implement test_speed_parameter in tests/test_aquestalk_client.py
-- [ ] T052 [P] [US3] Implement test_voice_parameter in tests/test_aquestalk_client.py
-- [ ] T053 [P] [US3] Implement test_pitch_parameter in tests/test_aquestalk_client.py
-- [ ] T054 [P] [US3] Implement test_parameter_validation in tests/test_aquestalk_client.py
-- [ ] T055 [P] [US3] Implement test_cli_parameter_options in tests/test_aquestalk_pipeline.py
-- [ ] T056 Verify `make test` FAIL (RED)
-- [ ] T057 Generate RED output: specs/003-aquestalk-tts/red-tests/ph4-test.md
+- [X] T051 [P] [US3] Implement test_speed_parameter in tests/test_aquestalk_client.py (Phase 3 で既に実装済み)
+- [X] T052 [P] [US3] Implement test_voice_parameter in tests/test_aquestalk_client.py
+- [X] T053 [P] [US3] Implement test_pitch_parameter in tests/test_aquestalk_client.py
+- [X] T054 [P] [US3] Implement test_parameter_validation in tests/test_aquestalk_client.py
+- [X] T055 [P] [US3] Implement test_cli_parameter_options in tests/test_aquestalk_pipeline.py (Phase 2 で既に実装済み)
+- [X] T056 Verify `make test` FAIL (RED)
+- [X] T057 Generate RED output: specs/003-aquestalk-tts/red-tests/ph4-test.md
 
 ### Implementation (GREEN)
 
