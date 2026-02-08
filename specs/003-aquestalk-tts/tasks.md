@@ -51,21 +51,21 @@
 
 ### Input
 
-- [ ] T008 Read previous phase output: specs/003-aquestalk-tts/tasks/ph1-output.md
+- [X] T008 Read previous phase output: specs/003-aquestalk-tts/tasks/ph1-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T009 [P] [US1] Create test file structure tests/test_aquestalk_client.py
-- [ ] T010 [P] [US1] Implement test_synthesize_basic in tests/test_aquestalk_client.py
-- [ ] T011 [P] [US1] Implement test_synthesize_with_num_tag in tests/test_aquestalk_client.py
-- [ ] T012 [P] [US1] Implement test_add_punctuation_to_text in tests/test_aquestalk_client.py
-- [ ] T013 [P] [US1] Create test file structure tests/test_aquestalk_pipeline.py
-- [ ] T014 [P] [US1] Implement test_parse_args in tests/test_aquestalk_pipeline.py
-- [ ] T015 [P] [US1] Implement test_main_generates_audio in tests/test_aquestalk_pipeline.py
-- [ ] T016 [P] [US1] Implement test_page_range_filtering in tests/test_aquestalk_pipeline.py
-- [ ] T017 [P] [US1] Implement test_file_not_found_error in tests/test_aquestalk_pipeline.py
-- [ ] T018 Verify `make test` FAIL (RED)
-- [ ] T019 Generate RED output: specs/003-aquestalk-tts/red-tests/ph2-test.md
+- [X] T009 [P] [US1] Create test file structure tests/test_aquestalk_client.py
+- [X] T010 [P] [US1] Implement test_synthesize_basic in tests/test_aquestalk_client.py
+- [X] T011 [P] [US1] Implement test_synthesize_with_num_tag in tests/test_aquestalk_client.py
+- [X] T012 [P] [US1] Implement test_add_punctuation_to_text in tests/test_aquestalk_client.py
+- [X] T013 [P] [US1] Create test file structure tests/test_aquestalk_pipeline.py
+- [X] T014 [P] [US1] Implement test_parse_args in tests/test_aquestalk_pipeline.py
+- [X] T015 [P] [US1] Implement test_main_generates_audio in tests/test_aquestalk_pipeline.py
+- [X] T016 [P] [US1] Implement test_page_range_filtering in tests/test_aquestalk_pipeline.py
+- [X] T017 [P] [US1] Implement test_file_not_found_error in tests/test_aquestalk_pipeline.py
+- [X] T018 Verify `make test` FAIL (RED)
+- [X] T019 Generate RED output: specs/003-aquestalk-tts/red-tests/ph2-test.md
 
 ### Implementation (GREEN)
 
