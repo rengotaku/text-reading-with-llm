@@ -112,17 +112,17 @@
 
 ### Implementation (GREEN)
 
-- [ ] T041 Read RED tests: specs/003-aquestalk-tts/red-tests/ph3-test.md
-- [ ] T042 [US2] Implement load_heading_sound() with 16kHz resample in src/aquestalk_pipeline.py
-- [ ] T043 [US2] Implement process_pages_with_heading_sound() in src/aquestalk_pipeline.py
-- [ ] T044 [US2] Add --heading-sound CLI option in src/aquestalk_pipeline.py
-- [ ] T045 [US2] Implement heading speed reduction (speed 80) in src/aquestalk_pipeline.py
-- [ ] T046 Verify `make test` PASS (GREEN)
+- [X] T041 Read RED tests: specs/003-aquestalk-tts/red-tests/ph3-test.md
+- [X] T042 [US2] Implement load_heading_sound() with 16kHz resample in src/aquestalk_pipeline.py
+- [X] T043 [US2] Implement process_pages_with_heading_sound() in src/aquestalk_pipeline.py
+- [X] T044 [US2] Add --heading-sound CLI option in src/aquestalk_pipeline.py
+- [X] T045 [US2] Implement heading speed reduction (speed 80) in src/aquestalk_pipeline.py
+- [X] T046 Verify `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T047 Verify `make test` passes all tests (including regressions from US1)
-- [ ] T048 Generate phase output: specs/003-aquestalk-tts/tasks/ph3-output.md
+- [X] T047 Verify `make test` passes all tests (including regressions from US1)
+- [X] T048 Generate phase output: specs/003-aquestalk-tts/tasks/ph3-output.md
 
 **Checkpoint**: User Stories 1 AND 2 should both work independently
 

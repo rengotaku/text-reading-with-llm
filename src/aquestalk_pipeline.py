@@ -41,6 +41,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Heading emphasis: slow down heading speech for emphasis
+HEADING_SPEED = 80
+
 
 def parse_args(args=None):
     """Parse command line arguments.
@@ -191,7 +194,11 @@ def process_pages_with_heading_sound(
 
             # Synthesize
             if segment.strip():
-                wav_bytes = synthesizer.synthesize(segment)
+                # Use slower speed for headings (FR-011: 見出しをゆっくり読む)
+                if is_heading_segment:
+                    wav_bytes = synthesizer.synthesize(segment, speed=HEADING_SPEED)
+                else:
+                    wav_bytes = synthesizer.synthesize(segment)
 
                 # Convert bytes to numpy array
                 try:

@@ -544,7 +544,7 @@ class TestHeadingSoundInsertion:
         # Setup mock synthesizer
         mock_synthesizer = MagicMock()
         # Return valid WAV data
-        def mock_synthesize(text):
+        def mock_synthesize(text, speed=None):
             duration = 0.1
             t = np.linspace(0, duration, int(AQUESTALK_SAMPLE_RATE * duration), False)
             waveform = 0.3 * np.sin(2 * np.pi * 440 * t)
@@ -599,7 +599,7 @@ class TestHeadingSoundInsertion:
 
         # Setup mock synthesizer
         mock_synthesizer = MagicMock()
-        def mock_synthesize(text):
+        def mock_synthesize(text, speed=None):
             duration = 0.1
             t = np.linspace(0, duration, int(AQUESTALK_SAMPLE_RATE * duration), False)
             waveform = 0.3 * np.sin(2 * np.pi * 440 * t)
@@ -643,7 +643,7 @@ class TestHeadingSoundInsertion:
         # Setup mock synthesizer with call tracking
         mock_synthesizer = MagicMock()
         synthesize_calls = []
-        def mock_synthesize(text):
+        def mock_synthesize(text, speed=None):
             synthesize_calls.append(text)
             duration = 0.1
             t = np.linspace(0, duration, int(AQUESTALK_SAMPLE_RATE * duration), False)

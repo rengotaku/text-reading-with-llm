@@ -65,16 +65,20 @@ class AquesTalkSynthesizer:
         )
         self._initialized = True
 
-    def synthesize(self, text: str) -> bytes:
+    def synthesize(self, text: str, speed: int | None = None) -> bytes:
         """Synthesize text to audio.
 
         Args:
             text: Text to synthesize (can include AquesTalk tags like <NUM VAL=123>)
+            speed: Override speed (default: use config.speed)
 
         Returns:
             WAV audio data as bytes (16kHz, mono)
         """
         self.initialize()
+
+        # Use provided speed or fall back to config
+        actual_speed = speed if speed is not None else self.config.speed
 
         # Generate dummy audio (16kHz sine wave)
         # Length based on text length (rough approximation)
