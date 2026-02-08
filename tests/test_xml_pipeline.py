@@ -96,11 +96,11 @@ class TestParseArgsDefaults:
         )
 
     def test_voicevox_dir_default(self):
-        """--voicevox-dir のデフォルトは ./voicevox_core_cuda"""
+        """--voicevox-dir のデフォルトは ./voicevox_core"""
         args = parse_args(["-i", str(SAMPLE_BOOK_XML)])
 
-        assert args.voicevox_dir == "./voicevox_core_cuda", (
-            f"--voicevox-dir default should be './voicevox_core_cuda', got {args.voicevox_dir}"
+        assert args.voicevox_dir == "./voicevox_core", (
+            f"--voicevox-dir default should be './voicevox_core', got {args.voicevox_dir}"
         )
 
 

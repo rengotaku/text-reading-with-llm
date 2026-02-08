@@ -37,7 +37,7 @@ python src/xml_pipeline.py --input sample/book.xml --speed 1.2
 | `--end-page` | | 終了ページ番号 | 最終ページまで |
 | `--style-id` | | VOICEVOX スタイル ID | 13（青山龍星） |
 | `--speed` | | 話速（1.0 = 通常） | 1.0 |
-| `--voicevox-dir` | | VOICEVOX Core ディレクトリ | `./voicevox_core_cuda` |
+| `--voicevox-dir` | | VOICEVOX Core ディレクトリ | `./voicevox_core` |
 | `--max-chunk-chars` | | TTS チャンクの最大文字数 | 500 |
 
 ## 出力構造
@@ -81,6 +81,6 @@ XML に `<page>` 要素が含まれていることを確認してください。
 VOICEVOX Core が正しくセットアップされているか確認してください。
 
 ```bash
-ls voicevox_core_cuda/
+ls voicevox_core/
 # 以下が存在すること: onnxruntime/, dict/, models/
 ```

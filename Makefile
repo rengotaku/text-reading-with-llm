@@ -51,7 +51,7 @@ run-simple: ## Run TTS pipeline without chapter splitting
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.pipeline "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
 
 xml-tts: ## Run XML to TTS pipeline (for XML book files)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i sample/book.xml -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i sample/book.xml -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED) --heading-sound sample/heading-sound.mp3
 
 toc: ## Generate TOC JSON for input file
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.toc_extractor "$(INPUT)" --group-chapters --start-page $(TOC_START_PAGE) -o $(DATA_DIR)/toc.json

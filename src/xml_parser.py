@@ -123,12 +123,17 @@ def _should_read_aloud(elem) -> bool:
     return read_aloud != "false"
 
 
+# Marker for heading elements (used to insert sound effects)
+HEADING_MARKER = "[HEADING]"
+
+
 def _extract_content_text(content_elem) -> str:
     """Extract text from content element in DOM order.
 
     Extracts text from paragraph, heading, and list/item elements
     while preserving their order in the XML document.
     Elements with readAloud="false" are skipped.
+    Heading elements are prefixed with HEADING_MARKER for sound effect insertion.
 
     Args:
         content_elem: The <content> XML element
@@ -147,7 +152,8 @@ def _extract_content_text(content_elem) -> str:
                 texts.append(child.text)
         elif child.tag == "heading":
             if child.text:
-                texts.append(child.text)
+                # Add marker before heading text
+                texts.append(f"{HEADING_MARKER}{child.text}")
         elif child.tag == "list":
             # Extract all items from the list
             for item in child.findall("item"):
