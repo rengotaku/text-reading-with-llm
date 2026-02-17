@@ -140,17 +140,17 @@
 
 ### 実装 (GREEN)
 
-- [ ] T047 Read RED tests: specs/004-new-xml-format/red-tests/ph4-test.md
-- [ ] T048 [US3] Implement parse_args() in src/xml2_pipeline.py
-- [ ] T049 [US3] Implement load_sound() in src/xml2_pipeline.py (reuse from xml_pipeline.py)
-- [ ] T050 [US3] Implement process_content() in src/xml2_pipeline.py
-- [ ] T051 [US3] Implement main() in src/xml2_pipeline.py
-- [ ] T052 Verify `make test` PASS (GREEN)
+- [x] T047 Read RED tests: specs/004-new-xml-format/red-tests/ph4-test.md
+- [x] T048 [US3] Implement parse_args() in src/xml2_pipeline.py
+- [x] T049 [US3] Implement load_sound() in src/xml2_pipeline.py (reuse from xml_pipeline.py)
+- [x] T050 [US3] Implement process_content() in src/xml2_pipeline.py
+- [x] T051 [US3] Implement main() in src/xml2_pipeline.py
+- [x] T052 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T053 Verify `make test` passes all tests
-- [ ] T054 Edit and rename: specs/004-new-xml-format/tasks/ph4-output-template.md → ph4-output.md
+- [x] T053 Verify `make test` passes all tests
+- [x] T054 Edit and rename: specs/004-new-xml-format/tasks/ph4-output-template.md → ph4-output.md
 
 **Checkpoint**: CLI でエンドツーエンド実行可能であること
 
