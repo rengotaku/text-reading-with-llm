@@ -13,6 +13,7 @@ VOICEVOX_DOWNLOADER := download-linux-x64
 CFG = grep '^$(1):' config.yaml | head -1 | sed 's/^[^:]*: *//' | sed 's/^"//;s/"$$//'
 
 INPUT ?= $(shell $(call CFG,input))
+PARSER ?= xml
 OUTPUT ?= $(shell $(call CFG,output))
 STYLE_ID ?= 13
 SPEED ?= 1.0
@@ -50,8 +51,12 @@ run: ## Run TTS pipeline with chapter splitting
 run-simple: ## Run TTS pipeline without chapter splitting
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.pipeline "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
 
-xml-tts: ## Run XML to TTS pipeline (for XML book files)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i sample/book.xml -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED) --heading-sound sample/heading-sound.mp3
+xml-tts: ## Run XML to TTS pipeline (PARSER=xml|xml2, INPUT=file)
+ifeq ($(PARSER),xml2)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml2_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
+else
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED) --heading-sound sample/heading-sound.mp3
+endif
 
 toc: ## Generate TOC JSON for input file
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.toc_extractor "$(INPUT)" --group-chapters --start-page $(TOC_START_PAGE) -o $(DATA_DIR)/toc.json

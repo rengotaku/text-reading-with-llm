@@ -75,6 +75,8 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
     - Elements with readAloud="false"
 
     Processes:
+    - <chapter> elements (as level 1 headings)
+    - <section> elements (as level 2 headings)
     - <heading level="N"> elements
     - <paragraph> elements
     - <list>/<item> elements
@@ -93,7 +95,7 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
     root = tree.getroot()
 
     # Build heading number mapping from TOC
-    heading_number_map = {}
+    heading_number_map: dict[str, str] = {}
     toc = root.find("toc")
     if toc is not None:
         for entry in toc.findall("entry"):
@@ -102,46 +104,64 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
             if title and number:
                 heading_number_map[title] = number
 
-    content_items = []
+    content_items: list[ContentItem] = []
 
-    # Process all children of the root element
-    for elem in root:
+    def process_element(elem) -> None:
+        """Recursively process an element and its children."""
         # Skip metadata, toc, and front-matter sections
         if elem.tag in ("metadata", "toc", "front-matter"):
-            continue
+            return
+
+        # Process chapter (as level 1 heading)
+        if elem.tag == "chapter":
+            title = elem.get("title", "")
+            number = elem.get("number", "")
+            if title:
+                formatted_text = format_heading_text(1, number, title) if number else title
+                marked_text = CHAPTER_MARKER + formatted_text
+                heading_info = HeadingInfo(level=1, number=number, title=title, read_aloud=True)
+                content_items.append(ContentItem(
+                    item_type="heading",
+                    text=marked_text,
+                    heading_info=heading_info
+                ))
+            # Process children of chapter
+            for child in elem:
+                process_element(child)
+
+        # Process section (as level 2 heading)
+        elif elem.tag == "section":
+            title = elem.get("title", "")
+            number = elem.get("number", "")
+            if title:
+                formatted_text = format_heading_text(2, number, title) if number else title
+                marked_text = SECTION_MARKER + formatted_text
+                heading_info = HeadingInfo(level=2, number=number, title=title, read_aloud=True)
+                content_items.append(ContentItem(
+                    item_type="heading",
+                    text=marked_text,
+                    heading_info=heading_info
+                ))
+            # Process children of section
+            for child in elem:
+                process_element(child)
 
         # Process headings
-        if elem.tag == "heading":
+        elif elem.tag == "heading":
             if _should_read_aloud(elem) and elem.text:
                 text = elem.text.strip()
                 if text:
-                    # Extract level attribute (default to 1 if missing)
                     level = int(elem.get("level", "1"))
-
-                    # Get heading number from TOC mapping
+                    # Look up number from TOC mapping
                     number = heading_number_map.get(text, "")
-
                     # Format heading text
                     if number:
                         formatted_text = format_heading_text(level, number, text)
                     else:
-                        # If no number found in TOC, use original text
                         formatted_text = text
-
-                    # Add appropriate marker
-                    if level == 1:
-                        marked_text = CHAPTER_MARKER + formatted_text
-                    else:
-                        marked_text = SECTION_MARKER + formatted_text
-
-                    # Create heading info
-                    heading_info = HeadingInfo(
-                        level=level,
-                        number=number,
-                        title=text,
-                        read_aloud=True
-                    )
-
+                    marker = CHAPTER_MARKER if level == 1 else SECTION_MARKER
+                    marked_text = marker + formatted_text
+                    heading_info = HeadingInfo(level=level, number=number, title=text, read_aloud=True)
                     content_items.append(ContentItem(
                         item_type="heading",
                         text=marked_text,
@@ -170,6 +190,10 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                             text=text,
                             heading_info=None
                         ))
+
+    # Process all children of the root element
+    for elem in root:
+        process_element(elem)
 
     return content_items
 
