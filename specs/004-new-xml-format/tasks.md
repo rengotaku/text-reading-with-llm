@@ -162,21 +162,21 @@
 
 ### 入力
 
-- [ ] T055 Read setup analysis: specs/004-new-xml-format/tasks/ph1-output.md
-- [ ] T056 Read previous phase output: specs/004-new-xml-format/tasks/ph4-output.md
+- [x] T055 Read setup analysis: specs/004-new-xml-format/tasks/ph1-output.md
+- [x] T056 Read previous phase output: specs/004-new-xml-format/tasks/ph4-output.md
 
 ### 実装
 
-- [ ] T057 [P] Add docstrings to all public functions in src/xml2_parser.py
-- [ ] T058 [P] Add docstrings to all public functions in src/xml2_pipeline.py
-- [ ] T059 [P] Add type hints to all functions in src/xml2_parser.py
-- [ ] T060 [P] Add type hints to all functions in src/xml2_pipeline.py
-- [ ] T061 Run quickstart.md validation (manual test with sample/book2.xml)
+- [x] T057 [P] Add docstrings to all public functions in src/xml2_parser.py
+- [x] T058 [P] Add docstrings to all public functions in src/xml2_pipeline.py
+- [x] T059 [P] Add type hints to all functions in src/xml2_parser.py
+- [x] T060 [P] Add type hints to all functions in src/xml2_pipeline.py
+- [x] T061 Run quickstart.md validation (manual test with sample/book2.xml)
 
 ### 検証
 
-- [ ] T062 Run `make test` to verify all tests pass after cleanup
-- [ ] T063 Edit and rename: specs/004-new-xml-format/tasks/ph5-output-template.md → ph5-output.md
+- [x] T062 Run `make test` to verify all tests pass after cleanup
+- [x] T063 Edit and rename: specs/004-new-xml-format/tasks/ph5-output-template.md → ph5-output.md
 
 ---
 
