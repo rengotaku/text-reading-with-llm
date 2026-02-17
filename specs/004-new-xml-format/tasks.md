@@ -65,17 +65,17 @@
 
 ### 実装 (GREEN)
 
-- [ ] T016 Read RED tests: specs/004-new-xml-format/red-tests/ph2-test.md
-- [ ] T017 [P] [US1] Create dataclasses HeadingInfo, ContentItem in src/xml2_parser.py
-- [ ] T018 [P] [US1] Create constants CHAPTER_MARKER, SECTION_MARKER in src/xml2_parser.py
-- [ ] T019 [US1] Implement parse_book2_xml() in src/xml2_parser.py
-- [ ] T020 [US1] Implement _should_read_aloud() helper in src/xml2_parser.py
-- [ ] T021 Verify `make test` PASS (GREEN)
+- [x] T016 Read RED tests: specs/004-new-xml-format/red-tests/ph2-test.md
+- [x] T017 [P] [US1] Create dataclasses HeadingInfo, ContentItem in src/xml2_parser.py
+- [x] T018 [P] [US1] Create constants CHAPTER_MARKER, SECTION_MARKER in src/xml2_parser.py
+- [x] T019 [US1] Implement parse_book2_xml() in src/xml2_parser.py
+- [x] T020 [US1] Implement _should_read_aloud() helper in src/xml2_parser.py
+- [x] T021 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T022 Verify `make test` passes all tests (no regressions)
-- [ ] T023 Edit and rename: specs/004-new-xml-format/tasks/ph2-output-template.md → ph2-output.md
+- [x] T022 Verify `make test` passes all tests (no regressions)
+- [x] T023 Edit and rename: specs/004-new-xml-format/tasks/ph2-output-template.md → ph2-output.md
 
 **Checkpoint**: US1 が独立して動作・テスト可能であること
 
