@@ -104,15 +104,15 @@
 
 ### 実装 (GREEN)
 
-- [ ] T033 Read RED tests: specs/004-new-xml-format/red-tests/ph3-test.md
-- [ ] T034 [US2] Implement format_heading_text() in src/xml2_parser.py
-- [ ] T035 [US2] Update parse_book2_xml() to handle heading elements with markers in src/xml2_parser.py
-- [ ] T036 Verify `make test` PASS (GREEN)
+- [x] T033 Read RED tests: specs/004-new-xml-format/red-tests/ph3-test.md
+- [x] T034 [US2] Implement format_heading_text() in src/xml2_parser.py
+- [x] T035 [US2] Update parse_book2_xml() to handle heading elements with markers in src/xml2_parser.py
+- [x] T036 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T037 Verify `make test` passes all tests (including US1 regressions)
-- [ ] T038 Edit and rename: specs/004-new-xml-format/tasks/ph3-output-template.md → ph3-output.md
+- [x] T037 Verify `make test` passes all tests (including US1 regressions)
+- [x] T038 Edit and rename: specs/004-new-xml-format/tasks/ph3-output-template.md → ph3-output.md
 
 **Checkpoint**: US1 AND US2 が両方独立して動作すること
 

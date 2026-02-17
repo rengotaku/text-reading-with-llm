@@ -47,6 +47,24 @@ class ContentItem:
     heading_info: HeadingInfo | None = None
 
 
+def format_heading_text(level: int, number: str, title: str) -> str:
+    """Format heading for TTS.
+
+    Args:
+        level: Heading level (1=chapter, 2+=section)
+        number: Heading number ("1", "1.2", etc.)
+        title: Heading text
+
+    Returns:
+        "第{number}章 {title}" for level=1
+        "第{number}節 {title}" for level>=2
+    """
+    if level == 1:
+        return f"第{number}章 {title}"
+    else:
+        return f"第{number}節 {title}"
+
+
 def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
     """Parse book2.xml and extract content items.
 
@@ -74,6 +92,16 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
+    # Build heading number mapping from TOC
+    heading_number_map = {}
+    toc = root.find("toc")
+    if toc is not None:
+        for entry in toc.findall("entry"):
+            title = entry.get("title", "")
+            number = entry.get("number", "")
+            if title and number:
+                heading_number_map[title] = number
+
     content_items = []
 
     # Process all children of the root element
@@ -90,17 +118,33 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                     # Extract level attribute (default to 1 if missing)
                     level = int(elem.get("level", "1"))
 
+                    # Get heading number from TOC mapping
+                    number = heading_number_map.get(text, "")
+
+                    # Format heading text
+                    if number:
+                        formatted_text = format_heading_text(level, number, text)
+                    else:
+                        # If no number found in TOC, use original text
+                        formatted_text = text
+
+                    # Add appropriate marker
+                    if level == 1:
+                        marked_text = CHAPTER_MARKER + formatted_text
+                    else:
+                        marked_text = SECTION_MARKER + formatted_text
+
                     # Create heading info
                     heading_info = HeadingInfo(
                         level=level,
-                        number="",  # book2.xml headings don't have number attribute in body
+                        number=number,
                         title=text,
                         read_aloud=True
                     )
 
                     content_items.append(ContentItem(
                         item_type="heading",
-                        text=text,
+                        text=marked_text,
                         heading_info=heading_info
                     ))
 
