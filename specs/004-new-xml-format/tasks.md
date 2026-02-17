@@ -50,18 +50,18 @@
 
 ### 入力
 
-- [ ] T007 Read previous phase output: specs/004-new-xml-format/tasks/ph1-output.md
+- [x] T007 Read previous phase output: specs/004-new-xml-format/tasks/ph1-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T008 [P] [US1] Implement test_parse_book2_xml_returns_list in tests/test_xml2_parser.py
-- [ ] T009 [P] [US1] Implement test_parse_book2_xml_skips_toc in tests/test_xml2_parser.py
-- [ ] T010 [P] [US1] Implement test_parse_book2_xml_skips_front_matter in tests/test_xml2_parser.py
-- [ ] T011 [P] [US1] Implement test_parse_book2_xml_extracts_paragraphs in tests/test_xml2_parser.py
-- [ ] T012 [P] [US1] Implement test_parse_book2_xml_respects_read_aloud_false in tests/test_xml2_parser.py
-- [ ] T013 [P] [US1] Implement test_parse_book2_xml_extracts_list_items in tests/test_xml2_parser.py
-- [ ] T014 Verify `make test` FAIL (RED)
-- [ ] T015 Generate RED output: specs/004-new-xml-format/red-tests/ph2-test.md
+- [x] T008 [P] [US1] Implement test_parse_book2_xml_returns_list in tests/test_xml2_parser.py
+- [x] T009 [P] [US1] Implement test_parse_book2_xml_skips_toc in tests/test_xml2_parser.py
+- [x] T010 [P] [US1] Implement test_parse_book2_xml_skips_front_matter in tests/test_xml2_parser.py
+- [x] T011 [P] [US1] Implement test_parse_book2_xml_extracts_paragraphs in tests/test_xml2_parser.py
+- [x] T012 [P] [US1] Implement test_parse_book2_xml_respects_read_aloud_false in tests/test_xml2_parser.py
+- [x] T013 [P] [US1] Implement test_parse_book2_xml_extracts_list_items in tests/test_xml2_parser.py
+- [x] T014 Verify `make test` FAIL (RED)
+- [x] T015 Generate RED output: specs/004-new-xml-format/red-tests/ph2-test.md
 
 ### 実装 (GREEN)
 
