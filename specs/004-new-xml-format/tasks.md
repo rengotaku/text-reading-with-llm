@@ -126,17 +126,17 @@
 
 ### 入力
 
-- [ ] T039 Read setup analysis: specs/004-new-xml-format/tasks/ph1-output.md
-- [ ] T040 Read previous phase output: specs/004-new-xml-format/tasks/ph3-output.md
+- [x] T039 Read setup analysis: specs/004-new-xml-format/tasks/ph1-output.md
+- [x] T040 Read previous phase output: specs/004-new-xml-format/tasks/ph3-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T041 [P] [US3] Implement test_parse_args_defaults in tests/test_xml2_pipeline.py
-- [ ] T042 [P] [US3] Implement test_parse_args_custom_sounds in tests/test_xml2_pipeline.py
-- [ ] T043 [P] [US3] Implement test_load_sound_mono_conversion in tests/test_xml2_pipeline.py
-- [ ] T044 [P] [US3] Implement test_process_content_with_markers in tests/test_xml2_pipeline.py
-- [ ] T045 Verify `make test` FAIL (RED)
-- [ ] T046 Generate RED output: specs/004-new-xml-format/red-tests/ph4-test.md
+- [x] T041 [P] [US3] Implement test_parse_args_defaults in tests/test_xml2_pipeline.py
+- [x] T042 [P] [US3] Implement test_parse_args_custom_sounds in tests/test_xml2_pipeline.py
+- [x] T043 [P] [US3] Implement test_load_sound_mono_conversion in tests/test_xml2_pipeline.py
+- [x] T044 [P] [US3] Implement test_process_content_with_markers in tests/test_xml2_pipeline.py
+- [x] T045 Verify `make test` FAIL (RED)
+- [x] T046 Generate RED output: specs/004-new-xml-format/red-tests/ph4-test.md
 
 ### 実装 (GREEN)
 
