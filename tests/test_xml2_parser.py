@@ -23,6 +23,13 @@ from src.xml2_parser import (
     SECTION_MARKER,
 )
 
+# Phase 3: format_heading_text はまだ実装されていない
+# RED フェーズではインポートが失敗することを想定
+try:
+    from src.xml2_parser import format_heading_text
+except ImportError:
+    format_heading_text = None
+
 
 # Fixtures
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
@@ -432,6 +439,280 @@ class TestMarkerConstants:
 
 # =============================================================================
 # Edge Cases
+# =============================================================================
+
+
+# =============================================================================
+# Phase 3 RED Tests - US2: 見出し速度調整
+# =============================================================================
+
+
+class TestFormatHeadingTextChapter:
+    """Test format_heading_text for chapter (level=1)."""
+
+    def test_format_heading_text_chapter_basic(self):
+        """level=1 で「第N章 タイトル」形式になる"""
+        assert format_heading_text is not None, (
+            "format_heading_text function should be implemented in src/xml2_parser.py"
+        )
+        result = format_heading_text(level=1, number="1", title="はじめに")
+
+        assert result == "第1章 はじめに", (
+            f"Chapter format should be '第1章 はじめに', got '{result}'"
+        )
+
+    def test_format_heading_text_chapter_with_different_number(self):
+        """level=1 で異なる章番号を処理"""
+        assert format_heading_text is not None, (
+            "format_heading_text function should be implemented in src/xml2_parser.py"
+        )
+        result = format_heading_text(level=1, number="3", title="実装")
+
+        assert result == "第3章 実装", (
+            f"Chapter format should be '第3章 実装', got '{result}'"
+        )
+
+    def test_format_heading_text_chapter_with_english_title(self):
+        """level=1 で英語タイトル"""
+        assert format_heading_text is not None, (
+            "format_heading_text function should be implemented in src/xml2_parser.py"
+        )
+        result = format_heading_text(level=1, number="1", title="Introduction")
+
+        assert result == "第1章 Introduction", (
+            f"Chapter format should be '第1章 Introduction', got '{result}'"
+        )
+
+
+class TestFormatHeadingTextSection:
+    """Test format_heading_text for section (level>=2)."""
+
+    def test_format_heading_text_section_level2(self):
+        """level=2 で「第N節 タイトル」形式になる"""
+        assert format_heading_text is not None, (
+            "format_heading_text function should be implemented in src/xml2_parser.py"
+        )
+        result = format_heading_text(level=2, number="1.1", title="概要")
+
+        assert result == "第1.1節 概要", (
+            f"Section format should be '第1.1節 概要', got '{result}'"
+        )
+
+    def test_format_heading_text_section_level3(self):
+        """level=3 でも「第N節 タイトル」形式になる"""
+        assert format_heading_text is not None, (
+            "format_heading_text function should be implemented in src/xml2_parser.py"
+        )
+        result = format_heading_text(level=3, number="1.2.1", title="詳細")
+
+        assert result == "第1.2.1節 詳細", (
+            f"Section format should be '第1.2.1節 詳細', got '{result}'"
+        )
+
+    def test_format_heading_text_section_level4(self):
+        """level=4 でも「第N節 タイトル」形式になる"""
+        assert format_heading_text is not None, (
+            "format_heading_text function should be implemented in src/xml2_parser.py"
+        )
+        result = format_heading_text(level=4, number="1.2.1.1", title="補足")
+
+        assert result == "第1.2.1.1節 補足", (
+            f"Section format should be '第1.2.1.1節 補足', got '{result}'"
+        )
+
+
+class TestParseBook2XmlHeadingWithChapterMarker:
+    """Test parse_book2_xml inserts CHAPTER_MARKER for level=1 headings."""
+
+    def test_level1_heading_has_chapter_marker(self):
+        """level=1 の heading に CHAPTER_MARKER が付与される"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        # level=1 の heading を取得
+        level1_headings = [
+            item for item in result
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level == 1
+        ]
+
+        assert len(level1_headings) >= 1, "Should have at least one level=1 heading"
+
+        for heading in level1_headings:
+            assert CHAPTER_MARKER in heading.text, (
+                f"Level 1 heading should contain CHAPTER_MARKER, got text: '{heading.text}'"
+            )
+
+    def test_level1_heading_text_starts_with_chapter_marker(self):
+        """level=1 の heading テキストが CHAPTER_MARKER で始まる"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        level1_headings = [
+            item for item in result
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level == 1
+        ]
+
+        for heading in level1_headings:
+            assert heading.text.startswith(CHAPTER_MARKER), (
+                f"Level 1 heading text should start with CHAPTER_MARKER, got: '{heading.text}'"
+            )
+
+    def test_level1_heading_formatted_text(self):
+        """level=1 の heading が「第N章」形式で整形される"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        # "First Chapter" の heading を探す
+        first_chapter = None
+        for item in result:
+            if item.item_type == "heading" and item.heading_info:
+                if "First Chapter" in item.text or "第1章" in item.text:
+                    first_chapter = item
+                    break
+
+        assert first_chapter is not None, "Should find 'First Chapter' heading"
+        # CHAPTER_MARKER + "第1章 First Chapter" のような形式
+        assert "第" in first_chapter.text and "章" in first_chapter.text, (
+            f"Level 1 heading should contain '第N章', got: '{first_chapter.text}'"
+        )
+
+
+class TestParseBook2XmlHeadingWithSectionMarker:
+    """Test parse_book2_xml inserts SECTION_MARKER for level>=2 headings."""
+
+    def test_level2_heading_has_section_marker(self):
+        """level=2 の heading に SECTION_MARKER が付与される"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        # level=2 の heading を取得
+        level2_headings = [
+            item for item in result
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level == 2
+        ]
+
+        assert len(level2_headings) >= 1, "Should have at least one level=2 heading"
+
+        for heading in level2_headings:
+            assert SECTION_MARKER in heading.text, (
+                f"Level 2 heading should contain SECTION_MARKER, got text: '{heading.text}'"
+            )
+
+    def test_level2_heading_text_starts_with_section_marker(self):
+        """level=2 の heading テキストが SECTION_MARKER で始まる"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        level2_headings = [
+            item for item in result
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level == 2
+        ]
+
+        for heading in level2_headings:
+            assert heading.text.startswith(SECTION_MARKER), (
+                f"Level 2 heading text should start with SECTION_MARKER, got: '{heading.text}'"
+            )
+
+    def test_level2_heading_formatted_text(self):
+        """level=2 の heading が「第N節」形式で整形される"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        # "Section 1.1" の heading を探す
+        section_heading = None
+        for item in result:
+            if item.item_type == "heading" and item.heading_info:
+                if item.heading_info.level == 2:
+                    section_heading = item
+                    break
+
+        assert section_heading is not None, "Should find level=2 section heading"
+        # SECTION_MARKER + "第X節 ..." のような形式
+        assert "第" in section_heading.text and "節" in section_heading.text, (
+            f"Level 2 heading should contain '第N節', got: '{section_heading.text}'"
+        )
+
+    def test_level2_heading_does_not_have_chapter_marker(self):
+        """level=2 の heading に CHAPTER_MARKER が含まれない"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        level2_headings = [
+            item for item in result
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level == 2
+        ]
+
+        for heading in level2_headings:
+            assert CHAPTER_MARKER not in heading.text, (
+                f"Level 2 heading should NOT contain CHAPTER_MARKER, got: '{heading.text}'"
+            )
+
+
+class TestParseBook2XmlHeadingLevel3UsesSectionMarker:
+    """Test parse_book2_xml inserts SECTION_MARKER for level=3 headings."""
+
+    def test_level3_heading_has_section_marker(self):
+        """level=3 の heading に SECTION_MARKER が付与される（CHAPTER_MARKER ではない）"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        # level=3 の heading を取得
+        level3_headings = [
+            item for item in result
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level == 3
+        ]
+
+        assert len(level3_headings) >= 1, "Should have at least one level=3 heading"
+
+        for heading in level3_headings:
+            assert SECTION_MARKER in heading.text, (
+                f"Level 3 heading should contain SECTION_MARKER, got text: '{heading.text}'"
+            )
+
+    def test_level3_heading_does_not_have_chapter_marker(self):
+        """level=3 の heading に CHAPTER_MARKER が含まれない"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        level3_headings = [
+            item for item in result
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level == 3
+        ]
+
+        for heading in level3_headings:
+            assert CHAPTER_MARKER not in heading.text, (
+                f"Level 3 heading should NOT contain CHAPTER_MARKER, got: '{heading.text}'"
+            )
+
+    def test_level3_heading_text_starts_with_section_marker(self):
+        """level=3 の heading テキストが SECTION_MARKER で始まる"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        level3_headings = [
+            item for item in result
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level == 3
+        ]
+
+        for heading in level3_headings:
+            assert heading.text.startswith(SECTION_MARKER), (
+                f"Level 3 heading text should start with SECTION_MARKER, got: '{heading.text}'"
+            )
+
+    def test_level3_heading_formatted_as_section(self):
+        """level=3 の heading が「第N節」形式で整形される（章ではない）"""
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        level3_headings = [
+            item for item in result
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level == 3
+        ]
+
+        for heading in level3_headings:
+            # "章" が含まれず "節" が含まれる
+            assert "節" in heading.text, (
+                f"Level 3 heading should contain '節', got: '{heading.text}'"
+            )
+            # マーカー後のテキストに "章" が含まれないことを確認
+            text_after_marker = heading.text.lstrip(SECTION_MARKER)
+            # "章" は "第N章" 形式のみをチェック（テキスト自体に「章」があっても OK）
+            assert not text_after_marker.startswith("第") or "章" not in text_after_marker.split()[0], (
+                f"Level 3 heading should not be formatted as '第N章', got: '{heading.text}'"
+            )
+
+
+# =============================================================================
+# Phase 2 Edge Cases (existing tests)
 # =============================================================================
 
 

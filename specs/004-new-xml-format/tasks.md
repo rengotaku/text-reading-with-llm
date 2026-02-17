@@ -89,18 +89,18 @@
 
 ### 入力
 
-- [ ] T024 Read setup analysis: specs/004-new-xml-format/tasks/ph1-output.md
-- [ ] T025 Read previous phase output: specs/004-new-xml-format/tasks/ph2-output.md
+- [x] T024 Read setup analysis: specs/004-new-xml-format/tasks/ph1-output.md
+- [x] T025 Read previous phase output: specs/004-new-xml-format/tasks/ph2-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T026 [P] [US2] Implement test_format_heading_text_chapter in tests/test_xml2_parser.py
-- [ ] T027 [P] [US2] Implement test_format_heading_text_section in tests/test_xml2_parser.py
-- [ ] T028 [P] [US2] Implement test_parse_book2_xml_heading_with_chapter_marker in tests/test_xml2_parser.py
-- [ ] T029 [P] [US2] Implement test_parse_book2_xml_heading_with_section_marker in tests/test_xml2_parser.py
-- [ ] T030 [P] [US2] Implement test_parse_book2_xml_heading_level3_uses_section_marker in tests/test_xml2_parser.py
-- [ ] T031 Verify `make test` FAIL (RED)
-- [ ] T032 Generate RED output: specs/004-new-xml-format/red-tests/ph3-test.md
+- [x] T026 [P] [US2] Implement test_format_heading_text_chapter in tests/test_xml2_parser.py
+- [x] T027 [P] [US2] Implement test_format_heading_text_section in tests/test_xml2_parser.py
+- [x] T028 [P] [US2] Implement test_parse_book2_xml_heading_with_chapter_marker in tests/test_xml2_parser.py
+- [x] T029 [P] [US2] Implement test_parse_book2_xml_heading_with_section_marker in tests/test_xml2_parser.py
+- [x] T030 [P] [US2] Implement test_parse_book2_xml_heading_level3_uses_section_marker in tests/test_xml2_parser.py
+- [x] T031 Verify `make test` FAIL (RED)
+- [x] T032 Generate RED output: specs/004-new-xml-format/red-tests/ph3-test.md
 
 ### 実装 (GREEN)
 
