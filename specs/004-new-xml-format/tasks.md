@@ -264,12 +264,12 @@ specs/004-new-xml-format/
 ```
 
 **Checklist**:
-- [ ] XML parsing tests (toc/front-matter skip)
-- [ ] readAloud filtering tests
-- [ ] Heading format tests (第N章/第N.N節)
-- [ ] Marker insertion tests (CHAPTER_MARKER/SECTION_MARKER)
-- [ ] CLI argument parsing tests
-- [ ] End-to-End tests (input → final output)
+- [X] XML parsing tests (toc/front-matter skip)
+- [X] readAloud filtering tests
+- [X] Heading format tests (第N章/第N.N節)
+- [X] Marker insertion tests (CHAPTER_MARKER/SECTION_MARKER)
+- [X] CLI argument parsing tests
+- [X] End-to-End tests (input → final output)
 
 ---
 
