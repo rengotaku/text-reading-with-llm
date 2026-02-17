@@ -187,10 +187,10 @@ This ensures incremental validation and prevents regression at each phase bounda
 **TDD Phase Output (2 stages)**:
 
 1. **RED Output** (tdd-generator): `{FEATURE_DIR}/red-tests/ph{N}-test.md`
-   - Content written in Japanese (see templates/tasks-template.md for format)
+   - Format: `.specify/templates/red-test-template.md`
 
 2. **Phase Output** (phase-executor): `{FEATURE_DIR}/tasks/ph{N}-output.md`
-   - Content written in Japanese (see templates/tasks-template.md for format)
+   - Format: `.specify/templates/phN-output-template.md`
 
 **Directory Structure**:
 ```

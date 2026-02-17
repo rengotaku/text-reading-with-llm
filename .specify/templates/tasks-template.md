@@ -66,7 +66,7 @@ description: "Task list template for feature implementation (TDD workflow)"
 
 - [ ] T001 Read current implementation in src/[relevant files]
 - [ ] T002 [P] Read existing tests in src/tests/[relevant test files]
-- [ ] T003 Generate phase output: specs/[###-feature-name]/tasks/ph1-output.md
+- [ ] T003 Edit and rename: specs/[###-feature-name]/tasks/ph1-output-template.md → ph1-output.md
 
 ---
 
@@ -99,7 +99,7 @@ description: "Task list template for feature implementation (TDD workflow)"
 ### Verification
 
 - [ ] T015 Verify `make test` passes all tests (no regressions)
-- [ ] T016 Generate phase output: specs/[###-feature-name]/tasks/ph2-output.md
+- [ ] T016 Edit and rename: specs/[###-feature-name]/tasks/ph2-output-template.md → ph2-output.md
 
 **Checkpoint**: User Story 1 should be fully functional and testable independently
 
@@ -133,7 +133,7 @@ description: "Task list template for feature implementation (TDD workflow)"
 ### Verification
 
 - [ ] T027 Verify `make test` passes all tests (including regressions from US1)
-- [ ] T028 Generate phase output: specs/[###-feature-name]/tasks/ph3-output.md
+- [ ] T028 Edit and rename: specs/[###-feature-name]/tasks/ph3-output-template.md → ph3-output.md
 
 **Checkpoint**: User Stories 1 AND 2 should both work independently
 
@@ -162,7 +162,7 @@ description: "Task list template for feature implementation (TDD workflow)"
 ### Verification
 
 - [ ] TXXX Run `make test` to verify all tests pass after cleanup
-- [ ] TXXX Generate phase output: specs/[###-feature-name]/tasks/phN-output.md
+- [ ] TXXX Edit and rename: specs/[###-feature-name]/tasks/phN-output-template.md → phN-output.md
 
 ---
 
@@ -216,20 +216,13 @@ specs/[###-feature-name]/
     └── ph3-test.md             # Phase 3 RED test results (FAIL confirmation)
 ```
 
-### Phase Output Content
+### Phase Output Format
 
-Each `phN-output.md` should contain:
-- Summary of what was done
-- Files created/modified
-- Test results (`make test` output)
-- Any decisions or deviations from the plan
-
-### RED Test Output Content
-
-Each `phN-test.md` should contain:
-- Test code written
-- `make test` output showing FAIL (RED confirmation)
-- Number of failing tests and their names
+| Output Type | Template File |
+|-------------|---------------|
+| `ph1-output.md` | `.specify/templates/ph1-output-template.md` |
+| `phN-output.md` | `.specify/templates/phN-output-template.md` |
+| `phN-test.md` | `.specify/templates/red-test-template.md` |
 
 ---
 

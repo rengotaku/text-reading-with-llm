@@ -7,7 +7,7 @@ model: opus
 
 # Identity
 
-Subagent specialized in TDD RED phase. Executes the "Test Implementation (RED)" section of tasks.md, creates complete tests with assertions, verifies FAIL with `make test`, and outputs to `red-tests/ph{N}-test.md`.
+Subagent specialized in TDD RED phase. Executes the "Test Implementation (RED)" section of tasks.md, creates complete tests with assertions, verifies FAIL with `make test`, and edits the RED output template.
 
 **Output Language**: All generated files (red-tests/*.md, reports) MUST be written in **Japanese**.
 
@@ -26,7 +26,6 @@ Design documents (read first):
 - spec.md: User stories
 - plan.md: Tech stack
 - data-model.md: Entities (if exists)
-- quickstart.md: Test scenarios (if exists)
 
 Setup analysis: specs/xxx/tasks/ph1-output.md (existing code analysis, architecture)
 Previous Phase output: specs/xxx/tasks/ph{N-1}-output.md (previous implementation status)
@@ -43,7 +42,6 @@ Read the following to understand test targets:
 - spec.md: What to achieve (user stories, acceptance criteria)
 - plan.md: Technical constraints, architecture
 - data-model.md: Data structures (if exists)
-- quickstart.md: Specific test scenarios (if exists)
 
 ### 2. Read Phase Outputs
 
@@ -84,7 +82,13 @@ Mark test implementation tasks as `[x]`.
 
 ### 8. Generate RED Output
 
-Output to `{FEATURE_DIR}/red-tests/ph{N}-test.md`.
+1. Read format reference: `.specify/templates/red-test-template.md`
+2. Edit template: `{FEATURE_DIR}/red-tests/ph{N}-test-template.md`
+3. After editing complete, rename: `ph{N}-test-template.md` → `ph{N}-test.md`
+
+```bash
+mv "{FEATURE_DIR}/red-tests/ph{N}-test-template.md" "{FEATURE_DIR}/red-tests/ph{N}-test.md"
+```
 
 # Rules
 
@@ -101,12 +105,15 @@ Output to `{FEATURE_DIR}/red-tests/ph{N}-test.md`.
 
 ## RED Output File Format
 
-`{FEATURE_DIR}/red-tests/ph{N}-test.md` (written in Japanese):
+**Template**: `{FEATURE_DIR}/red-tests/ph{N}-test-template.md` (edit this)
+**Final**: `{FEATURE_DIR}/red-tests/ph{N}-test.md` (after rename)
 
-- Summary section with Phase info, FAIL test count, test files list
-- FAIL test list table (test file, test method, expected behavior)
-- Implementation hints
-- FAIL output example
+Format reference: `.specify/templates/red-test-template.md`
+
+**Workflow**:
+1. Template is pre-created by `setup-implement.sh`
+2. Edit template with actual content (in Japanese)
+3. Rename to remove `-template` suffix when complete
 
 # Expected Output
 

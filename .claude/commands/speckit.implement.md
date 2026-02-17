@@ -14,7 +14,18 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
-2. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
+2. **Setup output templates**:
+   Run `.specify/scripts/bash/setup-implement.sh --json` to:
+   - Parse tasks.md and detect all phases (Phase 1, 2, ..., N)
+   - Determine which phases are TDD (have "Test Implementation" section)
+   - Create output templates in FEATURE_DIR:
+     - `tasks/ph1-output-template.md` (Phase 1)
+     - `tasks/ph{N}-output-template.md` (Phase 2+)
+     - `red-tests/ph{N}-test-template.md` (TDD phases only)
+   - Templates are copied from `.specify/templates/` and edited during execution
+   - After editing, agents rename `*-template.md` → `*.md`
+
+3. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
    - Scan all checklist files in the checklists/ directory
    - For each checklist, count:
      - Total items: All lines matching `- [ ]` or `- [X]` or `- [x]`
@@ -45,7 +56,7 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Display the table showing all checklists passed
      - Automatically proceed to step 3
 
-3. Load and analyze the implementation context:
+4. Load and analyze the implementation context:
    - **REQUIRED**: Read tasks.md for the complete task list and execution plan
    - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
    - **IF EXISTS**: Read data-model.md for entities and relationships
@@ -53,17 +64,17 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IF EXISTS**: Read research.md for technical decisions and constraints
    - **IF EXISTS**: Read quickstart.md for integration scenarios
 
-4. **Project Setup Verification**:
+5. **Project Setup Verification**:
    - Create/verify ignore files based on actual project setup (.gitignore, .dockerignore, etc.)
    - Check technology from plan.md and apply appropriate patterns
 
-5. Parse tasks.md structure and extract:
+6. Parse tasks.md structure and extract:
    - **Task phases**: Setup, Tests, Core, Integration, Polish
    - **Task dependencies**: Sequential vs parallel execution rules
    - **Task details**: ID, description, file paths, parallel markers [P]
    - **Execution flow**: Order and dependency requirements
 
-6. **Execute implementation phases**:
+7. **Execute implementation phases**:
 
    ### 6.1 Phase Type Detection
 
@@ -81,8 +92,12 @@ You **MUST** consider the user input before proceeding (if not empty).
    1. Extract Phase 1 tasks from tasks.md
    2. Execute each task sequentially
    3. Update tasks.md (`- [ ]` → `- [X]`)
-   4. Generate `{FEATURE_DIR}/tasks/ph1-output.md`
-   5. **Commit setup changes**:
+   4. Edit `{FEATURE_DIR}/tasks/ph1-output-template.md` (format: `.specify/templates/ph1-output-template.md`)
+   5. Rename: `ph1-output-template.md` → `ph1-output.md`
+      ```bash
+      mv "{FEATURE_DIR}/tasks/ph1-output-template.md" "{FEATURE_DIR}/tasks/ph1-output.md"
+      ```
+   6. **Commit setup changes**:
       ```bash
       git add -A && git commit -m "chore(phase-1): Setup - {brief description}"
       ```
@@ -146,7 +161,7 @@ You **MUST** consider the user input before proceeding (if not empty).
       ```
    3. This prevents the session from being reloaded after compaction in unrelated work
 
-7. **Progress tracking and error handling**:
+8. **Progress tracking and error handling**:
    - Report progress after each completed task
    - Halt execution if any non-parallel task fails
    - For parallel tasks [P], continue with successful tasks, report failed ones
@@ -154,12 +169,27 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT**: For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
-8. **Completion validation**:
+9. **Completion validation**:
    - Verify all phases completed
    - Run final validation: `grep -c "\- \[ \]" tasks.md` (Should be 0)
    - Check that implemented features match the original specification
    - Validate that tests pass
    - Generate completion report
+
+## Agent Input Reference
+
+| Document | implement(親) | tdd-generator | phase-executor |
+|----------|:-------------:|:-------------:|:--------------:|
+| tasks.md | ✅ REQUIRED | - | - |
+| plan.md | ✅ REQUIRED | ✅ REQUIRED | ✅ REQUIRED |
+| spec.md | - | ✅ REQUIRED | - |
+| ph1-output.md | - | ✅ Phase2+ | ✅ Phase2+ |
+| ph{N-1}-output.md | - | ✅ Phase3+ | ✅ Phase3+ |
+| red-tests/ph{N}-test.md | - | - | ✅ TDD Phase |
+| data-model.md | IF EXISTS | IF EXISTS | IF EXISTS |
+| quickstart.md | IF EXISTS | - | - |
+| contracts/ | IF EXISTS | - | - |
+| research.md | IF EXISTS | - | - |
 
 ## Notes
 
