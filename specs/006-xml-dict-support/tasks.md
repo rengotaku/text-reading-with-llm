@@ -65,15 +65,15 @@
 
 ### Implementation (GREEN)
 
-- [ ] T016 REDテストを読む: `specs/006-xml-dict-support/red-tests/ph2-test.md`
-- [ ] T017 [US1] `main()` に拡張子判定の分岐ロジックを実装: `src/generate_reading_dict.py`（`.xml` → XMLフロー、`.md` → 既存フロー、その他 → エラー）
-- [ ] T018 [US1] XML分岐内にチャプターグループ化 + 用語抽出ロジックを実装: `src/generate_reading_dict.py`（`parse_book2_xml()` → `chapter_number` でグループ化 → `extract_technical_terms()` per group）
-- [ ] T019 `make test` が PASS することを確認 (GREEN)
+- [x] T016 REDテストを読む: `specs/006-xml-dict-support/red-tests/ph2-test.md`
+- [x] T017 [US1] `main()` に拡張子判定の分岐ロジックを実装: `src/generate_reading_dict.py`（`.xml` → XMLフロー、`.md` → 既存フロー、その他 → エラー）
+- [x] T018 [US1] XML分岐内にチャプターグループ化 + 用語抽出ロジックを実装: `src/generate_reading_dict.py`（`parse_book2_xml()` → `chapter_number` でグループ化 → `extract_technical_terms()` per group）
+- [x] T019 `make test` が PASS することを確認 (GREEN)
 
 ### Verification
 
-- [ ] T020 `make test` ですべてのテストがパスすることを確認（リグレッションなし）
-- [ ] T021 フェーズ出力を編集・リネーム: `specs/006-xml-dict-support/tasks/phN-output-template.md` → `ph2-output.md`
+- [x] T020 `make test` ですべてのテストがパスすることを確認（リグレッションなし）
+- [x] T021 フェーズ出力を編集・リネーム: `specs/006-xml-dict-support/tasks/phN-output-template.md` → `ph2-output.md`
 
 **チェックポイント**: US1 が単独で機能し、XMLファイルから辞書が生成できること
 
