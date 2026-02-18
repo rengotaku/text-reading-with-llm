@@ -88,10 +88,10 @@ specs/                       # フィーチャー仕様格納
 - **phase-executor** (sonnet): 実装 → GREEN 確認 → 検証 → `tasks/ph{N}-output.md` 出力
 
 ## Recent Changes
+- 006-xml-dict-support: Added Python 3.10+ + xml.etree.ElementTree（標準ライブラリ）, src/xml2_parser, src/dict_manager, src/llm_reading_generator
 - 005-chapter-split-cleaning: Added Python 3.10+ + xml.etree.ElementTree（標準ライブラリ）, voicevox_core, soundfile, numpy, MeCab（text_cleaner経由）
-- 004-new-xml-format: Added Python 3.10+ + xml.etree.ElementTree（標準ライブラリ）, voicevox_core, soundfile, numpy
 - 004-new-xml-format: Added Python 3.10+ + xml.etree.ElementTree（標準ライブラリ）, voicevox_core, soundfile, numpy
 
 ## Active Technologies
-- Python 3.10+ + xml.etree.ElementTree（標準ライブラリ）, voicevox_core, soundfile, numpy, MeCab（text_cleaner経由） (005-chapter-split-cleaning)
-- Files（WAV 出力、assets/sounds/*.mp3） (005-chapter-split-cleaning)
+- Python 3.10+ + xml.etree.ElementTree（標準ライブラリ）, src/xml2_parser, src/dict_manager, src/llm_reading_generator (006-xml-dict-support)
+- Files（`data/{hash}/readings.json`） (006-xml-dict-support)
