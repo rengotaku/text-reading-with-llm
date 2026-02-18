@@ -52,16 +52,16 @@
 
 ### Input
 
-- [ ] T009 前フェーズの出力を読む: `specs/006-xml-dict-support/tasks/ph1-output.md`
+- [x] T009 前フェーズの出力を読む: `specs/006-xml-dict-support/tasks/ph1-output.md`
 
 ### Test Implementation (RED)
 
-- [ ] T010 [P] [US1] XMLファイル入力時に `parse_book2_xml()` が呼ばれることをテスト: `tests/test_generate_reading_dict.py`
-- [ ] T011 [P] [US1] ContentItemのチャプター単位グループ化と用語抽出をテスト: `tests/test_generate_reading_dict.py`
-- [ ] T012 [P] [US1] XML入力で辞書ファイルが正しいパス（`data/{hash}/readings.json`）に保存されることをテスト: `tests/test_generate_reading_dict.py`
-- [ ] T013 [P] [US1] `--merge` オプションがXML入力で動作することをテスト: `tests/test_generate_reading_dict.py`
-- [ ] T014 `make test` が FAIL することを確認 (RED)
-- [ ] T015 RED出力を生成: `specs/006-xml-dict-support/red-tests/ph2-test.md`
+- [x] T010 [P] [US1] XMLファイル入力時に `parse_book2_xml()` が呼ばれることをテスト: `tests/test_generate_reading_dict.py`
+- [x] T011 [P] [US1] ContentItemのチャプター単位グループ化と用語抽出をテスト: `tests/test_generate_reading_dict.py`
+- [x] T012 [P] [US1] XML入力で辞書ファイルが正しいパス（`data/{hash}/readings.json`）に保存されることをテスト: `tests/test_generate_reading_dict.py`
+- [x] T013 [P] [US1] `--merge` オプションがXML入力で動作することをテスト: `tests/test_generate_reading_dict.py`
+- [x] T014 `make test` が FAIL することを確認 (RED)
+- [x] T015 RED出力を生成: `specs/006-xml-dict-support/red-tests/ph2-test.md`
 
 ### Implementation (GREEN)
 
