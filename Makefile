@@ -13,7 +13,7 @@ VOICEVOX_DOWNLOADER := download-linux-x64
 CFG = grep '^$(1):' config.yaml | head -1 | sed 's/^[^:]*: *//' | sed 's/^"//;s/"$$//'
 
 INPUT ?= $(shell $(call CFG,input))
-PARSER ?= xml
+PARSER ?= xml2
 OUTPUT ?= $(shell $(call CFG,output))
 STYLE_ID ?= 13
 SPEED ?= 1.0
