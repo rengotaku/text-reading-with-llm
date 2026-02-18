@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <metadata>
+        <title>Dict Test Book</title>
+    </metadata>
+    <toc begin="1" end="2">
+        <entry level="1" number="1" title="API Design" />
+        <entry level="1" number="2" title="Infrastructure" />
+    </toc>
+    <chapter number="1" title="API Design">
+        <section number="1.1" title="REST API Basics">
+            <paragraph readAloud="true">RESTful API design follows HTTP protocol conventions. JSON is the standard data format for request and response payloads.</paragraph>
+            <paragraph readAloud="true">OAuth authentication provides secure access control for API endpoints.</paragraph>
+        </section>
+    </chapter>
+    <chapter number="2" title="Infrastructure">
+        <section number="2.1" title="Cloud Services">
+            <paragraph readAloud="true">Docker containers enable consistent deployment across environments. Kubernetes orchestrates container workloads at scale.</paragraph>
+            <paragraph readAloud="true">CI/CD pipelines automate the build and deployment process using GitHub Actions.</paragraph>
+        </section>
+    </chapter>
+</book>

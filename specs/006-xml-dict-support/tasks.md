@@ -33,14 +33,14 @@
 
 **目的**: 既存実装の確認と変更準備
 
-- [ ] T001 既存の辞書生成コードを確認: `src/generate_reading_dict.py`
-- [ ] T002 [P] 既存のXMLパーサーを確認: `src/xml2_parser.py`
-- [ ] T003 [P] 既存の辞書管理モジュールを確認: `src/dict_manager.py`
-- [ ] T004 [P] 既存の用語抽出関数を確認: `src/llm_reading_generator.py`
-- [ ] T005 [P] 既存のテストを確認: `tests/test_xml2_parser.py`
-- [ ] T006 テスト用XMLフィクスチャを作成: `tests/fixtures/dict_test_book.xml`（チャプター2つ、各チャプターに技術用語を含むパラグラフ）
-- [ ] T007 `make test` で既存テストがすべてパスすることを確認
-- [ ] T008 セットアップ出力を編集・リネーム: `specs/006-xml-dict-support/tasks/ph1-output-template.md` → `ph1-output.md`
+- [x] T001 既存の辞書生成コードを確認: `src/generate_reading_dict.py`
+- [x] T002 [P] 既存のXMLパーサーを確認: `src/xml2_parser.py`
+- [x] T003 [P] 既存の辞書管理モジュールを確認: `src/dict_manager.py`
+- [x] T004 [P] 既存の用語抽出関数を確認: `src/llm_reading_generator.py`
+- [x] T005 [P] 既存のテストを確認: `tests/test_xml2_parser.py`
+- [x] T006 テスト用XMLフィクスチャを作成: `tests/fixtures/dict_test_book.xml`（チャプター2つ、各チャプターに技術用語を含むパラグラフ）
+- [x] T007 `make test` で既存テストがすべてパスすることを確認
+- [x] T008 セットアップ出力を編集・リネーム: `specs/006-xml-dict-support/tasks/ph1-output-template.md` → `ph1-output.md`
 
 ---
 
