@@ -123,18 +123,18 @@
 
 ### Input
 
-- [ ] T038 セットアップ出力を読む: `specs/006-xml-dict-support/tasks/ph1-output.md`
-- [ ] T039 前フェーズの出力を読む: `specs/006-xml-dict-support/tasks/ph3-output.md`
+- [x] T038 セットアップ出力を読む: `specs/006-xml-dict-support/tasks/ph1-output.md`
+- [x] T039 前フェーズの出力を読む: `specs/006-xml-dict-support/tasks/ph3-output.md`
 
 ### Implementation
 
-- [ ] T040 [P] 不要なインポートやデッドコードがないか確認・削除: `src/generate_reading_dict.py`
-- [ ] T041 quickstart.md の手順で手動検証: `specs/006-xml-dict-support/quickstart.md`
+- [x] T040 [P] 不要なインポートやデッドコードがないか確認・削除: `src/generate_reading_dict.py`
+- [x] T041 quickstart.md の手順で手動検証: `specs/006-xml-dict-support/quickstart.md`
 
 ### Verification
 
-- [ ] T042 `make test` で全テストがパスすることを最終確認
-- [ ] T043 フェーズ出力を編集・リネーム: `specs/006-xml-dict-support/tasks/phN-output-template.md` → `ph4-output.md`
+- [x] T042 `make test` で全テストがパスすることを最終確認
+- [x] T043 フェーズ出力を編集・リネーム: `specs/006-xml-dict-support/tasks/phN-output-template.md` → `ph4-output.md`
 
 ---
 

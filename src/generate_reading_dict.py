@@ -141,7 +141,6 @@ def main():
     if args.merge or (args.output is None and output_path.exists()):
         existing = load_dict(input_path) if args.output is None else {}
         if args.output and args.output.exists():
-            import json
             with open(args.output, encoding="utf-8") as f:
                 existing = json.load(f)
     logger.info("Existing dictionary: %d entries", len(existing))
