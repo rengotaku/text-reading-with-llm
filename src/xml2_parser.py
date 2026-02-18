@@ -41,10 +41,12 @@ class ContentItem:
         item_type: Type of content ("paragraph", "heading", "list_item")
         text: Text content (may include markers)
         heading_info: Heading information (only for heading items)
+        chapter_number: Chapter number (1, 2, 3, ...) or None for non-chapter content
     """
     item_type: str
     text: str
     heading_info: HeadingInfo | None = None
+    chapter_number: int | None = None
 
 
 def format_heading_text(level: int, number: str, title: str) -> str:
@@ -56,13 +58,19 @@ def format_heading_text(level: int, number: str, title: str) -> str:
         title: Heading text
 
     Returns:
-        "第{number}章 {title}" for level=1
-        "第{number}節 {title}" for level>=2
+        "第{number}章、{title}" for level=1 (with pause after 章)
+        "{first}の{rest}節、{title}" for level>=2 with dot (e.g., "1の1節、")
+        "第{number}節、{title}" for level>=2 without dot
     """
     if level == 1:
-        return f"第{number}章 {title}"
+        return f"第{number}章、{title}"
     else:
-        return f"第{number}節 {title}"
+        # For section numbers with dots (e.g., "1.1"), convert to "X の Y 節" format
+        if "." in number:
+            parts = number.split(".", 1)
+            return f"{parts[0]}の{parts[1]}節、{title}"
+        else:
+            return f"第{number}節、{title}"
 
 
 def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
@@ -105,9 +113,12 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                 heading_number_map[title] = number
 
     content_items: list[ContentItem] = []
+    current_chapter_number: int | None = None
 
     def process_element(elem) -> None:
         """Recursively process an element and its children."""
+        nonlocal current_chapter_number
+
         # Skip metadata, toc, and front-matter sections
         if elem.tag in ("metadata", "toc", "front-matter"):
             return
@@ -116,6 +127,12 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
         if elem.tag == "chapter":
             title = elem.get("title", "")
             number = elem.get("number", "")
+            # Track current chapter number
+            if number:
+                try:
+                    current_chapter_number = int(number)
+                except ValueError:
+                    current_chapter_number = None
             if title:
                 formatted_text = format_heading_text(1, number, title) if number else title
                 marked_text = CHAPTER_MARKER + formatted_text
@@ -123,7 +140,8 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                 content_items.append(ContentItem(
                     item_type="heading",
                     text=marked_text,
-                    heading_info=heading_info
+                    heading_info=heading_info,
+                    chapter_number=current_chapter_number
                 ))
             # Process children of chapter
             for child in elem:
@@ -140,7 +158,8 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                 content_items.append(ContentItem(
                     item_type="heading",
                     text=marked_text,
-                    heading_info=heading_info
+                    heading_info=heading_info,
+                    chapter_number=current_chapter_number
                 ))
             # Process children of section
             for child in elem:
@@ -165,7 +184,8 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                     content_items.append(ContentItem(
                         item_type="heading",
                         text=marked_text,
-                        heading_info=heading_info
+                        heading_info=heading_info,
+                        chapter_number=current_chapter_number
                     ))
 
         # Process paragraphs
@@ -176,7 +196,8 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                     content_items.append(ContentItem(
                         item_type="paragraph",
                         text=text,
-                        heading_info=None
+                        heading_info=None,
+                        chapter_number=current_chapter_number
                     ))
 
         # Process lists
@@ -188,7 +209,8 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                         content_items.append(ContentItem(
                             item_type="list_item",
                             text=text,
-                            heading_info=None
+                            heading_info=None,
+                            chapter_number=current_chapter_number
                         ))
 
     # Process all children of the root element

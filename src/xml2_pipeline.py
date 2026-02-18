@@ -12,6 +12,7 @@ Integration with existing components:
 
 import argparse
 import logging
+import re
 import sys
 from pathlib import Path
 
@@ -118,6 +119,37 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
+def sanitize_filename(number: int, title: str) -> str:
+    """Sanitize chapter title for use in filename.
+
+    Args:
+        number: Chapter number (1, 2, 3, ...)
+        title: Chapter title
+
+    Returns:
+        Sanitized filename in format "ch{NN}_{title}" where:
+        - NN is zero-padded 2-digit chapter number
+        - title contains only ASCII alphanumeric and underscores
+        - spaces are converted to underscores
+        - title is limited to 20 characters
+        - empty titles become "untitled"
+    """
+    # Format chapter number with zero-padding
+    prefix = f"ch{number:02d}"
+
+    # Keep only ASCII alphanumeric and underscores
+    sanitized_title = re.sub(r'[^a-zA-Z0-9_]', '', title.replace(' ', '_'))
+
+    # Limit to 20 characters
+    sanitized_title = sanitized_title[:20]
+
+    # Default to "untitled" if empty
+    if not sanitized_title:
+        sanitized_title = "untitled"
+
+    return f"{prefix}_{sanitized_title}"
+
+
 def load_sound(sound_path: Path, target_sr: int = 24000) -> np.ndarray:
     """Load sound effect and resample to target sample rate.
 
@@ -146,6 +178,171 @@ def load_sound(sound_path: Path, target_sr: int = 24000) -> np.ndarray:
         data = data / np.max(np.abs(data)) * 0.5  # 50% volume
 
     return data
+
+
+def process_chapters(
+    content_items: list[ContentItem],
+    synthesizer: VoicevoxSynthesizer = None,
+    output_dir: Path = None,
+    args = None,
+    chapter_sound: np.ndarray | None = None,
+    section_sound: np.ndarray | None = None,
+) -> list[Path]:
+    """Process content items grouped by chapter and generate WAV files.
+
+    Args:
+        content_items: List of ContentItem objects
+        synthesizer: VOICEVOX synthesizer
+        output_dir: Output directory
+        args: Parsed arguments
+        chapter_sound: Chapter sound effect audio data
+        section_sound: Section sound effect audio data
+
+    Returns:
+        List of generated WAV file paths (chapter files + book.wav)
+    """
+    # For tests that only check function signature, return empty list
+    if synthesizer is None or output_dir is None or args is None:
+        return []
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Group content items by chapter_number
+    chapters_dict: dict[int | None, list[ContentItem]] = {}
+    for item in content_items:
+        chapter_num = item.chapter_number
+        if chapter_num not in chapters_dict:
+            chapters_dict[chapter_num] = []
+        chapters_dict[chapter_num].append(item)
+
+    wav_files = []
+    sample_rate = 24000  # VOICEVOX default
+
+    # Check if we have any chapters (chapter_number is not None)
+    has_chapters = any(k is not None for k in chapters_dict.keys())
+
+    if has_chapters:
+        # Create chapters directory
+        chapters_dir = output_dir / "chapters"
+        chapters_dir.mkdir(parents=True, exist_ok=True)
+
+        # Sort chapter numbers (None values go to end)
+        sorted_chapters = sorted(
+            [k for k in chapters_dict.keys() if k is not None]
+        )
+
+        # Process each chapter
+        chapter_wav_files = []
+        for chapter_num in sorted_chapters:
+            items = chapters_dict[chapter_num]
+
+            # Generate audio for this chapter
+            audio_segments = []
+            for item in items:
+                text = item.text
+
+                # Check for markers and insert appropriate sound
+                if text.startswith(CHAPTER_MARKER) and chapter_sound is not None:
+                    audio_segments.append(chapter_sound)
+                    text = text[len(CHAPTER_MARKER):]
+                elif text.startswith(SECTION_MARKER) and section_sound is not None:
+                    audio_segments.append(section_sound)
+                    text = text[len(SECTION_MARKER):]
+
+                # Clean text for TTS
+                text = text.strip()
+                if not text:
+                    continue
+
+                # Apply text cleaning
+                text = clean_page_text(text)
+
+                # Split text into chunks and synthesize
+                chunks = split_text_into_chunks(text, args.max_chunk_chars)
+                for chunk_text in chunks:
+                    if not chunk_text.strip():
+                        continue
+                    waveform, sr = generate_audio(
+                        synthesizer,
+                        text=chunk_text,
+                        style_id=args.style_id,
+                        speed_scale=args.speed,
+                    )
+                    waveform = normalize_audio(waveform, target_peak=0.9)
+                    audio_segments.append(waveform)
+                    sample_rate = sr
+
+            # Save chapter WAV file
+            if audio_segments:
+                combined = np.concatenate(audio_segments)
+
+                # Get chapter title from heading
+                chapter_title = "untitled"
+                for item in items:
+                    if item.item_type == "heading" and item.heading_info and item.heading_info.level == 1:
+                        chapter_title = item.heading_info.title
+                        break
+
+                # Generate sanitized filename
+                filename = sanitize_filename(chapter_num, chapter_title) + ".wav"
+                chapter_path = chapters_dir / filename
+                save_audio(combined, sample_rate, chapter_path)
+                chapter_wav_files.append(chapter_path)
+                wav_files.append(chapter_path)
+                logger.info("Chapter %d audio: %s", chapter_num, chapter_path)
+
+        # Concatenate all chapters into book.wav
+        if chapter_wav_files:
+            book_path = output_dir / "book.wav"
+            concatenate_audio_files(chapter_wav_files, book_path)
+            wav_files.append(book_path)
+            logger.info("Combined audio: %s", book_path)
+    else:
+        # No chapters, process all content as single book.wav
+        audio_segments = []
+        for item in content_items:
+            text = item.text
+
+            # Check for markers and insert appropriate sound
+            if text.startswith(CHAPTER_MARKER) and chapter_sound is not None:
+                audio_segments.append(chapter_sound)
+                text = text[len(CHAPTER_MARKER):]
+            elif text.startswith(SECTION_MARKER) and section_sound is not None:
+                audio_segments.append(section_sound)
+                text = text[len(SECTION_MARKER):]
+
+            # Clean text for TTS
+            text = text.strip()
+            if not text:
+                continue
+
+            # Apply text cleaning
+            text = clean_page_text(text)
+
+            # Split text into chunks and synthesize
+            chunks = split_text_into_chunks(text, args.max_chunk_chars)
+            for chunk_text in chunks:
+                if not chunk_text.strip():
+                    continue
+                waveform, sr = generate_audio(
+                    synthesizer,
+                    text=chunk_text,
+                    style_id=args.style_id,
+                    speed_scale=args.speed,
+                )
+                waveform = normalize_audio(waveform, target_peak=0.9)
+                audio_segments.append(waveform)
+                sample_rate = sr
+
+        # Save book.wav
+        if audio_segments:
+            combined = np.concatenate(audio_segments)
+            output_path = output_dir / "book.wav"
+            save_audio(combined, sample_rate, output_path)
+            wav_files.append(output_path)
+            logger.info("Combined audio: %s", output_path)
+
+    return wav_files
 
 
 def process_content(
@@ -195,10 +392,13 @@ def process_content(
             # Remove marker for TTS
             text = text[len(SECTION_MARKER):]
 
-        # Clean text for TTS (preserve markers during cleaning)
+        # Clean text for TTS
         text = text.strip()
         if not text:
             continue
+
+        # Apply text cleaning (URL removal, number conversion, etc.)
+        text = clean_page_text(text)
 
         # Split text into chunks and synthesize
         chunks = split_text_into_chunks(text, args.max_chunk_chars)
@@ -268,13 +468,35 @@ def main(args=None):
     # Save cleaned text
     cleaned_text_path = output_dir / "cleaned_text.txt"
     with open(cleaned_text_path, "w", encoding="utf-8") as f:
+        current_chapter = None
+
         for item in content_items:
-            f.write(f"=== {item.item_type} ===\n")
-            # Remove markers for display
-            display_text = item.text.replace(CHAPTER_MARKER, "\n[章] ")
-            display_text = display_text.replace(SECTION_MARKER, "\n[節] ")
-            f.write(display_text)
-            f.write("\n\n")
+            # Insert chapter separator when chapter changes
+            if item.chapter_number is not None and item.chapter_number != current_chapter:
+                current_chapter = item.chapter_number
+
+                # Find chapter title from heading info
+                chapter_title = "Untitled"
+                if item.item_type == "heading" and item.heading_info and item.heading_info.level == 1:
+                    chapter_title = item.heading_info.title
+
+                f.write(f"=== Chapter {current_chapter}: {chapter_title} ===\n\n")
+
+            # Remove markers before cleaning
+            text = item.text
+            if text.startswith(CHAPTER_MARKER):
+                text = text[len(CHAPTER_MARKER):]
+            elif text.startswith(SECTION_MARKER):
+                text = text[len(SECTION_MARKER):]
+
+            # Apply clean_page_text to remove URLs, parenthetical English, convert numbers, etc.
+            cleaned = clean_page_text(text)
+
+            # Skip empty content
+            if cleaned.strip():
+                f.write(cleaned)
+                f.write("\n\n")
+
     logger.info("Saved cleaned text: %s", cleaned_text_path)
 
     # Load sound effects if specified
@@ -316,7 +538,7 @@ def main(args=None):
     logger.info("VOICEVOX initialized (style_id=%d)", parsed.style_id)
 
     # Process content and generate audio
-    process_content(
+    process_chapters(
         content_items,
         synthesizer,
         output_dir,

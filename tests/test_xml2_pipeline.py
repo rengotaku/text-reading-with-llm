@@ -3,6 +3,9 @@
 Phase 4 RED Tests - US3: 音声パイプライン統合
 Tests for xml2_pipeline.py command-line interface and content processing.
 
+Phase 2 RED Tests - US1: テキストクリーニングの適用
+Tests for clean_page_text() integration in process_content().
+
 Target functions:
 - src/xml2_pipeline.py::parse_args()
 - src/xml2_pipeline.py::load_sound()
@@ -13,6 +16,7 @@ Test Fixture: tests/fixtures/sample_book2.xml
 """
 
 from pathlib import Path
+from unittest.mock import patch, MagicMock
 
 import numpy as np
 import pytest
@@ -564,6 +568,511 @@ class TestMainFunction:
 
 
 # =============================================================================
+# Phase 2 RED Tests - US1: テキストクリーニングの適用
+# =============================================================================
+
+
+class TestProcessContentAppliesCleanPageText:
+    """T007: process_content が clean_page_text() を呼び出すことを検証する。
+
+    US1 Acceptance Scenario:
+    - clean_page_text() が全テキストに適用される
+    - マーカー除去後、TTS生成前にクリーニングが行われる
+    """
+
+    def test_process_content_calls_clean_page_text(self):
+        """process_content は各コンテンツアイテムのテキストに clean_page_text() を適用する"""
+        from src.xml2_pipeline import process_content
+        from src.xml2_parser import ContentItem
+
+        content_items = [
+            ContentItem(
+                item_type="paragraph",
+                text="テスト段落テキスト",
+                heading_info=None,
+            ),
+        ]
+
+        # Mock synthesizer and args to go through the full processing path
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = (
+            np.zeros(2400, dtype=np.float32),
+            24000,
+        )
+
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+
+            with patch("src.xml2_pipeline.clean_page_text") as mock_clean:
+                mock_clean.return_value = "クリーニング済みテキスト"
+
+                with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                    mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+                    process_content(
+                        content_items,
+                        synthesizer=mock_synthesizer,
+                        output_dir=output_dir,
+                        args=mock_args,
+                        chapter_sound=None,
+                        section_sound=None,
+                    )
+
+                    # clean_page_text must be called at least once
+                    assert mock_clean.called, (
+                        "process_content は clean_page_text() を呼び出すべきだが、呼び出されていない"
+                    )
+
+    def test_process_content_applies_clean_page_text_to_each_item(self):
+        """process_content は複数のコンテンツアイテム全てに clean_page_text() を適用する"""
+        from src.xml2_pipeline import process_content
+        from src.xml2_parser import ContentItem
+
+        content_items = [
+            ContentItem(item_type="paragraph", text="段落1のテキスト", heading_info=None),
+            ContentItem(item_type="paragraph", text="段落2のテキスト", heading_info=None),
+            ContentItem(item_type="paragraph", text="段落3のテキスト", heading_info=None),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = (
+            np.zeros(2400, dtype=np.float32),
+            24000,
+        )
+
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+
+            with patch("src.xml2_pipeline.clean_page_text") as mock_clean:
+                mock_clean.side_effect = lambda text, **kwargs: text
+
+                with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                    mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+                    process_content(
+                        content_items,
+                        synthesizer=mock_synthesizer,
+                        output_dir=output_dir,
+                        args=mock_args,
+                        chapter_sound=None,
+                        section_sound=None,
+                    )
+
+                    # clean_page_text should be called for each non-empty item
+                    assert mock_clean.call_count >= 3, (
+                        f"clean_page_text は3回呼び出されるべきだが、{mock_clean.call_count}回しか呼び出されていない"
+                    )
+
+    def test_process_content_cleans_text_after_marker_removal(self):
+        """process_content はマーカー除去後にクリーニングを行う"""
+        from src.xml2_pipeline import process_content
+        from src.xml2_parser import ContentItem, CHAPTER_MARKER
+
+        content_items = [
+            ContentItem(
+                item_type="heading",
+                text=f"{CHAPTER_MARKER}第1章 テストの章",
+                heading_info=None,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = (
+            np.zeros(2400, dtype=np.float32),
+            24000,
+        )
+
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        chapter_sound = np.zeros(2400, dtype=np.float32)
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+
+            with patch("src.xml2_pipeline.clean_page_text") as mock_clean:
+                mock_clean.side_effect = lambda text, **kwargs: text
+
+                with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                    mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+                    process_content(
+                        content_items,
+                        synthesizer=mock_synthesizer,
+                        output_dir=output_dir,
+                        args=mock_args,
+                        chapter_sound=chapter_sound,
+                        section_sound=None,
+                    )
+
+                    # clean_page_text should be called without the marker
+                    if mock_clean.called:
+                        first_call_text = mock_clean.call_args_list[0][0][0]
+                        assert CHAPTER_MARKER not in first_call_text, (
+                            f"clean_page_text にマーカーが含まれてはいけない: {first_call_text!r}"
+                        )
+                    else:
+                        pytest.fail(
+                            "clean_page_text はマーカー除去後に呼び出されるべきだが、呼び出されていない"
+                        )
+
+
+class TestProcessContentRemovesUrl:
+    """T008: process_content が URL を除去することを検証する。
+
+    US1 Acceptance Scenario 1:
+    - Given URL を含む paragraph 要素
+    - When xml2_pipeline で処理する
+    - Then URL は読み上げられない
+    """
+
+    def test_url_not_passed_to_tts(self):
+        """URL を含むテキストが TTS に渡される前に URL が除去される"""
+        from src.xml2_pipeline import process_content
+        from src.xml2_parser import ContentItem
+
+        url_text = "詳細は https://example.com/path/to/page を参照してください。"
+        content_items = [
+            ContentItem(item_type="paragraph", text=url_text, heading_info=None),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = (
+            np.zeros(2400, dtype=np.float32),
+            24000,
+        )
+
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        tts_texts = []
+        original_generate = None
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+
+            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+                process_content(
+                    content_items,
+                    synthesizer=mock_synthesizer,
+                    output_dir=output_dir,
+                    args=mock_args,
+                    chapter_sound=None,
+                    section_sound=None,
+                )
+
+                # Collect all text passed to generate_audio
+                for call in mock_gen.call_args_list:
+                    _, kwargs = call
+                    if "text" in kwargs:
+                        tts_texts.append(kwargs["text"])
+                    elif len(call[0]) > 1:
+                        tts_texts.append(call[0][1])
+
+        # URL should not appear in any TTS text
+        all_tts_text = " ".join(tts_texts)
+        assert "https://example.com" not in all_tts_text, (
+            f"TTS テキストに URL が含まれている: {all_tts_text!r}"
+        )
+        assert "example.com" not in all_tts_text, (
+            f"TTS テキストにドメイン名が含まれている: {all_tts_text!r}"
+        )
+
+    def test_http_url_removed(self):
+        """http:// で始まる URL も除去される"""
+        from src.xml2_pipeline import process_content
+        from src.xml2_parser import ContentItem
+
+        content_items = [
+            ContentItem(
+                item_type="paragraph",
+                text="リンク先は http://example.org/index.html です。",
+                heading_info=None,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = (
+            np.zeros(2400, dtype=np.float32),
+            24000,
+        )
+
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+
+            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+                process_content(
+                    content_items,
+                    synthesizer=mock_synthesizer,
+                    output_dir=output_dir,
+                    args=mock_args,
+                    chapter_sound=None,
+                    section_sound=None,
+                )
+
+                all_tts_text = " ".join(
+                    call.kwargs.get("text", call.args[1] if len(call.args) > 1 else "")
+                    for call in mock_gen.call_args_list
+                )
+
+        assert "http://example.org" not in all_tts_text, (
+            f"TTS テキストに http URL が含まれている: {all_tts_text!r}"
+        )
+
+
+class TestProcessContentRemovesParentheticalEnglish:
+    """T009: process_content が括弧内英語を除去することを検証する。
+
+    US1 Acceptance Scenario 2:
+    - Given 括弧内英語 (English) を含むテキスト
+    - When 処理する
+    - Then 括弧内英語は読み上げられない
+    """
+
+    def test_parenthetical_english_removed(self):
+        """括弧内の英語テキストが除去される"""
+        from src.xml2_pipeline import process_content
+        from src.xml2_parser import ContentItem
+
+        content_items = [
+            ContentItem(
+                item_type="paragraph",
+                text="信頼性 (Reliability) は重要な概念です。",
+                heading_info=None,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = (
+            np.zeros(2400, dtype=np.float32),
+            24000,
+        )
+
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+
+            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+                process_content(
+                    content_items,
+                    synthesizer=mock_synthesizer,
+                    output_dir=output_dir,
+                    args=mock_args,
+                    chapter_sound=None,
+                    section_sound=None,
+                )
+
+                all_tts_text = " ".join(
+                    call.kwargs.get("text", call.args[1] if len(call.args) > 1 else "")
+                    for call in mock_gen.call_args_list
+                )
+
+        assert "Reliability" not in all_tts_text, (
+            f"TTS テキストに括弧内英語が含まれている: {all_tts_text!r}"
+        )
+        assert "(Reliability)" not in all_tts_text, (
+            f"TTS テキストに括弧付き英語が含まれている: {all_tts_text!r}"
+        )
+
+    def test_multiple_parenthetical_english_removed(self):
+        """複数の括弧内英語が全て除去される"""
+        from src.xml2_pipeline import process_content
+        from src.xml2_parser import ContentItem
+
+        content_items = [
+            ContentItem(
+                item_type="paragraph",
+                text="可用性 (Availability) と拡張性 (Scalability) について説明します。",
+                heading_info=None,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = (
+            np.zeros(2400, dtype=np.float32),
+            24000,
+        )
+
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+
+            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+                process_content(
+                    content_items,
+                    synthesizer=mock_synthesizer,
+                    output_dir=output_dir,
+                    args=mock_args,
+                    chapter_sound=None,
+                    section_sound=None,
+                )
+
+                all_tts_text = " ".join(
+                    call.kwargs.get("text", call.args[1] if len(call.args) > 1 else "")
+                    for call in mock_gen.call_args_list
+                )
+
+        assert "Availability" not in all_tts_text, (
+            f"TTS テキストに 'Availability' が含まれている: {all_tts_text!r}"
+        )
+        assert "Scalability" not in all_tts_text, (
+            f"TTS テキストに 'Scalability' が含まれている: {all_tts_text!r}"
+        )
+
+
+class TestProcessContentConvertsNumbersToKana:
+    """T010: process_content が数字をカナに変換することを検証する。
+
+    US1 Acceptance Scenario 5:
+    - Given 数字「123」を含むテキスト
+    - When 処理する
+    - Then 「ひゃくにじゅうさん」と読み上げられる
+    """
+
+    def test_numbers_converted_to_kana(self):
+        """数字がカナに変換されて TTS に渡される"""
+        from src.xml2_pipeline import process_content
+        from src.xml2_parser import ContentItem
+
+        content_items = [
+            ContentItem(
+                item_type="paragraph",
+                text="合計は123個です。",
+                heading_info=None,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = (
+            np.zeros(2400, dtype=np.float32),
+            24000,
+        )
+
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+
+            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+                process_content(
+                    content_items,
+                    synthesizer=mock_synthesizer,
+                    output_dir=output_dir,
+                    args=mock_args,
+                    chapter_sound=None,
+                    section_sound=None,
+                )
+
+                all_tts_text = " ".join(
+                    call.kwargs.get("text", call.args[1] if len(call.args) > 1 else "")
+                    for call in mock_gen.call_args_list
+                )
+
+        # 数字 "123" はそのままの形で TTS に渡されてはいけない
+        # clean_page_text() が適用されれば、カナに変換される
+        assert "123" not in all_tts_text, (
+            f"TTS テキストに生の数字 '123' が含まれている（カナ変換されるべき）: {all_tts_text!r}"
+        )
+
+    def test_year_number_converted(self):
+        """年号の数字もカナに変換される"""
+        from src.xml2_pipeline import process_content
+        from src.xml2_parser import ContentItem
+
+        content_items = [
+            ContentItem(
+                item_type="paragraph",
+                text="2024年に発表されました。",
+                heading_info=None,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = (
+            np.zeros(2400, dtype=np.float32),
+            24000,
+        )
+
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+
+            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+                process_content(
+                    content_items,
+                    synthesizer=mock_synthesizer,
+                    output_dir=output_dir,
+                    args=mock_args,
+                    chapter_sound=None,
+                    section_sound=None,
+                )
+
+                all_tts_text = " ".join(
+                    call.kwargs.get("text", call.args[1] if len(call.args) > 1 else "")
+                    for call in mock_gen.call_args_list
+                )
+
+        assert "2024" not in all_tts_text, (
+            f"TTS テキストに生の数字 '2024' が含まれている（カナ変換されるべき）: {all_tts_text!r}"
+        )
+
+
+# =============================================================================
 # Edge Cases
 # =============================================================================
 
@@ -595,3 +1104,972 @@ class TestEdgeCases:
 
         assert args.input == "sample/book2.xml"
         assert args.chapter_sound == "./sounds/chapter.mp3"
+
+
+# =============================================================================
+# Phase 3 RED Tests - US2: チャプター単位の分割出力
+# =============================================================================
+
+
+# --- T022: test_sanitize_filename ---
+
+
+class TestSanitizeFilename:
+    """T022: sanitize_filename がファイル名をサニタイズすることを検証する。
+
+    US2 要件 (FR-003):
+    - ch{NN}_{sanitized_title}.wav 形式のファイル名を生成
+    - 半角英数字とアンダースコアのみ許可
+    - 日本語タイトルは除去
+    - 空の場合は "untitled"
+    - 最大20文字
+    """
+
+    def test_sanitize_filename_function_exists(self):
+        """sanitize_filename 関数が存在する"""
+        from src.xml2_pipeline import sanitize_filename
+
+        assert callable(sanitize_filename), (
+            "sanitize_filename は呼び出し可能な関数であるべき"
+        )
+
+    def test_sanitize_filename_english_title(self):
+        """英語タイトルはそのままサニタイズされる"""
+        from src.xml2_pipeline import sanitize_filename
+
+        result = sanitize_filename(1, "Introduction")
+
+        assert result == "ch01_Introduction", (
+            f"英語タイトルのサニタイズ結果は 'ch01_Introduction' であるべきだが、'{result}' が返された"
+        )
+
+    def test_sanitize_filename_japanese_title(self):
+        """日本語タイトルは除去される（半角英数字のみ残る）"""
+        from src.xml2_pipeline import sanitize_filename
+
+        result = sanitize_filename(2, "はじめに")
+
+        # 日本語のみの場合、英数字が残らないので untitled になる
+        assert result == "ch02_untitled", (
+            f"日本語のみのタイトルは 'ch02_untitled' であるべきだが、'{result}' が返された"
+        )
+
+    def test_sanitize_filename_mixed_title(self):
+        """日本語と英語の混合タイトル"""
+        from src.xml2_pipeline import sanitize_filename
+
+        result = sanitize_filename(3, "Python入門")
+
+        assert result == "ch03_Python", (
+            f"混合タイトルのサニタイズ結果は 'ch03_Python' であるべきだが、'{result}' が返された"
+        )
+
+    def test_sanitize_filename_empty_title(self):
+        """空タイトルは untitled になる"""
+        from src.xml2_pipeline import sanitize_filename
+
+        result = sanitize_filename(1, "")
+
+        assert result == "ch01_untitled", (
+            f"空タイトルは 'ch01_untitled' であるべきだが、'{result}' が返された"
+        )
+
+    def test_sanitize_filename_special_characters(self):
+        """特殊文字は除去される"""
+        from src.xml2_pipeline import sanitize_filename
+
+        result = sanitize_filename(1, "Hello/World:Test?")
+
+        # /, :, ? は除去、英数字のみ残る
+        assert "ch01_" in result, (
+            f"特殊文字を含むタイトルのサニタイズ結果にはプレフィックス 'ch01_' が含まれるべきだが、'{result}' が返された"
+        )
+        assert "/" not in result, f"'/' が含まれてはいけない: '{result}'"
+        assert ":" not in result, f"':' が含まれてはいけない: '{result}'"
+        assert "?" not in result, f"'?' が含まれてはいけない: '{result}'"
+
+    def test_sanitize_filename_number_zero_padded(self):
+        """章番号はゼロ埋め2桁"""
+        from src.xml2_pipeline import sanitize_filename
+
+        result = sanitize_filename(5, "Test")
+
+        assert result.startswith("ch05_"), (
+            f"章番号 5 は 'ch05_' で始まるべきだが、'{result}' が返された"
+        )
+
+    def test_sanitize_filename_large_chapter_number(self):
+        """2桁以上の章番号"""
+        from src.xml2_pipeline import sanitize_filename
+
+        result = sanitize_filename(12, "Test")
+
+        assert result.startswith("ch12_"), (
+            f"章番号 12 は 'ch12_' で始まるべきだが、'{result}' が返された"
+        )
+
+    def test_sanitize_filename_max_length(self):
+        """サニタイズ後のタイトル部分が最大20文字"""
+        from src.xml2_pipeline import sanitize_filename
+
+        long_title = "A" * 50  # 50文字の英語タイトル
+        result = sanitize_filename(1, long_title)
+
+        # ch01_ (5文字) + 最大20文字 = 25文字以下
+        title_part = result[5:]  # "ch01_" を除いた部分
+        assert len(title_part) <= 20, (
+            f"タイトル部分は最大20文字であるべきだが、{len(title_part)}文字: '{result}'"
+        )
+
+    def test_sanitize_filename_spaces_to_underscores(self):
+        """スペースはアンダースコアに変換される"""
+        from src.xml2_pipeline import sanitize_filename
+
+        result = sanitize_filename(1, "Hello World")
+
+        assert " " not in result, (
+            f"スペースが含まれてはいけない: '{result}'"
+        )
+        assert "Hello" in result and "World" in result, (
+            f"'Hello' と 'World' が含まれるべき: '{result}'"
+        )
+
+
+# --- T023: test_process_chapters_creates_chapter_files ---
+
+
+class TestProcessChaptersCreatesChapterFiles:
+    """T023: process_chapters が chapter ごとの WAV ファイルを chapters/ ディレクトリに生成することを検証する。
+
+    US2 要件 (FR-002):
+    - chapter 要素ごとに個別の WAV ファイルを chapters/ ディレクトリに出力
+    - ファイル名は ch{NN}_{sanitized_title}.wav 形式
+    """
+
+    def test_process_chapters_function_exists(self):
+        """process_chapters 関数が存在する"""
+        from src.xml2_pipeline import process_chapters
+
+        assert callable(process_chapters), (
+            "process_chapters は呼び出し可能な関数であるべき"
+        )
+
+    def test_process_chapters_creates_chapters_directory(self, tmp_path):
+        """process_chapters が chapters/ ディレクトリを作成する"""
+        from src.xml2_pipeline import process_chapters
+        from src.xml2_parser import ContentItem, HeadingInfo, CHAPTER_MARKER
+
+        content_items = [
+            ContentItem(
+                item_type="heading",
+                text=f"{CHAPTER_MARKER}第1章 Introduction",
+                heading_info=HeadingInfo(level=1, number="1", title="Introduction", read_aloud=True),
+                chapter_number=1,
+            ),
+            ContentItem(
+                item_type="paragraph",
+                text="First chapter content.",
+                heading_info=None,
+                chapter_number=1,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
+
+        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            process_chapters(
+                content_items,
+                synthesizer=mock_synthesizer,
+                output_dir=output_dir,
+                args=mock_args,
+                chapter_sound=None,
+                section_sound=None,
+            )
+
+        chapters_dir = output_dir / "chapters"
+        assert chapters_dir.exists(), (
+            f"chapters/ ディレクトリが作成されるべきだが、存在しない: {chapters_dir}"
+        )
+
+    def test_process_chapters_creates_chapter_wav_files(self, tmp_path):
+        """process_chapters が chapter ごとの WAV ファイルを作成する"""
+        from src.xml2_pipeline import process_chapters
+        from src.xml2_parser import ContentItem, HeadingInfo, CHAPTER_MARKER
+
+        content_items = [
+            ContentItem(
+                item_type="heading",
+                text=f"{CHAPTER_MARKER}第1章 First",
+                heading_info=HeadingInfo(level=1, number="1", title="First", read_aloud=True),
+                chapter_number=1,
+            ),
+            ContentItem(
+                item_type="paragraph",
+                text="Chapter 1 content.",
+                heading_info=None,
+                chapter_number=1,
+            ),
+            ContentItem(
+                item_type="heading",
+                text=f"{CHAPTER_MARKER}第2章 Second",
+                heading_info=HeadingInfo(level=1, number="2", title="Second", read_aloud=True),
+                chapter_number=2,
+            ),
+            ContentItem(
+                item_type="paragraph",
+                text="Chapter 2 content.",
+                heading_info=None,
+                chapter_number=2,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
+
+        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            process_chapters(
+                content_items,
+                synthesizer=mock_synthesizer,
+                output_dir=output_dir,
+                args=mock_args,
+                chapter_sound=None,
+                section_sound=None,
+            )
+
+        chapters_dir = output_dir / "chapters"
+        wav_files = sorted(chapters_dir.glob("*.wav"))
+
+        assert len(wav_files) == 2, (
+            f"2つの chapter WAV ファイルが作成されるべきだが、{len(wav_files)} 個が見つかった: {wav_files}"
+        )
+
+    def test_process_chapters_filename_format(self, tmp_path):
+        """chapter WAV ファイル名が ch{NN}_{title}.wav 形式である"""
+        from src.xml2_pipeline import process_chapters
+        from src.xml2_parser import ContentItem, HeadingInfo, CHAPTER_MARKER
+
+        content_items = [
+            ContentItem(
+                item_type="heading",
+                text=f"{CHAPTER_MARKER}第1章 Introduction",
+                heading_info=HeadingInfo(level=1, number="1", title="Introduction", read_aloud=True),
+                chapter_number=1,
+            ),
+            ContentItem(
+                item_type="paragraph",
+                text="Content here.",
+                heading_info=None,
+                chapter_number=1,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
+
+        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            process_chapters(
+                content_items,
+                synthesizer=mock_synthesizer,
+                output_dir=output_dir,
+                args=mock_args,
+                chapter_sound=None,
+                section_sound=None,
+            )
+
+        chapters_dir = output_dir / "chapters"
+        wav_files = list(chapters_dir.glob("*.wav"))
+
+        assert len(wav_files) >= 1, "少なくとも1つの WAV ファイルが作成されるべき"
+        filename = wav_files[0].stem  # 拡張子なし
+        assert filename.startswith("ch01_"), (
+            f"ファイル名は 'ch01_' で始まるべきだが、'{filename}' が返された"
+        )
+
+    def test_process_chapters_three_chapters(self, tmp_path):
+        """3つの chapter を処理した場合に3つの WAV ファイルが生成される"""
+        from src.xml2_pipeline import process_chapters
+        from src.xml2_parser import ContentItem, HeadingInfo, CHAPTER_MARKER
+
+        content_items = []
+        for ch_num in range(1, 4):
+            content_items.extend([
+                ContentItem(
+                    item_type="heading",
+                    text=f"{CHAPTER_MARKER}第{ch_num}章 Chapter{ch_num}",
+                    heading_info=HeadingInfo(level=1, number=str(ch_num), title=f"Chapter{ch_num}", read_aloud=True),
+                    chapter_number=ch_num,
+                ),
+                ContentItem(
+                    item_type="paragraph",
+                    text=f"Content of chapter {ch_num}.",
+                    heading_info=None,
+                    chapter_number=ch_num,
+                ),
+            ])
+
+        mock_synthesizer = MagicMock()
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
+
+        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            process_chapters(
+                content_items,
+                synthesizer=mock_synthesizer,
+                output_dir=output_dir,
+                args=mock_args,
+                chapter_sound=None,
+                section_sound=None,
+            )
+
+        chapters_dir = output_dir / "chapters"
+        wav_files = sorted(chapters_dir.glob("*.wav"))
+
+        assert len(wav_files) == 3, (
+            f"3つの chapter WAV ファイルが作成されるべきだが、{len(wav_files)} 個が見つかった: "
+            f"{[f.name for f in wav_files]}"
+        )
+
+
+# --- T024: test_process_chapters_creates_book_wav ---
+
+
+class TestProcessChaptersCreatesBookWav:
+    """T024: process_chapters が全 chapter を結合した book.wav を生成することを検証する。
+
+    US2 要件 (FR-004):
+    - 全 chapter を結合した book.wav も生成される
+    """
+
+    def test_process_chapters_creates_book_wav(self, tmp_path):
+        """process_chapters が book.wav を生成する"""
+        from src.xml2_pipeline import process_chapters
+        from src.xml2_parser import ContentItem, HeadingInfo, CHAPTER_MARKER
+
+        content_items = [
+            ContentItem(
+                item_type="heading",
+                text=f"{CHAPTER_MARKER}第1章 First",
+                heading_info=HeadingInfo(level=1, number="1", title="First", read_aloud=True),
+                chapter_number=1,
+            ),
+            ContentItem(
+                item_type="paragraph",
+                text="Chapter 1 content.",
+                heading_info=None,
+                chapter_number=1,
+            ),
+            ContentItem(
+                item_type="heading",
+                text=f"{CHAPTER_MARKER}第2章 Second",
+                heading_info=HeadingInfo(level=1, number="2", title="Second", read_aloud=True),
+                chapter_number=2,
+            ),
+            ContentItem(
+                item_type="paragraph",
+                text="Chapter 2 content.",
+                heading_info=None,
+                chapter_number=2,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
+
+        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            process_chapters(
+                content_items,
+                synthesizer=mock_synthesizer,
+                output_dir=output_dir,
+                args=mock_args,
+                chapter_sound=None,
+                section_sound=None,
+            )
+
+        book_wav = output_dir / "book.wav"
+        assert book_wav.exists(), (
+            f"book.wav が生成されるべきだが、存在しない: {book_wav}"
+        )
+
+    def test_process_chapters_book_wav_and_chapter_files_coexist(self, tmp_path):
+        """book.wav と chapters/ の WAV ファイルが両方存在する"""
+        from src.xml2_pipeline import process_chapters
+        from src.xml2_parser import ContentItem, HeadingInfo, CHAPTER_MARKER
+
+        content_items = [
+            ContentItem(
+                item_type="heading",
+                text=f"{CHAPTER_MARKER}第1章 Only",
+                heading_info=HeadingInfo(level=1, number="1", title="Only", read_aloud=True),
+                chapter_number=1,
+            ),
+            ContentItem(
+                item_type="paragraph",
+                text="Solo chapter.",
+                heading_info=None,
+                chapter_number=1,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
+
+        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            process_chapters(
+                content_items,
+                synthesizer=mock_synthesizer,
+                output_dir=output_dir,
+                args=mock_args,
+                chapter_sound=None,
+                section_sound=None,
+            )
+
+        book_wav = output_dir / "book.wav"
+        chapters_dir = output_dir / "chapters"
+
+        assert book_wav.exists(), "book.wav が存在するべき"
+        assert chapters_dir.exists(), "chapters/ ディレクトリが存在するべき"
+        assert len(list(chapters_dir.glob("*.wav"))) >= 1, (
+            "chapters/ に少なくとも1つの WAV ファイルが存在するべき"
+        )
+
+
+# --- T025: test_process_content_without_chapters_creates_book_wav ---
+
+
+# =============================================================================
+# Phase 4 RED Tests - US3: cleaned_text.txt の品質向上
+# =============================================================================
+
+
+class TestCleanedTextFileContainsCleanedContent:
+    """T039: cleaned_text.txt に clean_page_text() 適用済みテキストが出力されることを検証する。
+
+    US3 要件 (FR-005):
+    - cleaned_text.txt にクリーニング済みテキストを出力
+    - URL、括弧内英語が除去されている
+    - 数字がカナに変換されている
+    """
+
+    def test_cleaned_text_does_not_contain_url(self, tmp_path):
+        """cleaned_text.txt に URL が含まれていないことを確認する"""
+        from src.xml2_pipeline import main
+        from src.xml2_parser import CHAPTER_MARKER
+
+        # Create a test XML with URL-containing text
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <chapter number="1" title="Introduction">
+    <paragraph>詳細は https://example.com/path を参照してください。</paragraph>
+  </chapter>
+</book>"""
+        xml_path = tmp_path / "test_book.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
+        output_dir = tmp_path / "output"
+
+        with patch("src.xml2_pipeline.init_for_content"), \
+             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"), \
+             patch("src.xml2_pipeline.VoicevoxConfig"), \
+             patch("src.xml2_pipeline.VoicevoxSynthesizer") as mock_synth_cls, \
+             patch("src.xml2_pipeline.generate_audio") as mock_gen, \
+             patch("src.xml2_pipeline.save_audio"), \
+             patch("src.xml2_pipeline.concatenate_audio_files"):
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            main([
+                "--input", str(xml_path),
+                "--output", str(output_dir),
+                "--chapter-sound", "",
+                "--section-sound", "",
+            ])
+
+        # Find cleaned_text.txt in output
+        cleaned_text_files = list(output_dir.rglob("cleaned_text.txt"))
+        assert len(cleaned_text_files) >= 1, (
+            "cleaned_text.txt が生成されるべき"
+        )
+
+        content = cleaned_text_files[0].read_text(encoding="utf-8")
+        assert "https://example.com" not in content, (
+            f"cleaned_text.txt に URL が含まれている（clean_page_text() が適用されるべき）: {content!r}"
+        )
+        assert "example.com" not in content, (
+            f"cleaned_text.txt にドメイン名が含まれている: {content!r}"
+        )
+
+    def test_cleaned_text_does_not_contain_parenthetical_english(self, tmp_path):
+        """cleaned_text.txt に括弧内英語が含まれていないことを確認する"""
+        from src.xml2_pipeline import main
+
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <chapter number="1" title="Basics">
+    <paragraph>信頼性 (Reliability) は重要です。</paragraph>
+  </chapter>
+</book>"""
+        xml_path = tmp_path / "test_book.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
+        output_dir = tmp_path / "output"
+
+        with patch("src.xml2_pipeline.init_for_content"), \
+             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"), \
+             patch("src.xml2_pipeline.VoicevoxConfig"), \
+             patch("src.xml2_pipeline.VoicevoxSynthesizer") as mock_synth_cls, \
+             patch("src.xml2_pipeline.generate_audio") as mock_gen, \
+             patch("src.xml2_pipeline.save_audio"), \
+             patch("src.xml2_pipeline.concatenate_audio_files"):
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            main([
+                "--input", str(xml_path),
+                "--output", str(output_dir),
+                "--chapter-sound", "",
+                "--section-sound", "",
+            ])
+
+        cleaned_text_files = list(output_dir.rglob("cleaned_text.txt"))
+        assert len(cleaned_text_files) >= 1, "cleaned_text.txt が生成されるべき"
+
+        content = cleaned_text_files[0].read_text(encoding="utf-8")
+        assert "(Reliability)" not in content, (
+            f"cleaned_text.txt に括弧内英語が含まれている（clean_page_text() が適用されるべき）: {content!r}"
+        )
+
+    def test_cleaned_text_numbers_converted_to_kana(self, tmp_path):
+        """cleaned_text.txt の数字がカナに変換されていることを確認する"""
+        from src.xml2_pipeline import main
+
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <chapter number="1" title="Numbers">
+    <paragraph>合計は123個です。</paragraph>
+  </chapter>
+</book>"""
+        xml_path = tmp_path / "test_book.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
+        output_dir = tmp_path / "output"
+
+        with patch("src.xml2_pipeline.init_for_content"), \
+             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"), \
+             patch("src.xml2_pipeline.VoicevoxConfig"), \
+             patch("src.xml2_pipeline.VoicevoxSynthesizer") as mock_synth_cls, \
+             patch("src.xml2_pipeline.generate_audio") as mock_gen, \
+             patch("src.xml2_pipeline.save_audio"), \
+             patch("src.xml2_pipeline.concatenate_audio_files"):
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            main([
+                "--input", str(xml_path),
+                "--output", str(output_dir),
+                "--chapter-sound", "",
+                "--section-sound", "",
+            ])
+
+        cleaned_text_files = list(output_dir.rglob("cleaned_text.txt"))
+        assert len(cleaned_text_files) >= 1, "cleaned_text.txt が生成されるべき"
+
+        content = cleaned_text_files[0].read_text(encoding="utf-8")
+        assert "123" not in content, (
+            f"cleaned_text.txt に生の数字 '123' が含まれている（カナ変換されるべき）: {content!r}"
+        )
+
+    def test_cleaned_text_isbn_removed(self, tmp_path):
+        """cleaned_text.txt に ISBN が含まれていないことを確認する"""
+        from src.xml2_pipeline import main
+
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <chapter number="1" title="References">
+    <paragraph>参考文献 ISBN978-4-87311-778-2 を参照。</paragraph>
+  </chapter>
+</book>"""
+        xml_path = tmp_path / "test_book.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
+        output_dir = tmp_path / "output"
+
+        with patch("src.xml2_pipeline.init_for_content"), \
+             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"), \
+             patch("src.xml2_pipeline.VoicevoxConfig"), \
+             patch("src.xml2_pipeline.VoicevoxSynthesizer") as mock_synth_cls, \
+             patch("src.xml2_pipeline.generate_audio") as mock_gen, \
+             patch("src.xml2_pipeline.save_audio"), \
+             patch("src.xml2_pipeline.concatenate_audio_files"):
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            main([
+                "--input", str(xml_path),
+                "--output", str(output_dir),
+                "--chapter-sound", "",
+                "--section-sound", "",
+            ])
+
+        cleaned_text_files = list(output_dir.rglob("cleaned_text.txt"))
+        assert len(cleaned_text_files) >= 1, "cleaned_text.txt が生成されるべき"
+
+        content = cleaned_text_files[0].read_text(encoding="utf-8")
+        assert "ISBN" not in content, (
+            f"cleaned_text.txt に ISBN が含まれている（clean_page_text() が適用されるべき）: {content!r}"
+        )
+
+
+class TestCleanedTextFileHasChapterMarkers:
+    """T040: cleaned_text.txt に章区切りマーカーが含まれていることを検証する。
+
+    US3 要件 (spec.md Acceptance Scenario 2):
+    - 見出し要素が「第N章」「第N.N節」形式で整形されている
+    - chapter 区切りが識別できる形式で出力されている
+    """
+
+    def test_cleaned_text_has_chapter_separator_format(self, tmp_path):
+        """cleaned_text.txt に === Chapter N: Title === 形式の章区切りが含まれる"""
+        from src.xml2_pipeline import main
+
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <chapter number="1" title="First Chapter">
+    <paragraph>最初の章の内容。</paragraph>
+  </chapter>
+  <chapter number="2" title="Second Chapter">
+    <paragraph>二番目の章の内容。</paragraph>
+  </chapter>
+</book>"""
+        xml_path = tmp_path / "test_book.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
+        output_dir = tmp_path / "output"
+
+        with patch("src.xml2_pipeline.init_for_content"), \
+             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"), \
+             patch("src.xml2_pipeline.VoicevoxConfig"), \
+             patch("src.xml2_pipeline.VoicevoxSynthesizer") as mock_synth_cls, \
+             patch("src.xml2_pipeline.generate_audio") as mock_gen, \
+             patch("src.xml2_pipeline.save_audio"), \
+             patch("src.xml2_pipeline.concatenate_audio_files"):
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            main([
+                "--input", str(xml_path),
+                "--output", str(output_dir),
+                "--chapter-sound", "",
+                "--section-sound", "",
+            ])
+
+        cleaned_text_files = list(output_dir.rglob("cleaned_text.txt"))
+        assert len(cleaned_text_files) >= 1, "cleaned_text.txt が生成されるべき"
+
+        content = cleaned_text_files[0].read_text(encoding="utf-8")
+
+        # === Chapter N: Title === 形式の区切りが含まれるべき
+        assert "=== Chapter 1:" in content or "=== 第1章:" in content, (
+            f"cleaned_text.txt に '=== Chapter 1:' 形式の章区切りが含まれるべき: {content!r}"
+        )
+        assert "=== Chapter 2:" in content or "=== 第2章:" in content, (
+            f"cleaned_text.txt に '=== Chapter 2:' 形式の章区切りが含まれるべき: {content!r}"
+        )
+
+    def test_cleaned_text_chapter_separator_contains_title(self, tmp_path):
+        """cleaned_text.txt の章区切り行にタイトルが含まれる（=== 形式）"""
+        from src.xml2_pipeline import main
+
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <chapter number="1" title="Introduction">
+    <paragraph>導入テキスト。</paragraph>
+  </chapter>
+</book>"""
+        xml_path = tmp_path / "test_book.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
+        output_dir = tmp_path / "output"
+
+        with patch("src.xml2_pipeline.init_for_content"), \
+             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"), \
+             patch("src.xml2_pipeline.VoicevoxConfig"), \
+             patch("src.xml2_pipeline.VoicevoxSynthesizer") as mock_synth_cls, \
+             patch("src.xml2_pipeline.generate_audio") as mock_gen, \
+             patch("src.xml2_pipeline.save_audio"), \
+             patch("src.xml2_pipeline.concatenate_audio_files"):
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            main([
+                "--input", str(xml_path),
+                "--output", str(output_dir),
+                "--chapter-sound", "",
+                "--section-sound", "",
+            ])
+
+        cleaned_text_files = list(output_dir.rglob("cleaned_text.txt"))
+        assert len(cleaned_text_files) >= 1, "cleaned_text.txt が生成されるべき"
+
+        content = cleaned_text_files[0].read_text(encoding="utf-8")
+
+        # === Chapter 1: Introduction === のような形式の行が含まれるべき
+        lines = content.split("\n")
+        has_separator_with_title = any(
+            "===" in line and "Introduction" in line
+            for line in lines
+        )
+        assert has_separator_with_title, (
+            f"cleaned_text.txt に '=== ... Introduction ===' 形式の章区切り行が含まれるべき: {content!r}"
+        )
+
+    def test_cleaned_text_paragraph_text_is_cleaned(self, tmp_path):
+        """cleaned_text.txt の段落テキストに clean_page_text() が適用されている"""
+        from src.xml2_pipeline import main
+
+        # URL と括弧英語と数字を含むテキスト
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <chapter number="1" title="Mixed">
+    <paragraph>詳細は https://example.com を参照。可用性 (Availability) は100パーセント。</paragraph>
+  </chapter>
+</book>"""
+        xml_path = tmp_path / "test_book.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
+        output_dir = tmp_path / "output"
+
+        with patch("src.xml2_pipeline.init_for_content"), \
+             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"), \
+             patch("src.xml2_pipeline.VoicevoxConfig"), \
+             patch("src.xml2_pipeline.VoicevoxSynthesizer") as mock_synth_cls, \
+             patch("src.xml2_pipeline.generate_audio") as mock_gen, \
+             patch("src.xml2_pipeline.save_audio"), \
+             patch("src.xml2_pipeline.concatenate_audio_files"):
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            main([
+                "--input", str(xml_path),
+                "--output", str(output_dir),
+                "--chapter-sound", "",
+                "--section-sound", "",
+            ])
+
+        cleaned_text_files = list(output_dir.rglob("cleaned_text.txt"))
+        assert len(cleaned_text_files) >= 1, "cleaned_text.txt が生成されるべき"
+
+        content = cleaned_text_files[0].read_text(encoding="utf-8")
+
+        # URL、括弧英語、生数字が全て除去/変換されているべき
+        assert "https://example.com" not in content, (
+            f"cleaned_text.txt に URL が含まれている: {content!r}"
+        )
+        assert "(Availability)" not in content, (
+            f"cleaned_text.txt に括弧英語が含まれている: {content!r}"
+        )
+        assert "100" not in content, (
+            f"cleaned_text.txt に生の数字 '100' が含まれている: {content!r}"
+        )
+
+    def test_cleaned_text_no_item_type_labels(self, tmp_path):
+        """cleaned_text.txt に '=== paragraph ===' のような item_type ラベルが含まれない（クリーニング後の形式を使用）"""
+        from src.xml2_pipeline import main
+
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <chapter number="1" title="Test">
+    <paragraph>テスト段落。</paragraph>
+  </chapter>
+</book>"""
+        xml_path = tmp_path / "test_book.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
+        output_dir = tmp_path / "output"
+
+        with patch("src.xml2_pipeline.init_for_content"), \
+             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"), \
+             patch("src.xml2_pipeline.VoicevoxConfig"), \
+             patch("src.xml2_pipeline.VoicevoxSynthesizer") as mock_synth_cls, \
+             patch("src.xml2_pipeline.generate_audio") as mock_gen, \
+             patch("src.xml2_pipeline.save_audio"), \
+             patch("src.xml2_pipeline.concatenate_audio_files"):
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            main([
+                "--input", str(xml_path),
+                "--output", str(output_dir),
+                "--chapter-sound", "",
+                "--section-sound", "",
+            ])
+
+        cleaned_text_files = list(output_dir.rglob("cleaned_text.txt"))
+        assert len(cleaned_text_files) >= 1, "cleaned_text.txt が生成されるべき"
+
+        content = cleaned_text_files[0].read_text(encoding="utf-8")
+
+        # clean_page_text() 適用済みの形式では item_type ラベル（=== paragraph ===）は不要
+        # 代わりに章区切り（=== Chapter N: Title ===）を使用する
+        assert "=== paragraph ===" not in content, (
+            f"cleaned_text.txt に '=== paragraph ===' ラベルが含まれている（クリーニング済み形式を使用すべき）: {content!r}"
+        )
+        assert "=== heading ===" not in content, (
+            f"cleaned_text.txt に '=== heading ===' ラベルが含まれている（クリーニング済み形式を使用すべき）: {content!r}"
+        )
+
+
+class TestProcessContentWithoutChaptersCreatesBookWav:
+    """T025: chapter_number が全て None の場合に book.wav のみ生成されることを検証する。
+
+    US2 エッジケース (FR-009):
+    - chapter を含まない XML の場合、全コンテンツを book.wav として出力する
+    - chapters/ ディレクトリは作成されない
+    """
+
+    def test_no_chapters_creates_only_book_wav(self, tmp_path):
+        """chapter_number が全て None の場合、book.wav のみ生成される"""
+        from src.xml2_pipeline import process_chapters
+        from src.xml2_parser import ContentItem
+
+        # chapter_number が全て None（chapter 要素がない XML から取得した場合）
+        content_items = [
+            ContentItem(
+                item_type="paragraph",
+                text="First paragraph without chapter.",
+                heading_info=None,
+                chapter_number=None,
+            ),
+            ContentItem(
+                item_type="paragraph",
+                text="Second paragraph without chapter.",
+                heading_info=None,
+                chapter_number=None,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
+
+        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            process_chapters(
+                content_items,
+                synthesizer=mock_synthesizer,
+                output_dir=output_dir,
+                args=mock_args,
+                chapter_sound=None,
+                section_sound=None,
+            )
+
+        book_wav = output_dir / "book.wav"
+        chapters_dir = output_dir / "chapters"
+
+        assert book_wav.exists(), (
+            "chapter がない場合でも book.wav は生成されるべき"
+        )
+        # chapters/ ディレクトリは作成されないか、空である
+        if chapters_dir.exists():
+            wav_files = list(chapters_dir.glob("*.wav"))
+            assert len(wav_files) == 0, (
+                f"chapter がない場合、chapters/ に WAV ファイルは作成されないべきだが、"
+                f"{len(wav_files)} 個見つかった: {[f.name for f in wav_files]}"
+            )
+
+    def test_mixed_none_and_numbered_chapters(self, tmp_path):
+        """chapter_number が混在する場合（None + 数値）は chapter のみ分割される"""
+        from src.xml2_pipeline import process_chapters
+        from src.xml2_parser import ContentItem, HeadingInfo, CHAPTER_MARKER
+
+        content_items = [
+            # chapter 外のコンテンツ（chapter_number=None）
+            ContentItem(
+                item_type="paragraph",
+                text="Preamble text.",
+                heading_info=None,
+                chapter_number=None,
+            ),
+            # chapter 1 のコンテンツ
+            ContentItem(
+                item_type="heading",
+                text=f"{CHAPTER_MARKER}第1章 Main",
+                heading_info=HeadingInfo(level=1, number="1", title="Main", read_aloud=True),
+                chapter_number=1,
+            ),
+            ContentItem(
+                item_type="paragraph",
+                text="Chapter content.",
+                heading_info=None,
+                chapter_number=1,
+            ),
+        ]
+
+        mock_synthesizer = MagicMock()
+        mock_args = MagicMock()
+        mock_args.max_chunk_chars = 500
+        mock_args.style_id = 13
+        mock_args.speed = 1.0
+
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
+
+        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
+
+            process_chapters(
+                content_items,
+                synthesizer=mock_synthesizer,
+                output_dir=output_dir,
+                args=mock_args,
+                chapter_sound=None,
+                section_sound=None,
+            )
+
+        book_wav = output_dir / "book.wav"
+        assert book_wav.exists(), "book.wav は常に生成されるべき"

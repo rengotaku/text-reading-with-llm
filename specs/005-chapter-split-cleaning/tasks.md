@@ -49,27 +49,27 @@
 
 ### 入力
 
-- [ ] T006 Read previous phase output: specs/005-chapter-split-cleaning/tasks/ph1-output.md
+- [x] T006 Read previous phase output: specs/005-chapter-split-cleaning/tasks/ph1-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T007 [P] [US1] Implement test_process_content_applies_clean_page_text in tests/test_xml2_pipeline.py
-- [ ] T008 [P] [US1] Implement test_process_content_removes_url in tests/test_xml2_pipeline.py
-- [ ] T009 [P] [US1] Implement test_process_content_removes_parenthetical_english in tests/test_xml2_pipeline.py
-- [ ] T010 [P] [US1] Implement test_process_content_converts_numbers_to_kana in tests/test_xml2_pipeline.py
-- [ ] T011 Verify `make test` FAIL (RED)
-- [ ] T012 Generate RED output: specs/005-chapter-split-cleaning/red-tests/ph2-test.md
+- [x] T007 [P] [US1] Implement test_process_content_applies_clean_page_text in tests/test_xml2_pipeline.py
+- [x] T008 [P] [US1] Implement test_process_content_removes_url in tests/test_xml2_pipeline.py
+- [x] T009 [P] [US1] Implement test_process_content_removes_parenthetical_english in tests/test_xml2_pipeline.py
+- [x] T010 [P] [US1] Implement test_process_content_converts_numbers_to_kana in tests/test_xml2_pipeline.py
+- [x] T011 Verify `make test` FAIL (RED)
+- [x] T012 Generate RED output: specs/005-chapter-split-cleaning/red-tests/ph2-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T013 Read RED tests: specs/005-chapter-split-cleaning/red-tests/ph2-test.md
-- [ ] T014 [US1] Update process_content() to call clean_page_text() in src/xml2_pipeline.py
-- [ ] T015 Verify `make test` PASS (GREEN)
+- [x] T013 Read RED tests: specs/005-chapter-split-cleaning/red-tests/ph2-test.md
+- [x] T014 [US1] Update process_content() to call clean_page_text() in src/xml2_pipeline.py
+- [x] T015 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T016 Verify `make test` passes all tests (no regressions)
-- [ ] T017 Edit and rename: specs/005-chapter-split-cleaning/tasks/ph2-output-template.md → ph2-output.md
+- [x] T016 Verify `make test` passes all tests (no regressions)
+- [x] T017 Edit and rename: specs/005-chapter-split-cleaning/tasks/ph2-output-template.md → ph2-output.md
 
 **Checkpoint**: US1 が独立して動作・テスト可能であること
 
@@ -83,34 +83,34 @@
 
 ### 入力
 
-- [ ] T018 Read setup analysis: specs/005-chapter-split-cleaning/tasks/ph1-output.md
-- [ ] T019 Read previous phase output: specs/005-chapter-split-cleaning/tasks/ph2-output.md
+- [x] T018 Read setup analysis: specs/005-chapter-split-cleaning/tasks/ph1-output.md
+- [x] T019 Read previous phase output: specs/005-chapter-split-cleaning/tasks/ph2-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T020 [P] [US2] Implement test_content_item_has_chapter_number in tests/test_xml2_parser.py
-- [ ] T021 [P] [US2] Implement test_parse_book2_xml_assigns_chapter_numbers in tests/test_xml2_parser.py
-- [ ] T022 [P] [US2] Implement test_sanitize_filename in tests/test_xml2_pipeline.py
-- [ ] T023 [P] [US2] Implement test_process_chapters_creates_chapter_files in tests/test_xml2_pipeline.py
-- [ ] T024 [P] [US2] Implement test_process_chapters_creates_book_wav in tests/test_xml2_pipeline.py
-- [ ] T025 [P] [US2] Implement test_process_content_without_chapters_creates_book_wav in tests/test_xml2_pipeline.py
-- [ ] T026 Verify `make test` FAIL (RED)
-- [ ] T027 Generate RED output: specs/005-chapter-split-cleaning/red-tests/ph3-test.md
+- [x] T020 [P] [US2] Implement test_content_item_has_chapter_number in tests/test_xml2_parser.py
+- [x] T021 [P] [US2] Implement test_parse_book2_xml_assigns_chapter_numbers in tests/test_xml2_parser.py
+- [x] T022 [P] [US2] Implement test_sanitize_filename in tests/test_xml2_pipeline.py
+- [x] T023 [P] [US2] Implement test_process_chapters_creates_chapter_files in tests/test_xml2_pipeline.py
+- [x] T024 [P] [US2] Implement test_process_chapters_creates_book_wav in tests/test_xml2_pipeline.py
+- [x] T025 [P] [US2] Implement test_process_content_without_chapters_creates_book_wav in tests/test_xml2_pipeline.py
+- [x] T026 Verify `make test` FAIL (RED)
+- [x] T027 Generate RED output: specs/005-chapter-split-cleaning/red-tests/ph3-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T028 Read RED tests: specs/005-chapter-split-cleaning/red-tests/ph3-test.md
-- [ ] T029 [P] [US2] Add chapter_number field to ContentItem dataclass in src/xml2_parser.py
-- [ ] T030 [US2] Update parse_book2_xml() to track and assign chapter_number in src/xml2_parser.py
-- [ ] T031 [P] [US2] Implement sanitize_filename() helper in src/xml2_pipeline.py
-- [ ] T032 [US2] Implement process_chapters() function in src/xml2_pipeline.py
-- [ ] T033 [US2] Update main() to call process_chapters() in src/xml2_pipeline.py
-- [ ] T034 Verify `make test` PASS (GREEN)
+- [x] T028 Read RED tests: specs/005-chapter-split-cleaning/red-tests/ph3-test.md
+- [x] T029 [P] [US2] Add chapter_number field to ContentItem dataclass in src/xml2_parser.py
+- [x] T030 [US2] Update parse_book2_xml() to track and assign chapter_number in src/xml2_parser.py
+- [x] T031 [P] [US2] Implement sanitize_filename() helper in src/xml2_pipeline.py
+- [x] T032 [US2] Implement process_chapters() function in src/xml2_pipeline.py
+- [x] T033 [US2] Update main() to call process_chapters() in src/xml2_pipeline.py
+- [x] T034 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T035 Verify `make test` passes all tests (including US1 regressions)
-- [ ] T036 Edit and rename: specs/005-chapter-split-cleaning/tasks/ph3-output-template.md → ph3-output.md
+- [x] T035 Verify `make test` passes all tests (including US1 regressions)
+- [x] T036 Edit and rename: specs/005-chapter-split-cleaning/tasks/ph3-output-template.md → ph3-output.md
 
 **Checkpoint**: US1 AND US2 が両方独立して動作すること
 
@@ -124,26 +124,26 @@
 
 ### 入力
 
-- [ ] T037 Read setup analysis: specs/005-chapter-split-cleaning/tasks/ph1-output.md
-- [ ] T038 Read previous phase output: specs/005-chapter-split-cleaning/tasks/ph3-output.md
+- [x] T037 Read setup analysis: specs/005-chapter-split-cleaning/tasks/ph1-output.md
+- [x] T038 Read previous phase output: specs/005-chapter-split-cleaning/tasks/ph3-output.md
 
 ### テスト実装 (RED)
 
-- [ ] T039 [P] [US3] Implement test_cleaned_text_file_contains_cleaned_content in tests/test_xml2_pipeline.py
-- [ ] T040 [P] [US3] Implement test_cleaned_text_file_has_chapter_markers in tests/test_xml2_pipeline.py
-- [ ] T041 Verify `make test` FAIL (RED)
-- [ ] T042 Generate RED output: specs/005-chapter-split-cleaning/red-tests/ph4-test.md
+- [x] T039 [P] [US3] Implement test_cleaned_text_file_contains_cleaned_content in tests/test_xml2_pipeline.py
+- [x] T040 [P] [US3] Implement test_cleaned_text_file_has_chapter_markers in tests/test_xml2_pipeline.py
+- [x] T041 Verify `make test` FAIL (RED)
+- [x] T042 Generate RED output: specs/005-chapter-split-cleaning/red-tests/ph4-test.md
 
 ### 実装 (GREEN)
 
-- [ ] T043 Read RED tests: specs/005-chapter-split-cleaning/red-tests/ph4-test.md
-- [ ] T044 [US3] Update main() to write cleaned text to cleaned_text.txt in src/xml2_pipeline.py
-- [ ] T045 Verify `make test` PASS (GREEN)
+- [x] T043 Read RED tests: specs/005-chapter-split-cleaning/red-tests/ph4-test.md
+- [x] T044 [US3] Update main() to write cleaned text to cleaned_text.txt in src/xml2_pipeline.py
+- [x] T045 Verify `make test` PASS (GREEN)
 
 ### 検証
 
-- [ ] T046 Verify `make test` passes all tests (including US1, US2 regressions)
-- [ ] T047 Edit and rename: specs/005-chapter-split-cleaning/tasks/ph4-output-template.md → ph4-output.md
+- [x] T046 Verify `make test` passes all tests (including US1, US2 regressions)
+- [x] T047 Edit and rename: specs/005-chapter-split-cleaning/tasks/ph4-output-template.md → ph4-output.md
 
 **Checkpoint**: 全 US (1, 2, 3) が動作し、E2E テスト可能であること
 
@@ -155,19 +155,19 @@
 
 ### 入力
 
-- [ ] T048 Read setup analysis: specs/005-chapter-split-cleaning/tasks/ph1-output.md
-- [ ] T049 Read previous phase output: specs/005-chapter-split-cleaning/tasks/ph4-output.md
+- [x] T048 Read setup analysis: specs/005-chapter-split-cleaning/tasks/ph1-output.md
+- [x] T049 Read previous phase output: specs/005-chapter-split-cleaning/tasks/ph4-output.md
 
 ### 実装
 
-- [ ] T050 [P] Add docstrings to new functions in src/xml2_pipeline.py (sanitize_filename, process_chapters)
-- [ ] T051 [P] Add type hints to new functions in src/xml2_parser.py and src/xml2_pipeline.py
-- [ ] T052 Run quickstart.md validation (manual test with sample/book2.xml)
+- [x] T050 [P] Add docstrings to new functions in src/xml2_pipeline.py (sanitize_filename, process_chapters)
+- [x] T051 [P] Add type hints to new functions in src/xml2_parser.py and src/xml2_pipeline.py
+- [x] T052 Run quickstart.md validation (manual test with sample/book2.xml)
 
 ### 検証
 
-- [ ] T053 Run `make test` to verify all tests pass after cleanup
-- [ ] T054 Edit and rename: specs/005-chapter-split-cleaning/tasks/ph5-output-template.md → ph5-output.md
+- [x] T053 Run `make test` to verify all tests pass after cleanup
+- [x] T054 Edit and rename: specs/005-chapter-split-cleaning/tasks/ph5-output-template.md → ph5-output.md
 
 ---
 

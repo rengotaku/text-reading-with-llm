@@ -451,14 +451,14 @@ class TestFormatHeadingTextChapter:
     """Test format_heading_text for chapter (level=1)."""
 
     def test_format_heading_text_chapter_basic(self):
-        """level=1 で「第N章 タイトル」形式になる"""
+        """level=1 で「第N章、タイトル」形式になる"""
         assert format_heading_text is not None, (
             "format_heading_text function should be implemented in src/xml2_parser.py"
         )
         result = format_heading_text(level=1, number="1", title="はじめに")
 
-        assert result == "第1章 はじめに", (
-            f"Chapter format should be '第1章 はじめに', got '{result}'"
+        assert result == "第1章、はじめに", (
+            f"Chapter format should be '第1章、はじめに', got '{result}'"
         )
 
     def test_format_heading_text_chapter_with_different_number(self):
@@ -468,8 +468,8 @@ class TestFormatHeadingTextChapter:
         )
         result = format_heading_text(level=1, number="3", title="実装")
 
-        assert result == "第3章 実装", (
-            f"Chapter format should be '第3章 実装', got '{result}'"
+        assert result == "第3章、実装", (
+            f"Chapter format should be '第3章、実装', got '{result}'"
         )
 
     def test_format_heading_text_chapter_with_english_title(self):
@@ -479,8 +479,8 @@ class TestFormatHeadingTextChapter:
         )
         result = format_heading_text(level=1, number="1", title="Introduction")
 
-        assert result == "第1章 Introduction", (
-            f"Chapter format should be '第1章 Introduction', got '{result}'"
+        assert result == "第1章、Introduction", (
+            f"Chapter format should be '第1章、Introduction', got '{result}'"
         )
 
 
@@ -488,36 +488,36 @@ class TestFormatHeadingTextSection:
     """Test format_heading_text for section (level>=2)."""
 
     def test_format_heading_text_section_level2(self):
-        """level=2 で「第N節 タイトル」形式になる"""
+        """level=2 で「XのY節、タイトル」形式になる"""
         assert format_heading_text is not None, (
             "format_heading_text function should be implemented in src/xml2_parser.py"
         )
         result = format_heading_text(level=2, number="1.1", title="概要")
 
-        assert result == "第1.1節 概要", (
-            f"Section format should be '第1.1節 概要', got '{result}'"
+        assert result == "1の1節、概要", (
+            f"Section format should be '1の1節、概要', got '{result}'"
         )
 
     def test_format_heading_text_section_level3(self):
-        """level=3 でも「第N節 タイトル」形式になる"""
+        """level=3 でも「XのY節、タイトル」形式になる"""
         assert format_heading_text is not None, (
             "format_heading_text function should be implemented in src/xml2_parser.py"
         )
         result = format_heading_text(level=3, number="1.2.1", title="詳細")
 
-        assert result == "第1.2.1節 詳細", (
-            f"Section format should be '第1.2.1節 詳細', got '{result}'"
+        assert result == "1の2.1節、詳細", (
+            f"Section format should be '1の2.1節、詳細', got '{result}'"
         )
 
     def test_format_heading_text_section_level4(self):
-        """level=4 でも「第N節 タイトル」形式になる"""
+        """level=4 でも「XのY節、タイトル」形式になる"""
         assert format_heading_text is not None, (
             "format_heading_text function should be implemented in src/xml2_parser.py"
         )
         result = format_heading_text(level=4, number="1.2.1.1", title="補足")
 
-        assert result == "第1.2.1.1節 補足", (
-            f"Section format should be '第1.2.1.1節 補足', got '{result}'"
+        assert result == "1の2.1.1節、補足", (
+            f"Section format should be '1の2.1.1節、補足', got '{result}'"
         )
 
 
@@ -609,7 +609,7 @@ class TestParseBook2XmlHeadingWithSectionMarker:
             )
 
     def test_level2_heading_formatted_text(self):
-        """level=2 の heading が「第N節」形式で整形される"""
+        """level=2 の heading が「XのY節、」形式で整形される"""
         result = parse_book2_xml(SAMPLE_BOOK2_XML)
 
         # "Section 1.1" の heading を探す
@@ -621,9 +621,9 @@ class TestParseBook2XmlHeadingWithSectionMarker:
                     break
 
         assert section_heading is not None, "Should find level=2 section heading"
-        # SECTION_MARKER + "第X節 ..." のような形式
-        assert "第" in section_heading.text and "節" in section_heading.text, (
-            f"Level 2 heading should contain '第N節', got: '{section_heading.text}'"
+        # SECTION_MARKER + "XのY節、..." のような形式 (e.g., "1の1節、")
+        assert "の" in section_heading.text and "節" in section_heading.text, (
+            f"Level 2 heading should contain 'XのY節', got: '{section_heading.text}'"
         )
 
     def test_level2_heading_does_not_have_chapter_marker(self):
@@ -752,4 +752,236 @@ class TestEdgeCases:
         assert first_chapter_pos < second_chapter_pos, (
             f"Document order should be preserved: "
             f"First Chapter at {first_chapter_pos}, Second Chapter at {second_chapter_pos}"
+        )
+
+
+# =============================================================================
+# Phase 3 RED Tests - US2: チャプター単位の分割出力
+# =============================================================================
+
+
+# --- T020: test_content_item_has_chapter_number ---
+
+
+class TestContentItemHasChapterNumber:
+    """T020: ContentItem に chapter_number フィールドが存在することを検証する。
+
+    US2 要件: ContentItem に chapter_number (int | None) フィールドを追加
+    - デフォルト値は None
+    - chapter 内のコンテンツには 1 以上の整数が設定される
+    """
+
+    def test_content_item_has_chapter_number_attribute(self):
+        """ContentItem に chapter_number 属性が存在する"""
+        item = ContentItem(
+            item_type="paragraph",
+            text="テスト段落",
+            heading_info=None,
+        )
+
+        assert hasattr(item, "chapter_number"), (
+            "ContentItem に 'chapter_number' 属性が存在するべきだが、見つからない"
+        )
+
+    def test_content_item_chapter_number_default_is_none(self):
+        """ContentItem の chapter_number デフォルト値は None"""
+        item = ContentItem(
+            item_type="paragraph",
+            text="テスト段落",
+            heading_info=None,
+        )
+
+        assert item.chapter_number is None, (
+            f"chapter_number のデフォルト値は None であるべきだが、{item.chapter_number!r} が返された"
+        )
+
+    def test_content_item_chapter_number_accepts_int(self):
+        """ContentItem の chapter_number に整数を設定できる"""
+        item = ContentItem(
+            item_type="paragraph",
+            text="テスト段落",
+            heading_info=None,
+            chapter_number=1,
+        )
+
+        assert item.chapter_number == 1, (
+            f"chapter_number に 1 を設定したが、{item.chapter_number!r} が返された"
+        )
+
+    def test_content_item_chapter_number_accepts_larger_int(self):
+        """ContentItem の chapter_number に大きな整数を設定できる"""
+        item = ContentItem(
+            item_type="paragraph",
+            text="テスト段落",
+            heading_info=None,
+            chapter_number=99,
+        )
+
+        assert item.chapter_number == 99, (
+            f"chapter_number に 99 を設定したが、{item.chapter_number!r} が返された"
+        )
+
+    def test_content_item_backward_compatible_without_chapter_number(self):
+        """既存の ContentItem 作成コード（chapter_number なし）が引き続き動作する"""
+        # 既存コードとの後方互換性を確認
+        item = ContentItem(
+            item_type="heading",
+            text="見出しテキスト",
+            heading_info=HeadingInfo(level=1, number="1", title="見出し", read_aloud=True),
+        )
+
+        # 既存フィールドが正常に動作する
+        assert item.item_type == "heading"
+        assert item.text == "見出しテキスト"
+        assert item.heading_info is not None
+        # chapter_number はデフォルトで None
+        assert item.chapter_number is None, (
+            "後方互換性: chapter_number を指定しない場合は None であるべき"
+        )
+
+
+# --- T021: test_parse_book2_xml_assigns_chapter_numbers ---
+
+
+class TestParseBook2XmlAssignsChapterNumbers:
+    """T021: parse_book2_xml が chapter 要素内のコンテンツに chapter_number を割り当てることを検証する。
+
+    US2 要件:
+    - <chapter number="N"> 内のコンテンツに chapter_number=N を設定
+    - chapter 外のコンテンツは chapter_number=None
+    - section は所属する chapter の chapter_number を引き継ぐ
+    """
+
+    def _create_chapter_xml(self, tmp_path):
+        """テスト用の chapter を含む XML ファイルを作成する"""
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <metadata><title>Chapter Test</title></metadata>
+    <toc begin="1" end="3">
+        <entry level="1" number="1" title="Introduction" />
+        <entry level="1" number="2" title="Main Content" />
+        <entry level="1" number="3" title="Conclusion" />
+    </toc>
+    <chapter number="1" title="Introduction">
+        <paragraph readAloud="true">First chapter paragraph one.</paragraph>
+        <paragraph readAloud="true">First chapter paragraph two.</paragraph>
+    </chapter>
+    <chapter number="2" title="Main Content">
+        <section number="2.1" title="Details">
+            <paragraph readAloud="true">Section content in chapter 2.</paragraph>
+        </section>
+        <paragraph readAloud="true">Second chapter paragraph.</paragraph>
+    </chapter>
+    <chapter number="3" title="Conclusion">
+        <paragraph readAloud="true">Third chapter paragraph.</paragraph>
+    </chapter>
+</book>"""
+        xml_path = tmp_path / "chapter_test.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+        return xml_path
+
+    def test_chapter_1_items_have_chapter_number_1(self, tmp_path):
+        """chapter 1 内のコンテンツの chapter_number が 1 になる"""
+        xml_path = self._create_chapter_xml(tmp_path)
+        result = parse_book2_xml(xml_path)
+
+        # chapter 1 の heading と paragraph を取得
+        ch1_items = [
+            item for item in result
+            if hasattr(item, "chapter_number") and item.chapter_number == 1
+        ]
+
+        assert len(ch1_items) >= 2, (
+            f"chapter 1 には少なくとも2つのアイテム（heading + paragraph）が存在するべきだが、"
+            f"{len(ch1_items)} 個しか見つからない。"
+            f"全アイテムの chapter_number: {[(i.text[:30], getattr(i, 'chapter_number', 'N/A')) for i in result]}"
+        )
+
+    def test_chapter_2_items_have_chapter_number_2(self, tmp_path):
+        """chapter 2 内のコンテンツの chapter_number が 2 になる"""
+        xml_path = self._create_chapter_xml(tmp_path)
+        result = parse_book2_xml(xml_path)
+
+        ch2_items = [
+            item for item in result
+            if hasattr(item, "chapter_number") and item.chapter_number == 2
+        ]
+
+        # chapter 2 には heading + section heading + paragraph + section paragraph
+        assert len(ch2_items) >= 2, (
+            f"chapter 2 には少なくとも2つのアイテムが存在するべきだが、"
+            f"{len(ch2_items)} 個しか見つからない。"
+            f"全アイテムの chapter_number: {[(i.text[:30], getattr(i, 'chapter_number', 'N/A')) for i in result]}"
+        )
+
+    def test_chapter_3_items_have_chapter_number_3(self, tmp_path):
+        """chapter 3 内のコンテンツの chapter_number が 3 になる"""
+        xml_path = self._create_chapter_xml(tmp_path)
+        result = parse_book2_xml(xml_path)
+
+        ch3_items = [
+            item for item in result
+            if hasattr(item, "chapter_number") and item.chapter_number == 3
+        ]
+
+        assert len(ch3_items) >= 1, (
+            f"chapter 3 には少なくとも1つのアイテムが存在するべきだが、"
+            f"{len(ch3_items)} 個しか見つからない。"
+            f"全アイテムの chapter_number: {[(i.text[:30], getattr(i, 'chapter_number', 'N/A')) for i in result]}"
+        )
+
+    def test_section_inherits_parent_chapter_number(self, tmp_path):
+        """section 内のコンテンツは親 chapter の chapter_number を引き継ぐ"""
+        xml_path = self._create_chapter_xml(tmp_path)
+        result = parse_book2_xml(xml_path)
+
+        # "Section content in chapter 2" は chapter 2 内の section にある
+        section_items = [
+            item for item in result
+            if "Section content" in item.text
+        ]
+
+        assert len(section_items) >= 1, (
+            "section 内の paragraph が見つからない"
+        )
+
+        for item in section_items:
+            assert hasattr(item, "chapter_number"), (
+                "section 内のアイテムにも chapter_number が存在するべき"
+            )
+            assert item.chapter_number == 2, (
+                f"section 内のアイテムの chapter_number は 2 であるべきだが、"
+                f"{getattr(item, 'chapter_number', 'N/A')} が返された"
+            )
+
+    def test_no_chapter_xml_has_none_chapter_number(self):
+        """chapter 要素のない XML では chapter_number が None になる"""
+        # sample_book2.xml には <chapter> 要素がない（<heading> を使用）
+        result = parse_book2_xml(SAMPLE_BOOK2_XML)
+
+        for item in result:
+            assert hasattr(item, "chapter_number"), (
+                f"ContentItem に chapter_number 属性が存在するべき: {item.text[:30]}"
+            )
+            assert item.chapter_number is None, (
+                f"chapter 要素がない XML では chapter_number は None であるべきだが、"
+                f"'{item.text[:30]}' の chapter_number が {item.chapter_number} になっている"
+            )
+
+    def test_chapter_heading_itself_has_chapter_number(self, tmp_path):
+        """chapter の見出し自体にも chapter_number が設定される"""
+        xml_path = self._create_chapter_xml(tmp_path)
+        result = parse_book2_xml(xml_path)
+
+        # chapter 1 の heading を探す
+        ch1_headings = [
+            item for item in result
+            if item.item_type == "heading"
+            and hasattr(item, "chapter_number")
+            and item.chapter_number == 1
+        ]
+
+        assert len(ch1_headings) >= 1, (
+            f"chapter 1 の heading に chapter_number=1 が設定されるべきだが、見つからない。"
+            f"heading items: {[(i.text[:30], getattr(i, 'chapter_number', 'N/A')) for i in result if i.item_type == 'heading']}"
         )
