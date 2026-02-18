@@ -61,16 +61,21 @@ def format_heading_text(level: int, number: str, title: str) -> str:
         "第{number}章、{title}。" for level=1 (with pauses after 章 and title)
         "{first}の{rest}節、{title}。" for level>=2 with dot (with pauses)
         "第{number}節、{title}。" for level>=2 without dot (with pauses)
+
+    Note: Strips trailing punctuation from title before adding period to avoid duplication.
     """
+    # Remove trailing punctuation from title to avoid duplication (、。！？)
+    title_stripped = title.rstrip("、。！？")
+
     if level == 1:
-        return f"第{number}章、{title}。"
+        return f"第{number}章、{title_stripped}。"
     else:
         # For section numbers with dots (e.g., "1.1"), convert to "X の Y 節" format
         if "." in number:
             parts = number.split(".", 1)
-            return f"{parts[0]}の{parts[1]}節、{title}。"
+            return f"{parts[0]}の{parts[1]}節、{title_stripped}。"
         else:
-            return f"第{number}節、{title}。"
+            return f"第{number}節、{title_stripped}。"
 
 
 def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:

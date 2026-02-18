@@ -22,7 +22,7 @@ DATA_DIR ?= data/72a2534e9e81
 
 LLM_MODEL ?= gpt-oss:20b
 
-.PHONY: help setup setup-voicevox run run-simple xml-tts toc organize test clean clean-all gen-dict
+.PHONY: help setup setup-voicevox run run-simple xml-tts xml-tts-safe kill-audio toc organize test clean clean-all gen-dict
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
