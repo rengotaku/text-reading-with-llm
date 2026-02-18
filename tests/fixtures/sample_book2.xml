@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <metadata>
+        <title>Test Book 2</title>
+    </metadata>
+    <toc begin="1" end="2">
+        <entry level="1" number="1" title="First Chapter" />
+        <entry level="2" number="1.1" title="Section 1.1" />
+        <entry level="2" number="1.2" title="Section 1.2" />
+        <entry level="3" number="1.2.1" title="Subsection 1.2.1" />
+        <entry level="1" number="2" title="Second Chapter" />
+    </toc>
+    <front-matter>
+        <paragraph readAloud="true">This is front matter text.</paragraph>
+        <heading level="2" readAloud="true">Front Matter Heading</heading>
+    </front-matter>
+    <!-- Main content starts here -->
+    <heading level="1" readAloud="true">First Chapter</heading>
+    <paragraph readAloud="true">This is the first paragraph of chapter 1.</paragraph>
+    <paragraph readAloud="true">This is the second paragraph.</paragraph>
+    <list>
+        <item>List item one</item>
+        <item>List item two</item>
+        <item>List item three</item>
+    </list>
+    <heading level="2" readAloud="true">Section 1.1</heading>
+    <paragraph readAloud="true">Content of section 1.1.</paragraph>
+    <paragraph readAloud="false">This paragraph should be skipped.</paragraph>
+    <heading level="2" readAloud="true">Section 1.2</heading>
+    <paragraph readAloud="true">Content of section 1.2.</paragraph>
+    <heading level="3" readAloud="true">Subsection 1.2.1</heading>
+    <paragraph readAloud="true">Content of subsection 1.2.1.</paragraph>
+    <heading level="1" readAloud="true">Second Chapter</heading>
+    <paragraph readAloud="true">This is the first paragraph of chapter 2.</paragraph>
+</book>

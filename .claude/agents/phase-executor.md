@@ -27,7 +27,6 @@ Target Section: Implementation (GREEN) → Verification  # For TDD Phase
             or: All tasks                              # For Standard Phase
 
 Design documents (read first):
-- spec.md: User stories
 - plan.md: Tech stack
 - data-model.md: Entities (if exists)
 
@@ -45,7 +44,6 @@ Context:
 ### 1. Read Design Documents
 
 Read the following to understand implementation targets:
-- spec.md: What to achieve
 - plan.md: Technical constraints, architecture
 - data-model.md: Data structures (if exists)
 
@@ -103,7 +101,15 @@ Mark completed tasks as `[x]`.
 
 ### 10. Generate Phase Output
 
-Generate `{FEATURE_DIR}/tasks/ph{N}-output.md`.
+1. Read format reference:
+   - Phase 1: `.specify/templates/ph1-output-template.md`
+   - Phase N: `.specify/templates/phN-output-template.md`
+2. Edit template: `{FEATURE_DIR}/tasks/ph{N}-output-template.md`
+3. After editing complete, rename: `ph{N}-output-template.md` → `ph{N}-output.md`
+
+```bash
+mv "{FEATURE_DIR}/tasks/ph{N}-output-template.md" "{FEATURE_DIR}/tasks/ph{N}-output.md"
+```
 
 # Rules
 
@@ -123,12 +129,17 @@ Generate `{FEATURE_DIR}/tasks/ph{N}-output.md`.
 
 ## Phase Output File Format
 
-`{FEATURE_DIR}/tasks/ph{N}-output.md` (written in Japanese):
+**Template**: `{FEATURE_DIR}/tasks/ph{N}-output-template.md` (edit this)
+**Final**: `{FEATURE_DIR}/tasks/ph{N}-output.md` (after rename)
 
-- Work summary section
-- Modified files list
-- Notes for subsequent phases
-- Implementation issues/problems found
+Format reference:
+- Phase 1: `.specify/templates/ph1-output-template.md`
+- Phase N: `.specify/templates/phN-output-template.md`
+
+**Workflow**:
+1. Template is pre-created by `setup-implement.sh`
+2. Edit template with actual content (in Japanese)
+3. Rename to remove `-template` suffix when complete
 
 # Expected Output
 
