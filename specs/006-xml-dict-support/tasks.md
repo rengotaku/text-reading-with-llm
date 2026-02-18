@@ -87,18 +87,18 @@
 
 ### Input
 
-- [ ] T022 セットアップ出力を読む: `specs/006-xml-dict-support/tasks/ph1-output.md`
-- [ ] T023 前フェーズの出力を読む: `specs/006-xml-dict-support/tasks/ph2-output.md`
+- [x] T022 セットアップ出力を読む: `specs/006-xml-dict-support/tasks/ph1-output.md`
+- [x] T023 前フェーズの出力を読む: `specs/006-xml-dict-support/tasks/ph2-output.md`
 
 ### Test Implementation (RED)
 
-- [ ] T024 [P] [US2] Markdown入力時に既存フロー（`split_into_pages`）が使われることをテスト: `tests/test_generate_reading_dict.py`
-- [ ] T025 [P] [US2] 未対応拡張子（`.txt` 等）でエラー終了することをテスト: `tests/test_generate_reading_dict.py`
-- [ ] T026 [P] [US2] 空XMLファイル（テキストなし）で空辞書が生成されることをテスト: `tests/test_generate_reading_dict.py`
-- [ ] T027 [P] [US2] 不正なXMLファイルでエラー終了することをテスト: `tests/test_generate_reading_dict.py`
-- [ ] T028 [P] [US2] チャプター番号なしのContentItemも用語抽出対象になることをテスト: `tests/test_generate_reading_dict.py`
-- [ ] T029 `make test` が FAIL することを確認 (RED)
-- [ ] T030 RED出力を生成: `specs/006-xml-dict-support/red-tests/ph3-test.md`
+- [x] T024 [P] [US2] Markdown入力時に既存フロー（`split_into_pages`）が使われることをテスト: `tests/test_generate_reading_dict.py`
+- [x] T025 [P] [US2] 未対応拡張子（`.txt` 等）でエラー終了することをテスト: `tests/test_generate_reading_dict.py`
+- [x] T026 [P] [US2] 空XMLファイル（テキストなし）で空辞書が生成されることをテスト: `tests/test_generate_reading_dict.py`
+- [x] T027 [P] [US2] 不正なXMLファイルでエラー終了することをテスト: `tests/test_generate_reading_dict.py`
+- [x] T028 [P] [US2] チャプター番号なしのContentItemも用語抽出対象になることをテスト: `tests/test_generate_reading_dict.py`
+- [x] T029 `make test` が FAIL することを確認 (RED)
+- [x] T030 RED出力を生成: `specs/006-xml-dict-support/red-tests/ph3-test.md`
 
 ### Implementation (GREEN)
 
