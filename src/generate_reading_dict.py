@@ -9,6 +9,7 @@ import argparse
 import json
 import logging
 import sys
+import xml.etree.ElementTree as ET
 from itertools import groupby
 from pathlib import Path
 
@@ -151,7 +152,12 @@ def main():
 
     if input_path.suffix == ".xml":
         # XML flow: parse → group by chapter → extract terms
-        items = parse_book2_xml(input_path)
+        try:
+            items = parse_book2_xml(input_path)
+        except ET.ParseError as e:
+            logger.error("Failed to parse XML file: %s", e)
+            sys.exit(1)
+
         logger.info("Parsed %d content items from XML", len(items))
 
         # Group by chapter_number and extract terms from each group

@@ -102,16 +102,16 @@
 
 ### Implementation (GREEN)
 
-- [ ] T031 REDテストを読む: `specs/006-xml-dict-support/red-tests/ph3-test.md`
-- [ ] T032 [US2] 必要に応じてエッジケース処理を追加: `src/generate_reading_dict.py`（不正XML例外キャッチ、空コンテンツ処理等）
-- [ ] T033 [P] [US2] 空XMLフィクスチャを作成: `tests/fixtures/dict_test_empty.xml`
-- [ ] T034 [P] [US2] 不正XMLフィクスチャを作成: `tests/fixtures/dict_test_invalid.xml`
-- [ ] T035 `make test` が PASS することを確認 (GREEN)
+- [x] T031 REDテストを読む: `specs/006-xml-dict-support/red-tests/ph3-test.md`
+- [x] T032 [US2] 必要に応じてエッジケース処理を追加: `src/generate_reading_dict.py`（不正XML例外キャッチ、空コンテンツ処理等）
+- [x] T033 [P] [US2] 空XMLフィクスチャを作成: `tests/fixtures/dict_test_empty.xml`
+- [x] T034 [P] [US2] 不正XMLフィクスチャを作成: `tests/fixtures/dict_test_invalid.xml`
+- [x] T035 `make test` が PASS することを確認 (GREEN)
 
 ### Verification
 
-- [ ] T036 `make test` ですべてのテストがパスすることを確認（US1 + US2 リグレッションなし）
-- [ ] T037 フェーズ出力を編集・リネーム: `specs/006-xml-dict-support/tasks/phN-output-template.md` → `ph3-output.md`
+- [x] T036 `make test` ですべてのテストがパスすることを確認（US1 + US2 リグレッションなし）
+- [x] T037 フェーズ出力を編集・リネーム: `specs/006-xml-dict-support/tasks/phN-output-template.md` → `ph3-output.md`
 
 **チェックポイント**: US1 と US2 の両方が独立して機能すること
 
