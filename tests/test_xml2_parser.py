@@ -457,8 +457,8 @@ class TestFormatHeadingTextChapter:
         )
         result = format_heading_text(level=1, number="1", title="はじめに")
 
-        assert result == "第1章、はじめに", (
-            f"Chapter format should be '第1章、はじめに', got '{result}'"
+        assert result == "第1章、はじめに。", (
+            f"Chapter format should be '第1章、はじめに。', got '{result}'"
         )
 
     def test_format_heading_text_chapter_with_different_number(self):
@@ -468,8 +468,8 @@ class TestFormatHeadingTextChapter:
         )
         result = format_heading_text(level=1, number="3", title="実装")
 
-        assert result == "第3章、実装", (
-            f"Chapter format should be '第3章、実装', got '{result}'"
+        assert result == "第3章、実装。", (
+            f"Chapter format should be '第3章、実装。', got '{result}'"
         )
 
     def test_format_heading_text_chapter_with_english_title(self):
@@ -479,8 +479,8 @@ class TestFormatHeadingTextChapter:
         )
         result = format_heading_text(level=1, number="1", title="Introduction")
 
-        assert result == "第1章、Introduction", (
-            f"Chapter format should be '第1章、Introduction', got '{result}'"
+        assert result == "第1章、Introduction。", (
+            f"Chapter format should be '第1章、Introduction。', got '{result}'"
         )
 
 
@@ -494,8 +494,8 @@ class TestFormatHeadingTextSection:
         )
         result = format_heading_text(level=2, number="1.1", title="概要")
 
-        assert result == "1の1節、概要", (
-            f"Section format should be '1の1節、概要', got '{result}'"
+        assert result == "1の1節、概要。", (
+            f"Section format should be '1の1節、概要。', got '{result}'"
         )
 
     def test_format_heading_text_section_level3(self):
@@ -505,8 +505,8 @@ class TestFormatHeadingTextSection:
         )
         result = format_heading_text(level=3, number="1.2.1", title="詳細")
 
-        assert result == "1の2.1節、詳細", (
-            f"Section format should be '1の2.1節、詳細', got '{result}'"
+        assert result == "1の2.1節、詳細。", (
+            f"Section format should be '1の2.1節、詳細。', got '{result}'"
         )
 
     def test_format_heading_text_section_level4(self):
@@ -516,8 +516,8 @@ class TestFormatHeadingTextSection:
         )
         result = format_heading_text(level=4, number="1.2.1.1", title="補足")
 
-        assert result == "1の2.1.1節、補足", (
-            f"Section format should be '1の2.1.1節、補足', got '{result}'"
+        assert result == "1の2.1.1節、補足。", (
+            f"Section format should be '1の2.1.1節、補足。', got '{result}'"
         )
 
 
