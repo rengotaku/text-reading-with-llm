@@ -48,20 +48,20 @@
 
 ### Input
 
-- [ ] T006 Read previous phase output: specs/007-cleanup-unused-code/tasks/ph1-output.md
+- [x] T006 Read previous phase output: specs/007-cleanup-unused-code/tasks/ph1-output.md
 
 ### Implementation
 
-- [ ] T007 [P] [US1] `git rm` で旧MDパイプライン関連を削除: `src/pipeline.py`, `src/progress.py`, `src/toc_extractor.py`, `src/organize_chapters.py`
-- [ ] T008 [P] [US1] `git rm` で旧XMLパイプライン関連を削除: `src/xml_pipeline.py`, `src/xml_parser.py`
-- [ ] T009 [P] [US1] `git rm` でAquesTalk関連を削除: `src/aquestalk_pipeline.py`, `src/aquestalk_client.py`
-- [ ] T010 [P] [US1] `git rm` でその他不要ファイルを削除: `src/tts_generator.py`, `src/test_tts_normalize.py`
-- [ ] T011 [US1] `__pycache__` 内の対応 `.pyc` ファイルを削除: `src/__pycache__/`
+- [x] T007 [P] [US1] `git rm` で旧MDパイプライン関連を削除: `src/pipeline.py`, `src/progress.py`, `src/toc_extractor.py`, `src/organize_chapters.py`
+- [x] T008 [P] [US1] `git rm` で旧XMLパイプライン関連を削除: `src/xml_pipeline.py`, `src/xml_parser.py`
+- [x] T009 [P] [US1] `git rm` でAquesTalk関連を削除: `src/aquestalk_pipeline.py`, `src/aquestalk_client.py`
+- [x] T010 [P] [US1] `git rm` でその他不要ファイルを削除: `src/tts_generator.py`, `src/test_tts_normalize.py`
+- [x] T011 [US1] `__pycache__` 内の対応 `.pyc` ファイルを削除: `src/__pycache__/`
 
 ### Verification
 
-- [ ] T012 `make test` を実行し全テストがパスすることを確認（リグレッションなし）
-- [ ] T013 Edit and rename: specs/007-cleanup-unused-code/tasks/ph2-output-template.md → ph2-output.md
+- [x] T012 `make test` を実行し全テストがパスすることを確認（リグレッションなし）
+- [x] T013 Edit and rename: specs/007-cleanup-unused-code/tasks/ph2-output-template.md → ph2-output.md
 
 **Checkpoint**: ソースファイル削除完了、xml2パイプライン正常動作
 

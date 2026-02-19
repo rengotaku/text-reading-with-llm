@@ -59,7 +59,8 @@
       "Bash(pgrep:*)",
       "Bash(/data/projects/text-reading-with-llm/.specify/scripts/bash/create-new-feature.sh:*)",
       "Bash(PYTHONPATH=. python -m pytest:*)",
-      "Bash(PYTHONPATH=. timeout 30 python -m pytest:*)"
+      "Bash(PYTHONPATH=. timeout 30 python -m pytest:*)",
+      "Bash(done)"
     ]
   }
 }
