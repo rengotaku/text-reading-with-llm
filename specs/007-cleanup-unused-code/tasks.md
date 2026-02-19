@@ -75,19 +75,19 @@
 
 ### Input
 
-- [ ] T014 Read setup analysis: specs/007-cleanup-unused-code/tasks/ph1-output.md
-- [ ] T015 Read previous phase output: specs/007-cleanup-unused-code/tasks/ph2-output.md
+- [x] T014 Read setup analysis: specs/007-cleanup-unused-code/tasks/ph1-output.md
+- [x] T015 Read previous phase output: specs/007-cleanup-unused-code/tasks/ph2-output.md
 
 ### Implementation
 
-- [ ] T016 [P] [US2] `git rm` で旧XMLパイプラインテストを削除: `tests/test_xml_pipeline.py`, `tests/test_xml_parser.py`
-- [ ] T017 [P] [US2] `git rm` でAquesTalkテストを削除: `tests/test_aquestalk_client.py`, `tests/test_aquestalk_pipeline.py`
-- [ ] T018 [US2] `__pycache__` 内の対応テストキャッシュを削除: `tests/__pycache__/`
+- [x] T016 [P] [US2] `git rm` で旧XMLパイプラインテストを削除: `tests/test_xml_pipeline.py`, `tests/test_xml_parser.py`
+- [x] T017 [P] [US2] `git rm` でAquesTalkテストを削除: `tests/test_aquestalk_client.py`, `tests/test_aquestalk_pipeline.py`
+- [x] T018 [US2] `__pycache__` 内の対応テストキャッシュを削除: `tests/__pycache__/`
 
 ### Verification
 
-- [ ] T019 `make test` を実行し全テストがパスすることを確認
-- [ ] T020 Edit and rename: specs/007-cleanup-unused-code/tasks/ph3-output-template.md → ph3-output.md
+- [x] T019 `make test` を実行し全テストがパスすることを確認
+- [x] T020 Edit and rename: specs/007-cleanup-unused-code/tasks/ph3-output-template.md → ph3-output.md
 
 **Checkpoint**: テストファイル削除完了、テストスイート整合性確認済み
 
