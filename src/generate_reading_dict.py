@@ -9,6 +9,8 @@ import argparse
 import json
 import logging
 import sys
+import xml.etree.ElementTree as ET
+from itertools import groupby
 from pathlib import Path
 
 import requests
@@ -16,6 +18,7 @@ import requests
 from src.dict_manager import get_dict_path, load_dict, save_dict
 from src.llm_reading_generator import extract_technical_terms
 from src.text_cleaner import split_into_pages
+from src.xml2_parser import parse_book2_xml
 
 logging.basicConfig(
     level=logging.INFO,
@@ -138,22 +141,54 @@ def main():
     if args.merge or (args.output is None and output_path.exists()):
         existing = load_dict(input_path) if args.output is None else {}
         if args.output and args.output.exists():
-            import json
             with open(args.output, encoding="utf-8") as f:
                 existing = json.load(f)
     logger.info("Existing dictionary: %d entries", len(existing))
 
-    # Read and parse book
+    # Read and parse book based on file extension
     logger.info("Reading: %s", input_path)
-    markdown = input_path.read_text(encoding="utf-8")
-    pages = split_into_pages(markdown)
-    logger.info("Found %d pages", len(pages))
-
-    # Extract all technical terms
     all_terms = set()
-    for page in pages:
-        terms = extract_technical_terms(page.text)
-        all_terms.update(terms)
+
+    if input_path.suffix == ".xml":
+        # XML flow: parse → group by chapter → extract terms
+        try:
+            items = parse_book2_xml(input_path)
+        except ET.ParseError as e:
+            logger.error("Failed to parse XML file: %s", e)
+            sys.exit(1)
+
+        logger.info("Parsed %d content items from XML", len(items))
+
+        # Group by chapter_number and extract terms from each group
+        # Sort first to ensure groupby works correctly
+        sorted_items = sorted(items, key=lambda x: x.chapter_number if x.chapter_number is not None else -1)
+        for chapter_num, group in groupby(sorted_items, key=lambda x: x.chapter_number):
+            # Combine all text from items in this chapter
+            chapter_items = list(group)
+            combined_text = " ".join(item.text for item in chapter_items)
+
+            # Extract terms from combined text
+            terms = extract_technical_terms(combined_text)
+            all_terms.update(terms)
+
+        logger.info("Extracted terms from %d chapter groups",
+                    len(set(item.chapter_number for item in items)))
+
+    elif input_path.suffix == ".md":
+        # MD flow: existing logic (unchanged)
+        markdown = input_path.read_text(encoding="utf-8")
+        pages = split_into_pages(markdown)
+        logger.info("Found %d pages", len(pages))
+
+        # Extract all technical terms
+        for page in pages:
+            terms = extract_technical_terms(page.text)
+            all_terms.update(terms)
+
+    else:
+        # Unsupported file extension
+        logger.error("Unsupported file extension: %s (only .xml and .md are supported)", input_path.suffix)
+        sys.exit(1)
 
     logger.info("Found %d unique technical terms", len(all_terms))
 

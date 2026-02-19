@@ -220,3 +220,6 @@ test_output/
 sample/
 
 voicevox_core/
+
+tmp/pids/*
+!tmp/pids/.gitkeep
