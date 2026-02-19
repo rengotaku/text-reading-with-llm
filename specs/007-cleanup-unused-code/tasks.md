@@ -101,21 +101,21 @@
 
 ### Input
 
-- [ ] T021 Read setup analysis: specs/007-cleanup-unused-code/tasks/ph1-output.md
-- [ ] T022 Read previous phase output: specs/007-cleanup-unused-code/tasks/ph3-output.md
+- [x] T021 Read setup analysis: specs/007-cleanup-unused-code/tasks/ph1-output.md
+- [x] T022 Read previous phase output: specs/007-cleanup-unused-code/tasks/ph3-output.md
 
 ### Implementation
 
-- [ ] T023 [US3] Makefile から不要ターゲットを削除: `run`, `run-simple`, `toc`, `organize` ターゲット in `Makefile`
-- [ ] T024 [US3] `xml-tts` ターゲットを修正: PARSER分岐を削除し xml2 直接実行に変更 in `Makefile`
-- [ ] T025 [US3] `.PHONY` から削除済みターゲットを除去 in `Makefile`
-- [ ] T026 [US3] 不要な Makefile 変数を削除: `PARSER` 変数等 in `Makefile`
+- [x] T023 [US3] Makefile から不要ターゲットを削除: `run`, `run-simple`, `toc`, `organize` ターゲット in `Makefile`
+- [x] T024 [US3] `xml-tts` ターゲットを修正: PARSER分岐を削除し xml2 直接実行に変更 in `Makefile`
+- [x] T025 [US3] `.PHONY` から削除済みターゲットを除去 in `Makefile`
+- [x] T026 [US3] 不要な Makefile 変数を削除: `PARSER` 変数等 in `Makefile`
 
 ### Verification
 
-- [ ] T027 `make help` を実行し不要ターゲットが表示されないことを確認
-- [ ] T028 `make test` を実行し全テストがパスすることを確認
-- [ ] T029 Edit and rename: specs/007-cleanup-unused-code/tasks/ph4-output-template.md → ph4-output.md
+- [x] T027 `make help` を実行し不要ターゲットが表示されないことを確認
+- [x] T028 `make test` を実行し全テストがパスすることを確認
+- [x] T029 Edit and rename: specs/007-cleanup-unused-code/tasks/ph4-output-template.md → ph4-output.md
 
 **Checkpoint**: Makefile 整理完了、全ターゲット有効
 
