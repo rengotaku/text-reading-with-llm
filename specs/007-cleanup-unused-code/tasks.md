@@ -127,19 +127,19 @@
 
 ### Input
 
-- [ ] T030 Read setup analysis: specs/007-cleanup-unused-code/tasks/ph1-output.md
-- [ ] T031 Read previous phase output: specs/007-cleanup-unused-code/tasks/ph4-output.md
+- [x] T030 Read setup analysis: specs/007-cleanup-unused-code/tasks/ph1-output.md
+- [x] T031 Read previous phase output: specs/007-cleanup-unused-code/tasks/ph4-output.md
 
 ### Implementation
 
-- [ ] T032 [P] 削除後のソースファイル数を確認し、5ファイル以上減少していることを検証（SC-001）
-- [ ] T033 [P] `requirements.txt` から不要な依存パッケージがあれば削除
-- [ ] T034 quickstart.md の検証手順を実行
+- [x] T032 [P] 削除後のソースファイル数を確認し、5ファイル以上減少していることを検証（SC-001）
+- [x] T033 [P] `requirements.txt` から不要な依存パッケージがあれば削除
+- [x] T034 quickstart.md の検証手順を実行
 
 ### Verification
 
-- [ ] T035 `make test` を実行し全テストが100%パスすることを最終確認（SC-002）
-- [ ] T036 Edit and rename: specs/007-cleanup-unused-code/tasks/ph5-output-template.md → ph5-output.md
+- [x] T035 `make test` を実行し全テストが100%パスすることを最終確認（SC-002）
+- [x] T036 Edit and rename: specs/007-cleanup-unused-code/tasks/ph5-output-template.md → ph5-output.md
 
 ---
 
