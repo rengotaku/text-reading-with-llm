@@ -4,8 +4,6 @@ Phase 2 RED Tests - US1: URLの除去・簡略化
 Tests for _clean_urls function that processes Markdown links and bare URLs.
 """
 
-import pytest
-
 from src.text_cleaner import _clean_urls
 
 
@@ -20,8 +18,7 @@ class TestCleanUrlsMarkdownLink:
         result = _clean_urls(input_text)
 
         assert result == expected, (
-            f"Markdownリンクのリンクテキストのみが残るべき: "
-            f"got '{result}', expected '{expected}'"
+            f"Markdownリンクのリンクテキストのみが残るべき: got '{result}', expected '{expected}'"
         )
 
     def test_clean_urls_markdown_link_with_path(self):
@@ -45,8 +42,7 @@ class TestCleanUrlsUrlAsLinkText:
         result = _clean_urls(input_text)
 
         assert result == expected, (
-            f"URLがリンクテキストの場合は完全に削除されるべき: "
-            f"got '{result}', expected '{expected}'"
+            f"URLがリンクテキストの場合は完全に削除されるべき: got '{result}', expected '{expected}'"
         )
 
     def test_clean_urls_url_as_link_text_with_path(self):
@@ -69,10 +65,7 @@ class TestCleanUrlsBareUrl:
 
         result = _clean_urls(input_text)
 
-        assert result == expected, (
-            f"裸のURLは完全に削除されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"裸のURLは完全に削除されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_urls_bare_url_http(self):
         """HTTPプロトコルのURLも削除"""
@@ -103,10 +96,7 @@ class TestCleanUrlsMultipleUrls:
 
         result = _clean_urls(input_text)
 
-        assert result == expected, (
-            f"複数のMarkdownリンクを正しく処理すべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"複数のMarkdownリンクを正しく処理すべき: got '{result}', expected '{expected}'"
 
     def test_clean_urls_mixed_markdown_and_bare(self):
         """Markdownリンクと裸URLの混在"""
@@ -137,10 +127,7 @@ class TestCleanUrlsIdempotent:
 
         result = _clean_urls(input_text)
 
-        assert result == expected, (
-            f"URLのないテキストは変化すべきでない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"URLのないテキストは変化すべきでない: got '{result}', expected '{expected}'"
 
     def test_clean_urls_idempotent_already_processed(self):
         """処理済みテキストを再処理しても変化しない"""
@@ -149,8 +136,7 @@ class TestCleanUrlsIdempotent:
         second_pass = _clean_urls(first_pass)
 
         assert first_pass == second_pass, (
-            f"冪等性が保証されるべき: "
-            f"first pass: '{first_pass}', second pass: '{second_pass}'"
+            f"冪等性が保証されるべき: first pass: '{first_pass}', second pass: '{second_pass}'"
         )
 
     def test_clean_urls_idempotent_plain_text(self):

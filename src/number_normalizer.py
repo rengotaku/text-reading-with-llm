@@ -420,9 +420,7 @@ def _normalize_plain_number(match: re.Match) -> str:
 PATTERNS: list[tuple[re.Pattern, Callable[[re.Match], str]]] = [
     # 日付: 2024年1月1日, 2024/1/1, 2024-1-1
     (
-        re.compile(
-            r"(?P<year>\d{4})[年/\-](?P<month>\d{1,2})[月/\-](?P<day>\d{1,2})日?"
-        ),
+        re.compile(r"(?P<year>\d{4})[年/\-](?P<month>\d{1,2})[月/\-](?P<day>\d{1,2})日?"),
         _normalize_date,
     ),
     # 年月: 2024年1月
@@ -454,11 +452,7 @@ PATTERNS: list[tuple[re.Pattern, Callable[[re.Match], str]]] = [
             type(
                 "Match",
                 (),
-                {
-                    "group": lambda self, x: m.group("year")
-                    if x == "year"
-                    else None
-                },
+                {"group": lambda self, x: m.group("year") if x == "year" else None},
             )()
         ),
     ),
@@ -491,9 +485,7 @@ PATTERNS: list[tuple[re.Pattern, Callable[[re.Match], str]]] = [
     # 第N章/節/回など
     (
         re.compile(r"第(?P<number>\d+)(?P<suffix>[章節回部編条項])"),
-        lambda m: "だい"
-        + number_to_japanese(int(m.group("number")))
-        + m.group("suffix"),
+        lambda m: "だい" + number_to_japanese(int(m.group("number"))) + m.group("suffix"),
     ),
     # 単独の数字（最後に適用）
     (

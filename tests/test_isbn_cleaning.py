@@ -4,8 +4,6 @@ Phase 4 RED Tests - US4: ISBN・書籍情報の簡略化
 Tests for _clean_isbn function that removes ISBN numbers from text.
 """
 
-import pytest
-
 from src.text_cleaner import _clean_isbn
 
 
@@ -19,10 +17,7 @@ class TestCleanIsbnWithHyphens:
 
         result = _clean_isbn(input_text)
 
-        assert result == expected, (
-            f"ISBN番号は完全に削除されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"ISBN番号は完全に削除されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_isbn_with_hyphens_13_digit(self):
         """ISBN-13形式（978または979で始まる）を削除"""
@@ -44,10 +39,7 @@ class TestCleanIsbnWithSpace:
 
         result = _clean_isbn(input_text)
 
-        assert result == expected, (
-            f"スペース区切りISBNも完全に削除されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"スペース区切りISBNも完全に削除されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_isbn_with_multiple_spaces(self):
         """複数スペースがあっても処理"""
@@ -69,10 +61,7 @@ class TestCleanIsbnInSentence:
 
         result = _clean_isbn(input_text)
 
-        assert result == expected, (
-            f"文中のISBNが削除されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"文中のISBNが削除されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_isbn_in_sentence_with_space(self):
         """スペース区切りISBNを文中で削除"""
@@ -103,10 +92,7 @@ class TestCleanIsbnEdgeCases:
 
         result = _clean_isbn(input_text)
 
-        assert result == expected, (
-            f"ハイフンなしISBNも削除されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"ハイフンなしISBNも削除されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_isbn_10_digit(self):
         """ISBN-10形式（旧形式）を削除"""
@@ -115,10 +101,7 @@ class TestCleanIsbnEdgeCases:
 
         result = _clean_isbn(input_text)
 
-        assert result == expected, (
-            f"ISBN-10形式も削除されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"ISBN-10形式も削除されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_isbn_10_digit_no_hyphens(self):
         """ハイフンなしISBN-10を削除"""
@@ -136,10 +119,7 @@ class TestCleanIsbnEdgeCases:
 
         result = _clean_isbn(input_text)
 
-        assert result == expected, (
-            f"複数のISBNを正しく削除すべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"複数のISBNを正しく削除すべき: got '{result}', expected '{expected}'"
 
     def test_clean_isbn_preserve_other_numbers(self):
         """ISBN以外の数字は保持"""
@@ -148,10 +128,7 @@ class TestCleanIsbnEdgeCases:
 
         result = _clean_isbn(input_text)
 
-        assert result == expected, (
-            f"ISBN以外の数字は保持されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"ISBN以外の数字は保持されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_isbn_lowercase(self):
         """小文字isbnも処理"""
@@ -182,10 +159,7 @@ class TestCleanIsbnIdempotent:
 
         result = _clean_isbn(input_text)
 
-        assert result == expected, (
-            f"ISBNのないテキストは変化すべきでない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"ISBNのないテキストは変化すべきでない: got '{result}', expected '{expected}'"
 
     def test_clean_isbn_idempotent_already_processed(self):
         """処理済みテキストを再処理しても変化しない"""
@@ -194,8 +168,7 @@ class TestCleanIsbnIdempotent:
         second_pass = _clean_isbn(first_pass)
 
         assert first_pass == second_pass, (
-            f"冪等性が保証されるべき: "
-            f"first pass: '{first_pass}', second pass: '{second_pass}'"
+            f"冪等性が保証されるべき: first pass: '{first_pass}', second pass: '{second_pass}'"
         )
 
     def test_clean_isbn_empty_string(self):

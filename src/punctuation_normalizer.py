@@ -12,6 +12,7 @@ import fugashi
 @dataclass
 class PunctuationRule:
     """A rule for inserting punctuation."""
+
     name: str
     pattern: str  # Regex pattern for surface forms
     insert_after: str = "、"
@@ -73,17 +74,17 @@ EXCLUSION_SUFFIXES = [
 # Time/ratio pattern to exclude:
 # - Pure digit sequences: 10:30:45, 1:2:3
 # - Ingredient ratios: 水1:砂糖2 (kanji+digit:kanji+digit...)
-TIME_RATIO_PATTERN = re.compile(r'[ァ-ヶ一-龠々]+\d+(?::[ァ-ヶ一-龠々]+\d+)+|\d+(?::\d+)+')
+TIME_RATIO_PATTERN = re.compile(r"[ァ-ヶ一-龠々]+\d+(?::[ァ-ヶ一-龠々]+\d+)+|\d+(?::\d+)+")
 # Colon patterns to convert
-COLON_FULL_PATTERN = re.compile(r'：')
-COLON_HALF_PATTERN = re.compile(r':')
+COLON_FULL_PATTERN = re.compile(r"：")
+COLON_HALF_PATTERN = re.compile(r":")
 
 # Bracket patterns for conversion (US8)
-OPEN_BRACKET_PATTERN = re.compile(r'[「『]')
-CLOSE_BRACKET_PATTERN = re.compile(r'[」』]')
+OPEN_BRACKET_PATTERN = re.compile(r"[「『]")
+CLOSE_BRACKET_PATTERN = re.compile(r"[」』]")
 
 # Additional patterns for _normalize_colons (compiled for performance)
-COLON_SPACE_CLEANUP_PATTERN = re.compile(r'は、\s+')
+COLON_SPACE_CLEANUP_PATTERN = re.compile(r"は、\s+")
 
 # Lazy initialization
 _tagger: fugashi.Tagger | None = None
@@ -141,9 +142,10 @@ def _normalize_colons(text: str) -> str:
     """
     # Step 1: Protect time/ratio patterns (digit:digit) with placeholders
     time_ratio_matches = []
+
     def save_time_ratio(match):
         time_ratio_matches.append(match.group(0))
-        return f"<<TIME_RATIO_{len(time_ratio_matches)-1}>>"
+        return f"<<TIME_RATIO_{len(time_ratio_matches) - 1}>>"
 
     text = TIME_RATIO_PATTERN.sub(save_time_ratio, text)
 
@@ -152,7 +154,7 @@ def _normalize_colons(text: str) -> str:
     text = COLON_HALF_PATTERN.sub("は、", text)
 
     # Step 3: Also remove spaces after converted colons for cleaner output
-    text = COLON_SPACE_CLEANUP_PATTERN.sub('は、', text)
+    text = COLON_SPACE_CLEANUP_PATTERN.sub("は、", text)
 
     # Step 4: Restore time/ratio patterns
     for i, original in enumerate(time_ratio_matches):
@@ -196,27 +198,15 @@ def _normalize_line(line: str, min_prefix_len: int = 8) -> str:
     for pattern in RENTAI_PATTERNS:
         # Match: (long prefix)(pattern)(non-punctuation char)
         # Prefix must be at least min_prefix_len chars without punctuation
-        line = re.sub(
-            rf"([^、。！？]{{{min_prefix_len},}})({re.escape(pattern)})([^、。！？\s])",
-            r"\1\2、\3",
-            line
-        )
+        line = re.sub(rf"([^、。！？]{{{min_prefix_len},}})({re.escape(pattern)})([^、。！？\s])", r"\1\2、\3", line)
 
     # Rule 2: Insert comma after adverb patterns (always apply)
     for pattern in ADVERB_PATTERNS:
-        line = re.sub(
-            rf"({re.escape(pattern)})([^、。！？\s])",
-            r"\1、\2",
-            line
-        )
+        line = re.sub(rf"({re.escape(pattern)})([^、。！？\s])", r"\1、\2", line)
 
     # Rule 3: Insert comma after conjunction patterns (with prefix check)
     for pattern in CONJUNCTION_PATTERNS:
-        line = re.sub(
-            rf"([^、。！？]{{{min_prefix_len},}})({re.escape(pattern)})([^、。！？\s])",
-            r"\1\2、\3",
-            line
-        )
+        line = re.sub(rf"([^、。！？]{{{min_prefix_len},}})({re.escape(pattern)})([^、。！？\s])", r"\1\2、\3", line)
 
     # Rule 4: Insert comma after は when preceded by long phrase
     # Exclude patterns like ではありません, にはならない, etc.
@@ -224,11 +214,7 @@ def _normalize_line(line: str, min_prefix_len: int = 8) -> str:
     # Use shorter threshold (6) because kanji is more compact than kana
     ha_prefix_len = min(min_prefix_len, 6)
     exclusion_pattern = "|".join(re.escape(s) for s in EXCLUSION_SUFFIXES)
-    line = re.sub(
-        rf"([^、。！？]{{{ha_prefix_len},}})(は)(?!({exclusion_pattern}))([^、。！？\s])",
-        r"\1\2、\4",
-        line
-    )
+    line = re.sub(rf"([^、。！？]{{{ha_prefix_len},}})(は)(?!({exclusion_pattern}))([^、。！？\s])", r"\1\2、\4", line)
 
     return line
 
@@ -250,7 +236,7 @@ def _insert_after_long_phrases(line: str) -> str:
 
     for i, word in enumerate(words):
         surface = word.surface
-        pos = word.feature.pos1 if hasattr(word.feature, 'pos1') else ""
+        pos = word.feature.pos1 if hasattr(word.feature, "pos1") else ""
 
         # Count consecutive noun-like elements
         if pos in ("名詞", "接頭辞", "形容詞", "連体詞"):
@@ -261,7 +247,7 @@ def _insert_after_long_phrases(line: str) -> str:
                 # Long noun phrase followed by particle - consider adding comma
                 # But only if next element starts a new clause
                 if i + 1 < len(words):
-                    next_pos = words[i + 1].feature.pos1 if hasattr(words[i + 1].feature, 'pos1') else ""
+                    next_pos = words[i + 1].feature.pos1 if hasattr(words[i + 1].feature, "pos1") else ""
                     if next_pos in ("名詞", "動詞", "形容詞"):
                         # Check if comma already exists
                         if not surface.endswith("、"):
@@ -277,8 +263,8 @@ def show_analysis(text: str) -> None:
     """Debug: Show morphological analysis of text."""
     tagger = _get_tagger()
     for word in tagger(text):
-        pos1 = word.feature.pos1 if hasattr(word.feature, 'pos1') else "?"
-        pos2 = word.feature.pos2 if hasattr(word.feature, 'pos2') else "?"
+        pos1 = word.feature.pos1 if hasattr(word.feature, "pos1") else "?"
+        pos2 = word.feature.pos2 if hasattr(word.feature, "pos2") else "?"
         print(f"{word.surface}\t{pos1}/{pos2}")
 
 

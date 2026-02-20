@@ -16,22 +16,21 @@ import logging
 import os
 import re
 import signal
-import sys
 from pathlib import Path
 
 import numpy as np
 import soundfile as sf
 
 from src.dict_manager import get_content_hash
-from src.pipeline import (
+from src.text_cleaner import clean_page_text, init_for_content, split_text_into_chunks
+from src.voicevox_client import (
+    VoicevoxConfig,
+    VoicevoxSynthesizer,
+    concatenate_audio_files,
     generate_audio,
     normalize_audio,
     save_audio,
-    split_text_into_chunks,
-    concatenate_audio_files,
 )
-from src.text_cleaner import clean_page_text, init_for_content
-from src.voicevox_client import VoicevoxConfig, VoicevoxSynthesizer
 from src.xml2_parser import (
     CHAPTER_MARKER,
     SECTION_MARKER,
@@ -78,7 +77,7 @@ def kill_existing_process(pid_file: Path) -> bool:
         return False
 
     try:
-        with open(pid_file, 'r') as f:
+        with open(pid_file, "r") as f:
             old_pid = int(f.read().strip())
 
         # Check if process exists and kill it
@@ -87,6 +86,7 @@ def kill_existing_process(pid_file: Path) -> bool:
             logger.warning(f"Killed existing process PID {old_pid}")
             # Wait a bit for process to terminate
             import time
+
             time.sleep(0.5)
             # Force kill if still alive
             try:
@@ -111,7 +111,7 @@ def write_pid_file(pid_file: Path):
     Args:
         pid_file: Path to PID file
     """
-    with open(pid_file, 'w') as f:
+    with open(pid_file, "w") as f:
         f.write(str(os.getpid()))
 
 
@@ -134,68 +134,31 @@ def parse_args(args=None):
     Returns:
         argparse.Namespace with parsed arguments
     """
-    parser = argparse.ArgumentParser(
-        description="Generate TTS audio from book2.xml files"
-    )
+    parser = argparse.ArgumentParser(description="Generate TTS audio from book2.xml files")
 
     # Required
-    parser.add_argument(
-        "--input", "-i",
-        required=True,
-        help="Input XML file path"
-    )
+    parser.add_argument("--input", "-i", required=True, help="Input XML file path")
 
     # Optional with defaults
-    parser.add_argument(
-        "--output", "-o",
-        default="./output",
-        help="Output directory (default: ./output)"
-    )
+    parser.add_argument("--output", "-o", default="./output", help="Output directory (default: ./output)")
     parser.add_argument(
         "--chapter-sound",
         default="assets/sounds/chapter.mp3",
-        help="Sound file to play before chapters (MP3/WAV) (default: assets/sounds/chapter.mp3)"
+        help="Sound file to play before chapters (MP3/WAV) (default: assets/sounds/chapter.mp3)",
     )
     parser.add_argument(
         "--section-sound",
         default="assets/sounds/section.mp3",
-        help="Sound file to play before sections (MP3/WAV) (default: assets/sounds/section.mp3)"
+        help="Sound file to play before sections (MP3/WAV) (default: assets/sounds/section.mp3)",
     )
+    parser.add_argument("--style-id", type=int, default=13, help="VOICEVOX style ID (default: 13)")
+    parser.add_argument("--speed", type=float, default=1.0, help="Speech speed (default: 1.0)")
     parser.add_argument(
-        "--style-id",
-        type=int,
-        default=13,
-        help="VOICEVOX style ID (default: 13)"
+        "--voicevox-dir", default="./voicevox_core", help="VOICEVOX Core directory (default: ./voicevox_core)"
     )
-    parser.add_argument(
-        "--speed",
-        type=float,
-        default=1.0,
-        help="Speech speed (default: 1.0)"
-    )
-    parser.add_argument(
-        "--voicevox-dir",
-        default="./voicevox_core",
-        help="VOICEVOX Core directory (default: ./voicevox_core)"
-    )
-    parser.add_argument(
-        "--max-chunk-chars",
-        type=int,
-        default=500,
-        help="Max characters per TTS chunk (default: 500)"
-    )
-    parser.add_argument(
-        "--start-page",
-        type=int,
-        default=1,
-        help="Start page number (default: 1)"
-    )
-    parser.add_argument(
-        "--end-page",
-        type=int,
-        default=None,
-        help="End page number (default: last page)"
-    )
+    parser.add_argument("--max-chunk-chars", type=int, default=500, help="Max characters per TTS chunk (default: 500)")
+    parser.add_argument("--start-page", type=int, default=1, help="Start page number (default: 1)")
+    parser.add_argument("--end-page", type=int, default=None, help="End page number (default: last page)")
 
     return parser.parse_args(args)
 
@@ -219,7 +182,7 @@ def sanitize_filename(number: int, title: str) -> str:
     prefix = f"ch{number:02d}"
 
     # Keep only ASCII alphanumeric and underscores
-    sanitized_title = re.sub(r'[^a-zA-Z0-9_]', '', title.replace(' ', '_'))
+    sanitized_title = re.sub(r"[^a-zA-Z0-9_]", "", title.replace(" ", "_"))
 
     # Limit to 20 characters
     sanitized_title = sanitized_title[:20]
@@ -250,6 +213,7 @@ def load_sound(sound_path: Path, target_sr: int = 24000) -> np.ndarray:
     # Resample if needed
     if sr != target_sr:
         from scipy import signal
+
         num_samples = int(len(data) * target_sr / sr)
         data = signal.resample(data, num_samples)
 
@@ -265,7 +229,7 @@ def process_chapters(
     content_items: list[ContentItem],
     synthesizer: VoicevoxSynthesizer = None,
     output_dir: Path = None,
-    args = None,
+    args=None,
     chapter_sound: np.ndarray | None = None,
     section_sound: np.ndarray | None = None,
 ) -> list[Path]:
@@ -308,9 +272,7 @@ def process_chapters(
         chapters_dir.mkdir(parents=True, exist_ok=True)
 
         # Sort chapter numbers (None values go to end)
-        sorted_chapters = sorted(
-            [k for k in chapters_dict.keys() if k is not None]
-        )
+        sorted_chapters = sorted([k for k in chapters_dict.keys() if k is not None])
 
         # Process each chapter
         chapter_wav_files = []
@@ -325,10 +287,10 @@ def process_chapters(
                 # Check for markers and insert appropriate sound
                 if text.startswith(CHAPTER_MARKER) and chapter_sound is not None:
                     audio_segments.append(chapter_sound)
-                    text = text[len(CHAPTER_MARKER):]
+                    text = text[len(CHAPTER_MARKER) :]
                 elif text.startswith(SECTION_MARKER) and section_sound is not None:
                     audio_segments.append(section_sound)
-                    text = text[len(SECTION_MARKER):]
+                    text = text[len(SECTION_MARKER) :]
 
                 # Clean text for TTS
                 text = text.strip()
@@ -387,10 +349,10 @@ def process_chapters(
             # Check for markers and insert appropriate sound
             if text.startswith(CHAPTER_MARKER) and chapter_sound is not None:
                 audio_segments.append(chapter_sound)
-                text = text[len(CHAPTER_MARKER):]
+                text = text[len(CHAPTER_MARKER) :]
             elif text.startswith(SECTION_MARKER) and section_sound is not None:
                 audio_segments.append(section_sound)
-                text = text[len(SECTION_MARKER):]
+                text = text[len(SECTION_MARKER) :]
 
             # Clean text for TTS
             text = text.strip()
@@ -430,7 +392,7 @@ def process_content(
     content_items: list[ContentItem],
     synthesizer: VoicevoxSynthesizer = None,
     output_dir: Path = None,
-    args = None,
+    args=None,
     chapter_sound: np.ndarray | None = None,
     section_sound: np.ndarray | None = None,
 ) -> list[Path]:
@@ -453,8 +415,8 @@ def process_content(
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Combine all content text
-    combined_text = " ".join(item.text for item in content_items)
+    # Combine all content text (for potential future use)
+    _ = " ".join(item.text for item in content_items)
 
     # Process content and generate audio
     audio_segments = []
@@ -467,11 +429,11 @@ def process_content(
         if text.startswith(CHAPTER_MARKER) and chapter_sound is not None:
             audio_segments.append(chapter_sound)
             # Remove marker for TTS
-            text = text[len(CHAPTER_MARKER):]
+            text = text[len(CHAPTER_MARKER) :]
         elif text.startswith(SECTION_MARKER) and section_sound is not None:
             audio_segments.append(section_sound)
             # Remove marker for TTS
-            text = text[len(SECTION_MARKER):]
+            text = text[len(SECTION_MARKER) :]
 
         # Clean text for TTS
         text = text.strip()
@@ -573,9 +535,9 @@ def main(args=None):
             # Remove markers before cleaning
             text = item.text
             if text.startswith(CHAPTER_MARKER):
-                text = text[len(CHAPTER_MARKER):]
+                text = text[len(CHAPTER_MARKER) :]
             elif text.startswith(SECTION_MARKER):
-                text = text[len(SECTION_MARKER):]
+                text = text[len(SECTION_MARKER) :]
 
             # Apply clean_page_text to remove URLs, parenthetical English, convert numbers, etc.
             cleaned = clean_page_text(text)

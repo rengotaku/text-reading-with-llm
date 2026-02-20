@@ -110,9 +110,7 @@ class VoicevoxSynthesizer:
             # vvm_dir から .vvm ファイルを探す
             vvm_files = list(self.config.vvm_dir.glob("*.vvm"))
             if not vvm_files:
-                raise FileNotFoundError(
-                    f"No VVM files found in {self.config.vvm_dir}"
-                )
+                raise FileNotFoundError(f"No VVM files found in {self.config.vvm_dir}")
             vvm_path = vvm_files[0]
 
         if vvm_path in self._loaded_models:

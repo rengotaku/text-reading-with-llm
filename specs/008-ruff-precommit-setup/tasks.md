@@ -62,19 +62,19 @@
 
 ### Implementation (GREEN)
 
-- [ ] T015 REDテストを読む: specs/008-ruff-precommit-setup/red-tests/ph2-test.md
-- [ ] T016 [US2] `ruff check --fix .` で自動修正可能な既存コード違反を一括修正
-- [ ] T017 [US2] `ruff format .` で既存コードのフォーマットを一括適用
-- [ ] T018 [US2] 手動修正が必要なruff違反を個別対応（残りがあれば）
-- [ ] T019 [US1] `pre-commit install` でgit hookを登録
-- [ ] T020 `make test` でPASS確認 (GREEN)
+- [x] T015 REDテストを読む: specs/008-ruff-precommit-setup/red-tests/ph2-test.md
+- [x] T016 [US2] `ruff check --fix .` で自動修正可能な既存コード違反を一括修正
+- [x] T017 [US2] `ruff format .` で既存コードのフォーマットを一括適用
+- [x] T018 [US2] 手動修正が必要なruff違反を個別対応（残りがあれば）
+- [x] T019 [US1] `pre-commit install` でgit hookを登録
+- [x] T020 `make test` でPASS確認 (GREEN)
 
 ### Verification
 
-- [ ] T021 `ruff check .` でエラー0件を確認
-- [ ] T022 `ruff format --check .` で差分0件を確認
-- [ ] T023 `make test` で全テストパスを確認（リグレッションなし）
-- [ ] T024 specs/008-ruff-precommit-setup/tasks/ph2-output-template.md を編集 → ph2-output.md にリネーム
+- [x] T021 `ruff check .` でエラー0件を確認
+- [x] T022 `ruff format --check .` で差分0件を確認
+- [x] T023 `make test` で全テストパスを確認（リグレッションなし）
+- [x] T024 specs/008-ruff-precommit-setup/tasks/ph2-output-template.md を編集 → ph2-output.md にリネーム
 
 **Checkpoint**: ruff check/formatがプロジェクト全体でクリーン、pre-commitフックが動作可能
 
