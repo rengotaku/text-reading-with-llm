@@ -51,14 +51,14 @@
 
 ### Input
 
-- [ ] T010 前フェーズ出力を読む: specs/008-ruff-precommit-setup/tasks/ph1-output.md
+- [x] T010 前フェーズ出力を読む: specs/008-ruff-precommit-setup/tasks/ph1-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T011 [P] [US2] ruff設定の検証テストを実装: pyproject.tomlの設定値確認テスト tests/test_ruff_config.py
-- [ ] T012 [P] [US1] pre-commit設定の検証テストを実装: .pre-commit-config.yaml存在・内容確認テスト tests/test_ruff_config.py
-- [ ] T013 `make test` でFAIL確認 (RED)
-- [ ] T014 RED出力を生成: specs/008-ruff-precommit-setup/red-tests/ph2-test.md
+- [x] T011 [P] [US2] ruff設定の検証テストを実装: pyproject.tomlの設定値確認テスト tests/test_ruff_config.py
+- [x] T012 [P] [US1] pre-commit設定の検証テストを実装: .pre-commit-config.yaml存在・内容確認テスト tests/test_ruff_config.py
+- [x] T013 `make test` でFAIL確認 (RED) ※設定ファイルはPhase 1で作成済みのため新規テストはPASS、既存テストに69件のFAILあり
+- [x] T014 RED出力を生成: specs/008-ruff-precommit-setup/red-tests/ph2-test.md
 
 ### Implementation (GREEN)
 
