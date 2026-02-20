@@ -88,17 +88,17 @@
 
 ### Input
 
-- [ ] T025 セットアップ分析を読む: specs/008-ruff-precommit-setup/tasks/ph1-output.md
-- [ ] T026 前フェーズ出力を読む: specs/008-ruff-precommit-setup/tasks/ph2-output.md
+- [x] T025 セットアップ分析を読む: specs/008-ruff-precommit-setup/tasks/ph1-output.md
+- [x] T026 前フェーズ出力を読む: specs/008-ruff-precommit-setup/tasks/ph2-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T027 [P] [US3] process_manager.pyのimport互換性テストを実装 tests/test_file_split.py
-- [ ] T028 [P] [US3] chapter_processor.pyのimport互換性テストを実装 tests/test_file_split.py
-- [ ] T029 [P] [US3] xml2_pipeline.pyのre-export動作テストを実装 tests/test_file_split.py
-- [ ] T030 [P] [US3] 各ファイルの行数上限テストを実装（600行以下確認） tests/test_file_split.py
-- [ ] T031 `make test` でFAIL確認 (RED)
-- [ ] T032 RED出力を生成: specs/008-ruff-precommit-setup/red-tests/ph3-test.md
+- [x] T027 [P] [US3] process_manager.pyのimport互換性テストを実装 tests/test_file_split.py
+- [x] T028 [P] [US3] chapter_processor.pyのimport互換性テストを実装 tests/test_file_split.py
+- [x] T029 [P] [US3] xml2_pipeline.pyのre-export動作テストを実装 tests/test_file_split.py
+- [x] T030 [P] [US3] 各ファイルの行数上限テストを実装（600行以下確認） tests/test_file_split.py
+- [x] T031 `make test` でFAIL確認 (RED)
+- [x] T032 RED出力を生成: specs/008-ruff-precommit-setup/red-tests/ph3-test.md
 
 ### Implementation (GREEN)
 
