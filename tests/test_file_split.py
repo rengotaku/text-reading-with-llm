@@ -12,8 +12,6 @@ Phase 3 RED Tests - US3: xml2_pipeline.py ファイル分割の検証
 
 from pathlib import Path
 
-import pytest
-
 # プロジェクトルートパス
 PROJECT_ROOT = Path(__file__).parent.parent
 
@@ -117,7 +115,9 @@ class TestXml2PipelineReExport:
         """xml2_pipeline 経由で kill_existing_process がimport可能であることを確認する。"""
         from src.xml2_pipeline import kill_existing_process
 
-        assert callable(kill_existing_process), "kill_existing_process は xml2_pipeline から import 可能でなければならない"
+        assert callable(kill_existing_process), (
+            "kill_existing_process は xml2_pipeline から import 可能でなければならない"
+        )
 
     def test_reexport_write_pid_file(self):
         """xml2_pipeline 経由で write_pid_file がimport可能であることを確認する。"""
@@ -172,14 +172,18 @@ class TestXml2PipelineReExport:
         from src.process_manager import get_pid_file_path as original
         from src.xml2_pipeline import get_pid_file_path as reexported
 
-        assert original is reexported, "xml2_pipeline.get_pid_file_path は process_manager からのre-exportでなければならない"
+        assert original is reexported, (
+            "xml2_pipeline.get_pid_file_path は process_manager からのre-exportでなければならない"
+        )
 
     def test_reexport_origin_chapter_processor(self):
         """re-export された音声処理関数が chapter_processor モジュール由来であることを確認する。"""
         from src.chapter_processor import sanitize_filename as original
         from src.xml2_pipeline import sanitize_filename as reexported
 
-        assert original is reexported, "xml2_pipeline.sanitize_filename は chapter_processor からのre-exportでなければならない"
+        assert original is reexported, (
+            "xml2_pipeline.sanitize_filename は chapter_processor からのre-exportでなければならない"
+        )
 
 
 class TestFileSizeLimit:
@@ -200,18 +204,14 @@ class TestFileSizeLimit:
         filepath = PROJECT_ROOT / "src" / "xml2_pipeline.py"
         assert filepath.exists(), f"{filepath} が存在しない"
         line_count = self._count_lines(filepath)
-        assert line_count <= self.LINE_LIMIT, (
-            f"src/xml2_pipeline.py は {line_count} 行（上限: {self.LINE_LIMIT} 行）"
-        )
+        assert line_count <= self.LINE_LIMIT, f"src/xml2_pipeline.py は {line_count} 行（上限: {self.LINE_LIMIT} 行）"
 
     def test_process_manager_line_count(self):
         """src/process_manager.py が600行以下であることを確認する。"""
         filepath = PROJECT_ROOT / "src" / "process_manager.py"
         assert filepath.exists(), f"{filepath} が存在しない"
         line_count = self._count_lines(filepath)
-        assert line_count <= self.LINE_LIMIT, (
-            f"src/process_manager.py は {line_count} 行（上限: {self.LINE_LIMIT} 行）"
-        )
+        assert line_count <= self.LINE_LIMIT, f"src/process_manager.py は {line_count} 行（上限: {self.LINE_LIMIT} 行）"
 
     def test_chapter_processor_line_count(self):
         """src/chapter_processor.py が600行以下であることを確認する。"""

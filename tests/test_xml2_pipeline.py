@@ -567,10 +567,10 @@ class TestProcessContentAppliesCleanPageText:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
 
-            with patch("src.xml2_pipeline.clean_page_text") as mock_clean:
+            with patch("src.chapter_processor.clean_page_text") as mock_clean:
                 mock_clean.return_value = "クリーニング済みテキスト"
 
-                with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                with patch("src.chapter_processor.generate_audio") as mock_gen:
                     mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
                     process_content(
@@ -614,10 +614,10 @@ class TestProcessContentAppliesCleanPageText:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
 
-            with patch("src.xml2_pipeline.clean_page_text") as mock_clean:
+            with patch("src.chapter_processor.clean_page_text") as mock_clean:
                 mock_clean.side_effect = lambda text, **kwargs: text
 
-                with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                with patch("src.chapter_processor.generate_audio") as mock_gen:
                     mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
                     process_content(
@@ -665,10 +665,10 @@ class TestProcessContentAppliesCleanPageText:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
 
-            with patch("src.xml2_pipeline.clean_page_text") as mock_clean:
+            with patch("src.chapter_processor.clean_page_text") as mock_clean:
                 mock_clean.side_effect = lambda text, **kwargs: text
 
-                with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+                with patch("src.chapter_processor.generate_audio") as mock_gen:
                     mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
                     process_content(
@@ -727,7 +727,7 @@ class TestProcessContentRemovesUrl:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
 
-            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            with patch("src.chapter_processor.generate_audio") as mock_gen:
                 mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
                 process_content(
@@ -781,7 +781,7 @@ class TestProcessContentRemovesUrl:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
 
-            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            with patch("src.chapter_processor.generate_audio") as mock_gen:
                 mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
                 process_content(
@@ -839,7 +839,7 @@ class TestProcessContentRemovesParentheticalEnglish:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
 
-            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            with patch("src.chapter_processor.generate_audio") as mock_gen:
                 mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
                 process_content(
@@ -888,7 +888,7 @@ class TestProcessContentRemovesParentheticalEnglish:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
 
-            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            with patch("src.chapter_processor.generate_audio") as mock_gen:
                 mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
                 process_content(
@@ -947,7 +947,7 @@ class TestProcessContentConvertsNumbersToKana:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
 
-            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            with patch("src.chapter_processor.generate_audio") as mock_gen:
                 mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
                 process_content(
@@ -999,7 +999,7 @@ class TestProcessContentConvertsNumbersToKana:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
 
-            with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+            with patch("src.chapter_processor.generate_audio") as mock_gen:
                 mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
                 process_content(
@@ -1209,7 +1209,7 @@ class TestProcessChaptersCreatesChapterFiles:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+        with patch("src.chapter_processor.generate_audio") as mock_gen:
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
             process_chapters(
@@ -1265,7 +1265,7 @@ class TestProcessChaptersCreatesChapterFiles:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+        with patch("src.chapter_processor.generate_audio") as mock_gen:
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
             process_chapters(
@@ -1313,7 +1313,7 @@ class TestProcessChaptersCreatesChapterFiles:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+        with patch("src.chapter_processor.generate_audio") as mock_gen:
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
             process_chapters(
@@ -1367,7 +1367,7 @@ class TestProcessChaptersCreatesChapterFiles:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+        with patch("src.chapter_processor.generate_audio") as mock_gen:
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
             process_chapters(
@@ -1439,7 +1439,7 @@ class TestProcessChaptersCreatesBookWav:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+        with patch("src.chapter_processor.generate_audio") as mock_gen:
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
             process_chapters(
@@ -1483,7 +1483,7 @@ class TestProcessChaptersCreatesBookWav:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+        with patch("src.chapter_processor.generate_audio") as mock_gen:
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
             process_chapters(
@@ -1541,9 +1541,9 @@ class TestCleanedTextFileContainsCleanedContent:
             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
             patch("src.xml2_pipeline.VoicevoxConfig"),
             patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.generate_audio") as mock_gen,
-            patch("src.xml2_pipeline.save_audio"),
-            patch("src.xml2_pipeline.concatenate_audio_files"),
+            patch("src.chapter_processor.generate_audio") as mock_gen,
+            patch("src.chapter_processor.save_audio"),
+            patch("src.chapter_processor.concatenate_audio_files"),
         ):
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
@@ -1590,9 +1590,9 @@ class TestCleanedTextFileContainsCleanedContent:
             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
             patch("src.xml2_pipeline.VoicevoxConfig"),
             patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.generate_audio") as mock_gen,
-            patch("src.xml2_pipeline.save_audio"),
-            patch("src.xml2_pipeline.concatenate_audio_files"),
+            patch("src.chapter_processor.generate_audio") as mock_gen,
+            patch("src.chapter_processor.save_audio"),
+            patch("src.chapter_processor.concatenate_audio_files"),
         ):
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
@@ -1637,9 +1637,9 @@ class TestCleanedTextFileContainsCleanedContent:
             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
             patch("src.xml2_pipeline.VoicevoxConfig"),
             patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.generate_audio") as mock_gen,
-            patch("src.xml2_pipeline.save_audio"),
-            patch("src.xml2_pipeline.concatenate_audio_files"),
+            patch("src.chapter_processor.generate_audio") as mock_gen,
+            patch("src.chapter_processor.save_audio"),
+            patch("src.chapter_processor.concatenate_audio_files"),
         ):
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
@@ -1684,9 +1684,9 @@ class TestCleanedTextFileContainsCleanedContent:
             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
             patch("src.xml2_pipeline.VoicevoxConfig"),
             patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.generate_audio") as mock_gen,
-            patch("src.xml2_pipeline.save_audio"),
-            patch("src.xml2_pipeline.concatenate_audio_files"),
+            patch("src.chapter_processor.generate_audio") as mock_gen,
+            patch("src.chapter_processor.save_audio"),
+            patch("src.chapter_processor.concatenate_audio_files"),
         ):
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
@@ -1743,9 +1743,9 @@ class TestCleanedTextFileHasChapterMarkers:
             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
             patch("src.xml2_pipeline.VoicevoxConfig"),
             patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.generate_audio") as mock_gen,
-            patch("src.xml2_pipeline.save_audio"),
-            patch("src.xml2_pipeline.concatenate_audio_files"),
+            patch("src.chapter_processor.generate_audio") as mock_gen,
+            patch("src.chapter_processor.save_audio"),
+            patch("src.chapter_processor.concatenate_audio_files"),
         ):
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
@@ -1795,9 +1795,9 @@ class TestCleanedTextFileHasChapterMarkers:
             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
             patch("src.xml2_pipeline.VoicevoxConfig"),
             patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.generate_audio") as mock_gen,
-            patch("src.xml2_pipeline.save_audio"),
-            patch("src.xml2_pipeline.concatenate_audio_files"),
+            patch("src.chapter_processor.generate_audio") as mock_gen,
+            patch("src.chapter_processor.save_audio"),
+            patch("src.chapter_processor.concatenate_audio_files"),
         ):
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
@@ -1847,9 +1847,9 @@ class TestCleanedTextFileHasChapterMarkers:
             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
             patch("src.xml2_pipeline.VoicevoxConfig"),
             patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.generate_audio") as mock_gen,
-            patch("src.xml2_pipeline.save_audio"),
-            patch("src.xml2_pipeline.concatenate_audio_files"),
+            patch("src.chapter_processor.generate_audio") as mock_gen,
+            patch("src.chapter_processor.save_audio"),
+            patch("src.chapter_processor.concatenate_audio_files"),
         ):
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
@@ -1897,9 +1897,9 @@ class TestCleanedTextFileHasChapterMarkers:
             patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
             patch("src.xml2_pipeline.VoicevoxConfig"),
             patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.generate_audio") as mock_gen,
-            patch("src.xml2_pipeline.save_audio"),
-            patch("src.xml2_pipeline.concatenate_audio_files"),
+            patch("src.chapter_processor.generate_audio") as mock_gen,
+            patch("src.chapter_processor.save_audio"),
+            patch("src.chapter_processor.concatenate_audio_files"),
         ):
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
@@ -1971,7 +1971,7 @@ class TestProcessContentWithoutChaptersCreatesBookWav:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+        with patch("src.chapter_processor.generate_audio") as mock_gen:
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
             process_chapters(
@@ -2032,7 +2032,7 @@ class TestProcessContentWithoutChaptersCreatesBookWav:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("src.xml2_pipeline.generate_audio") as mock_gen:
+        with patch("src.chapter_processor.generate_audio") as mock_gen:
             mock_gen.return_value = (np.zeros(2400, dtype=np.float32), 24000)
 
             process_chapters(

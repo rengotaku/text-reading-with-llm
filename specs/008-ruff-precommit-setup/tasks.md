@@ -102,19 +102,19 @@
 
 ### Implementation (GREEN)
 
-- [ ] T033 REDテストを読む: specs/008-ruff-precommit-setup/red-tests/ph3-test.md
-- [ ] T034 [US3] src/process_manager.py を新規作成（get_pid_file_path, kill_existing_process, write_pid_file, cleanup_pid_file を移動）
-- [ ] T035 [US3] src/chapter_processor.py を新規作成（sanitize_filename, load_sound, process_chapters, process_content を移動）
-- [ ] T036 [US3] src/xml2_pipeline.py をリファクタリング（parse_args, main を残し、re-exportを追加）
-- [ ] T037 `make test` でPASS確認 (GREEN)
+- [x] T033 REDテストを読む: specs/008-ruff-precommit-setup/red-tests/ph3-test.md
+- [x] T034 [US3] src/process_manager.py を新規作成（get_pid_file_path, kill_existing_process, write_pid_file, cleanup_pid_file を移動）
+- [x] T035 [US3] src/chapter_processor.py を新規作成（sanitize_filename, load_sound, process_chapters, process_content を移動）
+- [x] T036 [US3] src/xml2_pipeline.py をリファクタリング（parse_args, main を残し、re-exportを追加）
+- [x] T037 `make test` でPASS確認 (GREEN)
 
 ### Verification
 
-- [ ] T038 各ファイルの行数確認: `wc -l src/xml2_pipeline.py src/process_manager.py src/chapter_processor.py`（全て600行以下）
-- [ ] T039 `ruff check .` で分割後ファイルがruffチェック合格を確認
-- [ ] T040 `ruff format --check .` で分割後ファイルのフォーマット確認
-- [ ] T041 `make test` で全テストパスを確認（リグレッションなし）
-- [ ] T042 specs/008-ruff-precommit-setup/tasks/ph3-output-template.md を編集 → ph3-output.md にリネーム
+- [x] T038 各ファイルの行数確認: `wc -l src/xml2_pipeline.py src/process_manager.py src/chapter_processor.py`（全て600行以下）
+- [x] T039 `ruff check .` で分割後ファイルがruffチェック合格を確認
+- [x] T040 `ruff format --check .` で分割後ファイルのフォーマット確認
+- [x] T041 `make test` で全テストパスを確認（リグレッションなし）
+- [x] T042 specs/008-ruff-precommit-setup/tasks/ph3-output-template.md を編集 → ph3-output.md にリネーム
 
 **Checkpoint**: 3ファイル全て600行以下、全テストパス、ruffクリーン
 
