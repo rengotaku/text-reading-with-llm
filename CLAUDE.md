@@ -88,9 +88,9 @@ specs/                       # フィーチャー仕様格納
 - **phase-executor** (sonnet): 実装 → GREEN 確認 → 検証 → `tasks/ph{N}-output.md` 出力
 
 ## Recent Changes
+- 008-ruff-precommit-setup: Added Python 3.10+ + ruff, pre-commit（開発用依存関係として追加）
 - 007-cleanup-unused-code: Added Python 3.10+ + xml.etree.ElementTree, voicevox_core, MeCab, soundfile, numpy
 - 006-xml-dict-support: Added Python 3.10+ + xml.etree.ElementTree（標準ライブラリ）, src/xml2_parser, src/dict_manager, src/llm_reading_generator
-- 005-chapter-split-cleaning: Added Python 3.10+ + xml.etree.ElementTree（標準ライブラリ）, voicevox_core, soundfile, numpy, MeCab（text_cleaner経由）
 
 ## Active Technologies
-- Python 3.10+ + xml.etree.ElementTree, voicevox_core, MeCab, soundfile, numpy (007-cleanup-unused-code)
+- Python 3.10+ + ruff, pre-commit（開発用依存関係として追加） (008-ruff-precommit-setup)
