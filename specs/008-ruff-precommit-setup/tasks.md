@@ -126,22 +126,22 @@
 
 ### Input
 
-- [ ] T043 セットアップ分析を読む: specs/008-ruff-precommit-setup/tasks/ph1-output.md
-- [ ] T044 前フェーズ出力を読む: specs/008-ruff-precommit-setup/tasks/ph3-output.md
+- [X] T043 セットアップ分析を読む: specs/008-ruff-precommit-setup/tasks/ph1-output.md
+- [X] T044 前フェーズ出力を読む: specs/008-ruff-precommit-setup/tasks/ph3-output.md
 
 ### Implementation
 
-- [ ] T045 [P] 不要になったimportやコメントの削除
-- [ ] T046 [P] quickstart.md の手順に従ってセットアップが3ステップ以内で完了することを確認
-- [ ] T047 SC-001確認: `ruff check .` エラー0件
-- [ ] T048 SC-002確認: `ruff format --check .` 差分0件
-- [ ] T049 SC-004確認: 分割ファイル全て600行以下
-- [ ] T050 SC-005確認: `make test` で全テスト100%パス
+- [X] T045 [P] 不要になったimportやコメントの削除
+- [X] T046 [P] quickstart.md の手順に従ってセットアップが3ステップ以内で完了することを確認
+- [X] T047 SC-001確認: `ruff check .` エラー0件
+- [X] T048 SC-002確認: `ruff format --check .` 差分0件
+- [X] T049 SC-004確認: 分割ファイル全て600行以下
+- [X] T050 SC-005確認: `make test` で全テスト100%パス
 
 ### Verification
 
-- [ ] T051 `make test` で最終全テストパスを確認
-- [ ] T052 specs/008-ruff-precommit-setup/tasks/ph4-output-template.md を編集 → ph4-output.md にリネーム
+- [X] T051 `make test` で最終全テストパスを確認
+- [X] T052 specs/008-ruff-precommit-setup/tasks/ph4-output-template.md を編集 → ph4-output.md にリネーム
 
 ---
 
