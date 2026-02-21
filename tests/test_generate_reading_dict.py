@@ -17,6 +17,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 
 from src.xml2_parser import ContentItem, HeadingInfo
 
@@ -810,3 +811,112 @@ class TestChapterNumberNoneContentItem:
             assert "Second ungrouped item about REST" in call_text, (
                 "Combined text should contain second None-chapter item"
             )
+
+
+# =============================================================================
+# Phase 1 RED Tests - 009-llm-warmup: ウォームアップ関数追加
+# =============================================================================
+
+
+class TestWarmupModel:
+    """T003: ウォームアップ関数 _warmup_model() のユニットテスト"""
+
+    @patch("src.generate_reading_dict.ollama_chat")
+    @patch("src.generate_reading_dict.logger")
+    def test_warmup_model_calls_ollama_chat_with_ping(self, mock_logger, mock_ollama_chat):
+        """_warmup_model()が最小限のリクエスト（ping）でollama_chat()を呼び出す"""
+        from src.generate_reading_dict import _warmup_model
+
+        test_model = "gpt-oss:20b"
+        mock_ollama_chat.return_value = {"message": {"content": "pong"}}
+
+        _warmup_model(test_model)
+
+        # ollama_chat should be called once
+        mock_ollama_chat.assert_called_once()
+
+        # Verify call arguments
+        call_args = mock_ollama_chat.call_args
+        assert call_args[0][0] == test_model, "Model name should be passed to ollama_chat"
+
+        messages = call_args[0][1]
+        assert isinstance(messages, list), "Messages should be a list"
+        assert len(messages) > 0, "Messages should not be empty"
+
+    @patch("src.generate_reading_dict.ollama_chat")
+    @patch("src.generate_reading_dict.logger")
+    def test_warmup_model_logs_warming_up_message(self, mock_logger, mock_ollama_chat):
+        """_warmup_model()が開始時に "Warming up model: {model}" をログ出力する"""
+        from src.generate_reading_dict import _warmup_model
+
+        test_model = "gpt-oss:20b"
+        mock_ollama_chat.return_value = {"message": {"content": "pong"}}
+
+        _warmup_model(test_model)
+
+        # Check that logger.info was called with warming up message
+        log_calls = [str(call) for call in mock_logger.info.call_args_list]
+        assert any("Warming up model" in str(call) and test_model in str(call) for call in log_calls), (
+            f"Expected 'Warming up model: {test_model}' in logger.info calls, got: {log_calls}"
+        )
+
+    @patch("src.generate_reading_dict.ollama_chat")
+    @patch("src.generate_reading_dict.logger")
+    def test_warmup_model_logs_model_ready_message(self, mock_logger, mock_ollama_chat):
+        """_warmup_model()が完了時に "Model ready" をログ出力する"""
+        from src.generate_reading_dict import _warmup_model
+
+        test_model = "gpt-oss:20b"
+        mock_ollama_chat.return_value = {"message": {"content": "pong"}}
+
+        _warmup_model(test_model)
+
+        # Check that logger.info was called with model ready message
+        log_calls = [str(call) for call in mock_logger.info.call_args_list]
+        assert any("Model ready" in str(call) for call in log_calls), (
+            f"Expected 'Model ready' in logger.info calls, got: {log_calls}"
+        )
+
+    @patch("src.generate_reading_dict.ollama_chat")
+    @patch("src.generate_reading_dict.logger")
+    def test_warmup_model_default_timeout(self, mock_logger, mock_ollama_chat):
+        """_warmup_model()のデフォルトタイムアウトが300秒であることを確認"""
+        from src.generate_reading_dict import _warmup_model
+
+        test_model = "gpt-oss:20b"
+        mock_ollama_chat.return_value = {"message": {"content": "pong"}}
+
+        # Call without timeout argument (should use default 300)
+        _warmup_model(test_model)
+
+        # Verify ollama_chat was called
+        mock_ollama_chat.assert_called_once()
+
+    @patch("src.generate_reading_dict.ollama_chat")
+    @patch("src.generate_reading_dict.logger")
+    def test_warmup_model_custom_timeout(self, mock_logger, mock_ollama_chat):
+        """_warmup_model()にカスタムタイムアウトを渡せることを確認"""
+        from src.generate_reading_dict import _warmup_model
+
+        test_model = "gpt-oss:20b"
+        custom_timeout = 600
+        mock_ollama_chat.return_value = {"message": {"content": "pong"}}
+
+        # Call with custom timeout
+        _warmup_model(test_model, timeout=custom_timeout)
+
+        # Verify ollama_chat was called
+        mock_ollama_chat.assert_called_once()
+
+    @patch("src.generate_reading_dict.ollama_chat")
+    @patch("src.generate_reading_dict.logger")
+    def test_warmup_model_handles_request_exception(self, mock_logger, mock_ollama_chat):
+        """_warmup_model()がリクエスト例外を適切に処理する"""
+        from src.generate_reading_dict import _warmup_model
+
+        test_model = "gpt-oss:20b"
+        mock_ollama_chat.side_effect = requests.RequestException("Connection failed")
+
+        # Should raise exception or handle gracefully
+        with pytest.raises(requests.RequestException):
+            _warmup_model(test_model)

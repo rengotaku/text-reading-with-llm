@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 OLLAMA_API_URL = "http://localhost:11434/api/chat"
 
 
-def ollama_chat(model: str, messages: list[dict], max_retries: int = 3) -> dict:
+def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout: int = 120) -> dict:
     """Call Ollama chat API."""
     payload = {
         "model": model,
@@ -44,7 +44,7 @@ def ollama_chat(model: str, messages: list[dict], max_retries: int = 3) -> dict:
 
     for attempt in range(max_retries):
         try:
-            response = requests.post(OLLAMA_API_URL, json=payload, timeout=120)
+            response = requests.post(OLLAMA_API_URL, json=payload, timeout=timeout)
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
@@ -55,6 +55,20 @@ def ollama_chat(model: str, messages: list[dict], max_retries: int = 3) -> dict:
     return {}
 
 
+def _warmup_model(model: str, timeout: int = 300) -> None:
+    """Warm up the Ollama model by sending a minimal request.
+
+    Args:
+        model: Ollama model name
+        timeout: Timeout in seconds for model loading (default: 300)
+    """
+    logger.info("Warming up model: %s", model)
+    # Send minimal request to trigger model loading
+    messages = [{"role": "user", "content": "ping"}]
+    ollama_chat(model, messages, timeout=timeout)
+    logger.info("Model ready")
+
+
 def generate_readings_batch(
     terms: list[str],
     model: str,
@@ -62,6 +76,9 @@ def generate_readings_batch(
 ) -> dict[str, str]:
     """Generate readings for terms in batches."""
     all_readings = {}
+
+    # Warm up model before processing first batch
+    _warmup_model(model)
 
     for i in range(0, len(terms), batch_size):
         batch = terms[i : i + batch_size]

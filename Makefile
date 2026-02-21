@@ -19,10 +19,12 @@ SPEED ?= 1.0
 
 LLM_MODEL ?= gpt-oss:20b
 
-.PHONY: help setup setup-dev setup-voicevox xml-tts test lint format clean clean-all gen-dict
+.PHONY: help setup setup-dev setup-voicevox gen-dict xml-tts test coverage lint format clean clean-all
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+# --- Setup ---
 
 setup: $(VENV)/bin/activate setup-voicevox ## Create venv and install all dependencies
 
@@ -46,6 +48,22 @@ setup-dev: $(VENV)/bin/activate ## Install dev dependencies + pre-commit hooks
 	$(PIP) install -r requirements-dev.txt
 	$(VENV)/bin/pre-commit install
 
+# --- Pipeline (gen-dict → xml-tts) ---
+
+gen-dict: ## Generate reading dictionary with LLM (INPUT=file)
+	PYTHONPATH=$(CURDIR) $(PYTHON) src/generate_reading_dict.py "$(INPUT)" --model "$(LLM_MODEL)" --merge
+
+xml-tts: ## Run XML to TTS pipeline (INPUT=file)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml2_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
+
+# --- Quality ---
+
+test: ## Run tests
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v
+
+coverage: ## Run tests with coverage report
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v --cov=src --cov-report=term-missing
+
 lint: ## Run ruff linter and format check
 	$(VENV)/bin/ruff check .
 	$(VENV)/bin/ruff format --check .
@@ -54,17 +72,7 @@ format: ## Auto-format code with ruff
 	$(VENV)/bin/ruff check --fix .
 	$(VENV)/bin/ruff format .
 
-xml-tts: ## Run XML to TTS pipeline (INPUT=file)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml2_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
-
-test: ## Run tests
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v
-
-coverage: ## Run tests with coverage report
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v --cov=src --cov-report=term-missing
-
-gen-dict:
-	PYTHONPATH=$(CURDIR) $(PYTHON) src/generate_reading_dict.py "$(INPUT)" --model "$(LLM_MODEL)" --merge
+# --- Cleanup ---
 
 clean: ## Remove generated audio files (keep venv and dictionaries)
 	find $(OUTPUT) -name "*.wav" -delete 2>/dev/null || true
