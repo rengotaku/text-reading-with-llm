@@ -8,8 +8,6 @@ Current behavior: Rule 4 inserts comma after は when preceded by long phrase.
 Expected behavior: Exclude patterns like ではありません, ではない, にはならない, etc.
 """
 
-import pytest
-
 from src.punctuation_normalizer import _normalize_line
 
 
@@ -24,22 +22,18 @@ class TestNormalizeLineDehaArimasen:
         result = _normalize_line(input_text)
 
         assert result == expected, (
-            f"「ではありません」の「は」の後に読点を入れてはいけない: "
-            f"got '{result}', expected '{expected}'"
+            f"「ではありません」の「は」の後に読点を入れてはいけない: got '{result}', expected '{expected}'"
         )
 
     def test_normalize_line_deha_arimasen_longer(self):
         """長いフレーズ後の「ではありません」でも読点なし"""
         input_text = "この技術の導入は終わりではありません"
-        expected = "この技術の導入は終わりではありません"
 
         result = _normalize_line(input_text)
 
         # 「導入は」の後には読点が入ってもよいが、「ではありません」には入らない
         # Expected: 「この技術の導入は、終わりではありません」or「この技術の導入は終わりではありません」
-        assert "では、ありません" not in result, (
-            f"「ではありません」の途中に読点を入れてはいけない: got '{result}'"
-        )
+        assert "では、ありません" not in result, f"「ではありません」の途中に読点を入れてはいけない: got '{result}'"
 
 
 class TestNormalizeLineDehaPatterns:
@@ -53,8 +47,7 @@ class TestNormalizeLineDehaPatterns:
         result = _normalize_line(input_text)
 
         assert result == expected, (
-            f"「ではない」の「は」の後に読点を入れてはいけない: "
-            f"got '{result}', expected '{expected}'"
+            f"「ではない」の「は」の後に読点を入れてはいけない: got '{result}', expected '{expected}'"
         )
 
     def test_normalize_line_deha_nai_in_sentence(self):
@@ -64,9 +57,7 @@ class TestNormalizeLineDehaPatterns:
 
         result = _normalize_line(input_text)
 
-        assert expected_without_deha_comma not in result, (
-            f"「ではない」の途中に読点を入れてはいけない: got '{result}'"
-        )
+        assert expected_without_deha_comma not in result, f"「ではない」の途中に読点を入れてはいけない: got '{result}'"
 
     def test_normalize_line_deha_nakatta(self):
         """「ではなかった」の「は」の後に読点が入らない"""
@@ -76,8 +67,7 @@ class TestNormalizeLineDehaPatterns:
         result = _normalize_line(input_text)
 
         assert result == expected, (
-            f"「ではなかった」の「は」の後に読点を入れてはいけない: "
-            f"got '{result}', expected '{expected}'"
+            f"「ではなかった」の「は」の後に読点を入れてはいけない: got '{result}', expected '{expected}'"
         )
 
     def test_normalize_line_deha_nakute(self):
@@ -103,8 +93,7 @@ class TestNormalizeLineNihaPatterns:
         result = _normalize_line(input_text)
 
         assert result == expected, (
-            f"「にはならない」の「は」の後に読点を入れてはいけない: "
-            f"got '{result}', expected '{expected}'"
+            f"「にはならない」の「は」の後に読点を入れてはいけない: got '{result}', expected '{expected}'"
         )
 
     def test_normalize_line_niha_itaranai(self):
@@ -141,8 +130,7 @@ class TestNormalizeLineTohaPatterns:
         result = _normalize_line(input_text)
 
         assert result == expected, (
-            f"「とは言えない」の「は」の後に読点を入れてはいけない: "
-            f"got '{result}', expected '{expected}'"
+            f"「とは言えない」の「は」の後に読点を入れてはいけない: got '{result}', expected '{expected}'"
         )
 
     def test_normalize_line_toha_kagiranai(self):
@@ -170,9 +158,7 @@ class TestNormalizeLineMixedPatterns:
         result = _normalize_line(input_text)
 
         # Check that では、ありません does NOT appear
-        assert "では、ありません" not in result, (
-            f"「ではありません」の途中に読点を入れてはいけない: got '{result}'"
-        )
+        assert "では、ありません" not in result, f"「ではありません」の途中に読点を入れてはいけない: got '{result}'"
 
     def test_normalize_line_mixed_ha_patterns_longer(self):
         """長い文での混合パターン"""
@@ -181,9 +167,7 @@ class TestNormalizeLineMixedPatterns:
 
         result = _normalize_line(input_text)
 
-        assert "では、ありません" not in result, (
-            f"「ではありません」の途中に読点を入れてはいけない: got '{result}'"
-        )
+        assert "では、ありません" not in result, f"「ではありません」の途中に読点を入れてはいけない: got '{result}'"
 
     def test_normalize_line_multiple_exclusions(self):
         """複数の除外パターンが連続する場合"""
@@ -193,9 +177,7 @@ class TestNormalizeLineMixedPatterns:
         result = _normalize_line(input_text)
 
         # Check no comma appears after any では
-        assert "では、" not in result, (
-            f"「では」の後に読点を入れてはいけない: got '{result}'"
-        )
+        assert "では、" not in result, f"「では」の後に読点を入れてはいけない: got '{result}'"
 
     def test_normalize_line_regular_ha_still_works(self):
         """通常の「は」には読点が入る（機能継続確認）"""
@@ -207,9 +189,7 @@ class TestNormalizeLineMixedPatterns:
         # This test verifies that normal は rule still applies
         # The exact behavior depends on min_prefix_len
         # At minimum, the exclusion patterns should not affect normal は
-        assert "技術" in result and "重要" in result, (
-            f"テキストが破損している: got '{result}'"
-        )
+        assert "技術" in result and "重要" in result, f"テキストが破損している: got '{result}'"
 
 
 class TestNormalizeLineEdgeCases:
@@ -222,9 +202,7 @@ class TestNormalizeLineEdgeCases:
 
         result = _normalize_line(input_text)
 
-        assert expected_without_comma not in result, (
-            f"文頭の「では」でも読点を入れてはいけない: got '{result}'"
-        )
+        assert expected_without_comma not in result, f"文頭の「では」でも読点を入れてはいけない: got '{result}'"
 
     def test_normalize_line_deha_before_particle(self):
         """「ではないか」パターン"""
@@ -233,9 +211,7 @@ class TestNormalizeLineEdgeCases:
 
         result = _normalize_line(input_text)
 
-        assert expected_without_comma not in result, (
-            f"「ではないか」の途中に読点を入れてはいけない: got '{result}'"
-        )
+        assert expected_without_comma not in result, f"「ではないか」の途中に読点を入れてはいけない: got '{result}'"
 
     def test_normalize_line_empty_string(self):
         """空文字列の処理"""
@@ -250,9 +226,7 @@ class TestNormalizeLineEdgeCases:
 
         result = _normalize_line(input_text)
 
-        assert result == expected, (
-            f"「は」のないテキストは変化しない: got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"「は」のないテキストは変化しない: got '{result}', expected '{expected}'"
 
 
 class TestNormalizeLineArimasuPatterns:
@@ -265,9 +239,7 @@ class TestNormalizeLineArimasuPatterns:
 
         result = _normalize_line(input_text)
 
-        assert expected_without_comma not in result, (
-            f"「ではありますが」の途中に読点を入れてはいけない: got '{result}'"
-        )
+        assert expected_without_comma not in result, f"「ではありますが」の途中に読点を入れてはいけない: got '{result}'"
 
     def test_normalize_line_deha_aru(self):
         """「ではある」の「は」の後に読点が入らない"""
@@ -276,9 +248,7 @@ class TestNormalizeLineArimasuPatterns:
 
         result = _normalize_line(input_text)
 
-        assert expected_without_comma not in result, (
-            f"「ではある」の途中に読点を入れてはいけない: got '{result}'"
-        )
+        assert expected_without_comma not in result, f"「ではある」の途中に読点を入れてはいけない: got '{result}'"
 
 
 # ============================================================================
@@ -300,10 +270,7 @@ class TestNormalizeColonsFullWidth:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"全角コロンが「は、」に変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"全角コロンが「は、」に変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_colons_full_width_multiple(self):
         """複数の全角コロンが変換される"""
@@ -314,10 +281,7 @@ class TestNormalizeColonsFullWidth:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"複数の全角コロンが変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"複数の全角コロンが変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_colons_full_width_at_end(self):
         """文末の全角コロンが変換される"""
@@ -329,10 +293,7 @@ class TestNormalizeColonsFullWidth:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"文末の全角コロンも変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"文末の全角コロンも変換されるべき: got '{result}', expected '{expected}'"
 
 
 class TestNormalizeColonsHalfWidth:
@@ -347,10 +308,7 @@ class TestNormalizeColonsHalfWidth:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"半角コロンが「は、」に変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"半角コロンが「は、」に変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_colons_half_width_with_space(self):
         """半角コロン後のスペースも適切に処理される"""
@@ -361,10 +319,7 @@ class TestNormalizeColonsHalfWidth:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"半角コロン+スペースが変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"半角コロン+スペースが変換されるべき: got '{result}', expected '{expected}'"
 
 
 class TestNormalizeColonsExclusions:
@@ -379,10 +334,7 @@ class TestNormalizeColonsExclusions:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"時刻パターンは変換しない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"時刻パターンは変換しない: got '{result}', expected '{expected}'"
 
     def test_normalize_colons_exclude_time_with_seconds(self):
         """時刻パターン(10:30:45)は変換しない"""
@@ -393,10 +345,7 @@ class TestNormalizeColonsExclusions:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"秒を含む時刻パターンは変換しない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"秒を含む時刻パターンは変換しない: got '{result}', expected '{expected}'"
 
     def test_normalize_colons_exclude_ratio_pattern(self):
         """比率パターン(1:3)は変換しない"""
@@ -407,10 +356,7 @@ class TestNormalizeColonsExclusions:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"比率パターンは変換しない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"比率パターンは変換しない: got '{result}', expected '{expected}'"
 
     def test_normalize_colons_exclude_ratio_multiple(self):
         """複合比率パターン(1:2:3)は変換しない"""
@@ -421,10 +367,7 @@ class TestNormalizeColonsExclusions:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"複合比率パターンは変換しない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"複合比率パターンは変換しない: got '{result}', expected '{expected}'"
 
 
 class TestNormalizeColonsMixedPatterns:
@@ -439,10 +382,7 @@ class TestNormalizeColonsMixedPatterns:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"見出しコロンは変換、時刻コロンは保持: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"見出しコロンは変換、時刻コロンは保持: got '{result}', expected '{expected}'"
 
     def test_normalize_colons_mixed_ratio_and_heading(self):
         """見出しコロン変換 + 比率保持の混合パターン"""
@@ -453,10 +393,7 @@ class TestNormalizeColonsMixedPatterns:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"見出しコロンは変換、比率コロンは保持: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"見出しコロンは変換、比率コロンは保持: got '{result}', expected '{expected}'"
 
     def test_normalize_colons_full_and_half_width_mixed(self):
         """全角・半角コロン混在パターン"""
@@ -467,10 +404,7 @@ class TestNormalizeColonsMixedPatterns:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"全角・半角コロン両方が変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"全角・半角コロン両方が変換されるべき: got '{result}', expected '{expected}'"
 
 
 class TestNormalizeColonsEdgeCases:
@@ -493,10 +427,7 @@ class TestNormalizeColonsEdgeCases:
 
         result = _normalize_colons(input_text)
 
-        assert result == expected, (
-            f"コロンのないテキストは変化しない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"コロンのないテキストは変化しない: got '{result}', expected '{expected}'"
 
     def test_normalize_colons_consecutive(self):
         """連続コロン(::)の処理"""
@@ -510,9 +441,7 @@ class TestNormalizeColonsEdgeCases:
 
         # 少なくとも元の形式とは異なることを確認
         # または連続コロンが適切に処理されることを確認
-        assert "::" not in result or "は、" in result, (
-            f"連続コロンが処理されるべき: got '{result}'"
-        )
+        assert "::" not in result or "は、" in result, f"連続コロンが処理されるべき: got '{result}'"
 
     def test_normalize_colons_at_line_start(self):
         """行頭のコロン"""
@@ -567,10 +496,7 @@ class TestNormalizeBracketsBasic:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"鉤括弧が読点に変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"鉤括弧が読点に変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_brackets_single_char(self):
         """1文字だけの鉤括弧内テキスト"""
@@ -581,10 +507,7 @@ class TestNormalizeBracketsBasic:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"1文字の鉤括弧も変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"1文字の鉤括弧も変換されるべき: got '{result}', expected '{expected}'"
 
 
 class TestNormalizeBracketsWithText:
@@ -599,10 +522,7 @@ class TestNormalizeBracketsWithText:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"文中の鉤括弧が読点に変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"文中の鉤括弧が読点に変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_brackets_conference_name(self):
         """テックカンファレンス名の鉤括弧（spec.md US8 例）"""
@@ -613,10 +533,7 @@ class TestNormalizeBracketsWithText:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"カンファレンス名の鉤括弧が変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"カンファレンス名の鉤括弧が変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_brackets_book_description(self):
         """本の説明での鉤括弧（spec.md US8 例）"""
@@ -627,10 +544,7 @@ class TestNormalizeBracketsWithText:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"本の説明の鉤括弧が変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"本の説明の鉤括弧が変換されるべき: got '{result}', expected '{expected}'"
 
 
 class TestNormalizeBracketsConsecutive:
@@ -645,10 +559,7 @@ class TestNormalizeBracketsConsecutive:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"連続する鉤括弧が変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"連続する鉤括弧が変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_brackets_triple_consecutive(self):
         """3つ連続する鉤括弧が変換される"""
@@ -659,10 +570,7 @@ class TestNormalizeBracketsConsecutive:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"3つ連続する鉤括弧が変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"3つ連続する鉤括弧が変換されるべき: got '{result}', expected '{expected}'"
 
 
 class TestNormalizeBracketsEdgeCases:
@@ -678,10 +586,7 @@ class TestNormalizeBracketsEdgeCases:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"文頭の鉤括弧が変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"文頭の鉤括弧が変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_brackets_at_end(self):
         """文末の鉤括弧"""
@@ -692,10 +597,7 @@ class TestNormalizeBracketsEdgeCases:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"文末の鉤括弧が変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"文末の鉤括弧が変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_brackets_reference(self):
         """参照用途の鉤括弧（spec.md US8 例）"""
@@ -706,10 +608,7 @@ class TestNormalizeBracketsEdgeCases:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"参照用途の鉤括弧が変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"参照用途の鉤括弧が変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_brackets_empty(self):
         """空の鉤括弧"""
@@ -721,10 +620,7 @@ class TestNormalizeBracketsEdgeCases:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"空の鉤括弧が処理されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"空の鉤括弧が処理されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_brackets_nested(self):
         """入れ子の鉤括弧（二重鉤括弧）"""
@@ -736,10 +632,7 @@ class TestNormalizeBracketsEdgeCases:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"入れ子の鉤括弧が処理されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"入れ子の鉤括弧が処理されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_brackets_empty_string(self):
         """空文字列の処理"""
@@ -758,10 +651,7 @@ class TestNormalizeBracketsEdgeCases:
 
         result = _normalize_brackets(input_text)
 
-        assert result == expected, (
-            f"鉤括弧のないテキストは変化しない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"鉤括弧のないテキストは変化しない: got '{result}', expected '{expected}'"
 
 
 class TestNormalizeBracketsIntegration:
@@ -778,8 +668,7 @@ class TestNormalizeBracketsIntegration:
         result = normalize_punctuation(input_text)
 
         assert expected_substring in result, (
-            f"normalize_punctuationが鉤括弧変換を含むべき: "
-            f"got '{result}', expected substring '{expected_substring}'"
+            f"normalize_punctuationが鉤括弧変換を含むべき: got '{result}', expected substring '{expected_substring}'"
         )
 
     def test_normalize_punctuation_brackets_and_colons(self):
@@ -793,7 +682,4 @@ class TestNormalizeBracketsIntegration:
 
         result = normalize_punctuation(input_text)
 
-        assert result == expected, (
-            f"コロンと鉤括弧の両方が変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"コロンと鉤括弧の両方が変換されるべき: got '{result}', expected '{expected}'"

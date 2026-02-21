@@ -1,6 +1,5 @@
 """MeCab-based kanji to kana conversion using fugashi."""
 
-import re
 import logging
 
 import fugashi

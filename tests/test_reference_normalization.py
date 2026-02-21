@@ -5,8 +5,6 @@ Tests for _normalize_references function that converts figure, table,
 and note references to natural reading format.
 """
 
-import pytest
-
 from src.text_cleaner import _normalize_references
 
 
@@ -20,10 +18,7 @@ class TestNormalizeFigureReference:
 
         result = _normalize_references(input_text)
 
-        assert result == expected, (
-            f"図参照が読み仮名に変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"図参照が読み仮名に変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_figure_reference_full_width_dot(self):
         """全角ドット（．）でも変換される"""
@@ -41,10 +36,7 @@ class TestNormalizeFigureReference:
 
         result = _normalize_references(input_text)
 
-        assert result == expected, (
-            f"単一数字の図参照も変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"単一数字の図参照も変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_figure_reference_multi_digit(self):
         """複数桁の図番号も変換される"""
@@ -66,10 +58,7 @@ class TestNormalizeTableReference:
 
         result = _normalize_references(input_text)
 
-        assert result == expected, (
-            f"表参照が読み仮名に変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"表参照が読み仮名に変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_table_reference_full_width_dot(self):
         """全角ドット（．）でも変換される"""
@@ -100,10 +89,7 @@ class TestNormalizeNoteReference:
 
         result = _normalize_references(input_text)
 
-        assert result == expected, (
-            f"注参照が読み仮名に変換されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"注参照が読み仮名に変換されるべき: got '{result}', expected '{expected}'"
 
     def test_normalize_note_reference_full_width_dot(self):
         """全角ドット（．）でも変換される"""
@@ -134,10 +120,7 @@ class TestNormalizeReferencesMixed:
 
         result = _normalize_references(input_text)
 
-        assert result == expected, (
-            f"混在する参照を正しく処理すべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"混在する参照を正しく処理すべき: got '{result}', expected '{expected}'"
 
     def test_normalize_references_in_sentence(self):
         """文中の複数参照を処理"""
@@ -146,10 +129,7 @@ class TestNormalizeReferencesMixed:
 
         result = _normalize_references(input_text)
 
-        assert result == expected, (
-            f"文中の複数参照を正しく処理すべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"文中の複数参照を正しく処理すべき: got '{result}', expected '{expected}'"
 
     def test_normalize_references_multiple_same_type(self):
         """同種の参照が複数ある場合"""
@@ -171,10 +151,7 @@ class TestNormalizeReferencesIdempotent:
 
         result = _normalize_references(input_text)
 
-        assert result == expected, (
-            f"参照のないテキストは変化すべきでない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"参照のないテキストは変化すべきでない: got '{result}', expected '{expected}'"
 
     def test_normalize_references_idempotent_already_processed(self):
         """処理済みテキストを再処理しても変化しない"""
@@ -183,8 +160,7 @@ class TestNormalizeReferencesIdempotent:
         second_pass = _normalize_references(first_pass)
 
         assert first_pass == second_pass, (
-            f"冪等性が保証されるべき: "
-            f"first pass: '{first_pass}', second pass: '{second_pass}'"
+            f"冪等性が保証されるべき: first pass: '{first_pass}', second pass: '{second_pass}'"
         )
 
 

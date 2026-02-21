@@ -5,16 +5,15 @@ Supports heading, paragraph, and list/item elements with readAloud filtering.
 Skips <toc>, <front-matter>, and <metadata> sections.
 """
 
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
-import xml.etree.ElementTree as ET
-
 
 # Marker constants for chapter and section sound effects
 # Using Unicode private use area characters to avoid text cleaner interference
-CHAPTER_MARKER = "\uE001"
-SECTION_MARKER = "\uE002"
+CHAPTER_MARKER = "\ue001"
+SECTION_MARKER = "\ue002"
 
 
 @dataclass
@@ -27,6 +26,7 @@ class HeadingInfo:
         title: Heading text
         read_aloud: Whether to read the heading aloud
     """
+
     level: int
     number: str
     title: str
@@ -43,6 +43,7 @@ class ContentItem:
         heading_info: Heading information (only for heading items)
         chapter_number: Chapter number (1, 2, 3, ...) or None for non-chapter content
     """
+
     item_type: str
     text: str
     heading_info: HeadingInfo | None = None
@@ -142,12 +143,14 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                 formatted_text = format_heading_text(1, number, title) if number else title
                 marked_text = CHAPTER_MARKER + formatted_text
                 heading_info = HeadingInfo(level=1, number=number, title=title, read_aloud=True)
-                content_items.append(ContentItem(
-                    item_type="heading",
-                    text=marked_text,
-                    heading_info=heading_info,
-                    chapter_number=current_chapter_number
-                ))
+                content_items.append(
+                    ContentItem(
+                        item_type="heading",
+                        text=marked_text,
+                        heading_info=heading_info,
+                        chapter_number=current_chapter_number,
+                    )
+                )
             # Process children of chapter
             for child in elem:
                 process_element(child)
@@ -160,12 +163,14 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                 formatted_text = format_heading_text(2, number, title) if number else title
                 marked_text = SECTION_MARKER + formatted_text
                 heading_info = HeadingInfo(level=2, number=number, title=title, read_aloud=True)
-                content_items.append(ContentItem(
-                    item_type="heading",
-                    text=marked_text,
-                    heading_info=heading_info,
-                    chapter_number=current_chapter_number
-                ))
+                content_items.append(
+                    ContentItem(
+                        item_type="heading",
+                        text=marked_text,
+                        heading_info=heading_info,
+                        chapter_number=current_chapter_number,
+                    )
+                )
             # Process children of section
             for child in elem:
                 process_element(child)
@@ -186,24 +191,25 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                     marker = CHAPTER_MARKER if level == 1 else SECTION_MARKER
                     marked_text = marker + formatted_text
                     heading_info = HeadingInfo(level=level, number=number, title=text, read_aloud=True)
-                    content_items.append(ContentItem(
-                        item_type="heading",
-                        text=marked_text,
-                        heading_info=heading_info,
-                        chapter_number=current_chapter_number
-                    ))
+                    content_items.append(
+                        ContentItem(
+                            item_type="heading",
+                            text=marked_text,
+                            heading_info=heading_info,
+                            chapter_number=current_chapter_number,
+                        )
+                    )
 
         # Process paragraphs
         elif elem.tag == "paragraph":
             if _should_read_aloud(elem) and elem.text:
                 text = elem.text.strip()
                 if text:
-                    content_items.append(ContentItem(
-                        item_type="paragraph",
-                        text=text,
-                        heading_info=None,
-                        chapter_number=current_chapter_number
-                    ))
+                    content_items.append(
+                        ContentItem(
+                            item_type="paragraph", text=text, heading_info=None, chapter_number=current_chapter_number
+                        )
+                    )
 
         # Process lists
         elif elem.tag == "list":
@@ -211,12 +217,14 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
                 if item.text:
                     text = item.text.strip()
                     if text:
-                        content_items.append(ContentItem(
-                            item_type="list_item",
-                            text=text,
-                            heading_info=None,
-                            chapter_number=current_chapter_number
-                        ))
+                        content_items.append(
+                            ContentItem(
+                                item_type="list_item",
+                                text=text,
+                                heading_info=None,
+                                chapter_number=current_chapter_number,
+                            )
+                        )
 
     # Process all children of the root element
     for elem in root:

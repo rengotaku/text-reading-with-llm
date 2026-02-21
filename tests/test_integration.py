@@ -9,10 +9,8 @@ Target functions:
 - src/punctuation_normalizer.py::normalize_punctuation()
 """
 
-import pytest
-
-from src.text_cleaner import clean_page_text
 from src.punctuation_normalizer import normalize_punctuation
+from src.text_cleaner import clean_page_text
 
 
 class TestCleanPageTextIntegration:
@@ -30,54 +28,32 @@ ISBN978-4-87311-865-8
         result = clean_page_text(input_text)
 
         # URL処理: Markdownリンクのテキストのみ残る
-        assert "https://" not in result, (
-            f"URL should be removed: got '{result}'"
-        )
-        assert "こちら" in result or "参照" in result, (
-            f"Link text 'こちら' should remain: got '{result}'"
-        )
+        assert "https://" not in result, f"URL should be removed: got '{result}'"
+        assert "こちら" in result or "参照" in result, f"Link text 'こちら' should remain: got '{result}'"
 
         # ISBN処理: 削除される
-        assert "ISBN" not in result, (
-            f"ISBN should be removed: got '{result}'"
-        )
-        assert "978-4-87311-865-8" not in result, (
-            f"ISBN number should be removed: got '{result}'"
-        )
+        assert "ISBN" not in result, f"ISBN should be removed: got '{result}'"
+        assert "978-4-87311-865-8" not in result, f"ISBN number should be removed: got '{result}'"
 
         # 括弧処理: 英語括弧が除去される
-        assert "（Toil）" not in result, (
-            f"Parenthetical English should be removed: got '{result}'"
-        )
-        assert "(Toil)" not in result, (
-            f"Parenthetical English should be removed: got '{result}'"
-        )
+        assert "（Toil）" not in result, f"Parenthetical English should be removed: got '{result}'"
+        assert "(Toil)" not in result, f"Parenthetical English should be removed: got '{result}'"
         # トイル is converted to kana by MeCab, but the term should exist
         # Check that English parenthetical is removed
 
         # 参照正規化: 図2.1 → ず2の1 (読み仮名形式)
-        assert "図2.1" not in result, (
-            f"Figure reference should be normalized: got '{result}'"
-        )
-        assert "表3.4" not in result, (
-            f"Table reference should be normalized: got '{result}'"
-        )
+        assert "図2.1" not in result, f"Figure reference should be normalized: got '{result}'"
+        assert "表3.4" not in result, f"Table reference should be normalized: got '{result}'"
         # After number normalization, digits become Japanese
         # Check that patterns are converted (ず, ひょう prefixes exist)
 
         # コロン変換: ：→ は、
-        assert "：" not in result, (
-            f"Full-width colon should be converted: got '{result}'"
-        )
+        assert "：" not in result, f"Full-width colon should be converted: got '{result}'"
         # Note: After colon conversion, 目的：→ 目的は、
 
         # 鉤括弧変換: 「」→ 読点
-        assert "「" not in result, (
-            f"Opening bracket should be converted: got '{result}'"
-        )
-        assert "」" not in result, (
-            f"Closing bracket should be converted: got '{result}'"
-        )
+        assert "「" not in result, f"Opening bracket should be converted: got '{result}'"
+        assert "」" not in result, f"Closing bracket should be converted: got '{result}'"
 
     def test_clean_page_text_url_integration(self):
         """clean_page_text が URL を正しく処理する"""
@@ -85,9 +61,7 @@ ISBN978-4-87311-865-8
 
         result = clean_page_text(input_text)
 
-        assert "https://" not in result, (
-            f"URL should be removed: got '{result}'"
-        )
+        assert "https://" not in result, f"URL should be removed: got '{result}'"
         # After MeCab conversion, text becomes kana
         # Just verify URL is gone
 
@@ -97,12 +71,8 @@ ISBN978-4-87311-865-8
 
         result = clean_page_text(input_text)
 
-        assert "ISBN" not in result, (
-            f"ISBN should be removed: got '{result}'"
-        )
-        assert "978" not in result, (
-            f"ISBN number should be removed: got '{result}'"
-        )
+        assert "ISBN" not in result, f"ISBN should be removed: got '{result}'"
+        assert "978" not in result, f"ISBN number should be removed: got '{result}'"
 
     def test_clean_page_text_parenthetical_integration(self):
         """clean_page_text が括弧付き英語を正しく除去する"""
@@ -121,12 +91,8 @@ ISBN978-4-87311-865-8
         result = clean_page_text(input_text)
 
         # References should be converted to reading form
-        assert "図1.2" not in result, (
-            f"Figure reference should be normalized: got '{result}'"
-        )
-        assert "表2.3" not in result, (
-            f"Table reference should be normalized: got '{result}'"
-        )
+        assert "図1.2" not in result, f"Figure reference should be normalized: got '{result}'"
+        assert "表2.3" not in result, f"Table reference should be normalized: got '{result}'"
         # After conversion: ず1の2, ひょう2の3
         # Then number normalization converts digits
 
@@ -181,8 +147,7 @@ ISBN978-4-87311-865-8
         second_pass = clean_page_text(first_pass)
 
         assert first_pass == second_pass, (
-            f"clean_page_text should be idempotent: "
-            f"first='{first_pass}', second='{second_pass}'"
+            f"clean_page_text should be idempotent: first='{first_pass}', second='{second_pass}'"
         )
 
     def test_clean_page_text_idempotent_complex(self):
@@ -196,8 +161,7 @@ ISBN978-4-87311-865-8
         second_pass = clean_page_text(first_pass)
 
         assert first_pass == second_pass, (
-            f"clean_page_text should be idempotent: "
-            f"first='{first_pass}', second='{second_pass}'"
+            f"clean_page_text should be idempotent: first='{first_pass}', second='{second_pass}'"
         )
 
     def test_clean_page_text_idempotent_url_markdown(self):
@@ -222,25 +186,15 @@ class TestNormalizePunctuationIntegration:
         result = normalize_punctuation(input_text)
 
         # コロン変換: ：→ は、
-        assert "：" not in result, (
-            f"Full-width colon should be converted: got '{result}'"
-        )
-        assert "目的は、" in result, (
-            f"Colon should be converted to は、: got '{result}'"
-        )
+        assert "：" not in result, f"Full-width colon should be converted: got '{result}'"
+        assert "目的は、" in result, f"Colon should be converted to は、: got '{result}'"
 
         # 鉤括弧変換: 「」→ 読点
-        assert "「" not in result, (
-            f"Opening bracket should be converted: got '{result}'"
-        )
-        assert "」" not in result, (
-            f"Closing bracket should be converted: got '{result}'"
-        )
+        assert "「" not in result, f"Opening bracket should be converted: got '{result}'"
+        assert "」" not in result, f"Closing bracket should be converted: got '{result}'"
 
         # 除外パターン: ではありません に読点を入れない
-        assert "では、ありません" not in result, (
-            f"No comma should be inserted in ではありません: got '{result}'"
-        )
+        assert "では、ありません" not in result, f"No comma should be inserted in ではありません: got '{result}'"
 
     def test_normalize_punctuation_colon_conversion(self):
         """コロン変換が正しく動作する"""
@@ -248,9 +202,7 @@ class TestNormalizePunctuationIntegration:
 
         result = normalize_punctuation(input_text)
 
-        assert "目的は、" in result, (
-            f"Colon should be converted to は、: got '{result}'"
-        )
+        assert "目的は、" in result, f"Colon should be converted to は、: got '{result}'"
         assert "：" not in result
 
     def test_normalize_punctuation_bracket_conversion(self):
@@ -261,9 +213,7 @@ class TestNormalizePunctuationIntegration:
 
         assert "「" not in result
         assert "」" not in result
-        assert "、テスト、" in result, (
-            f"Brackets should be converted to commas: got '{result}'"
-        )
+        assert "、テスト、" in result, f"Brackets should be converted to commas: got '{result}'"
 
     def test_normalize_punctuation_exclusion_patterns(self):
         """除外パターンが正しく動作する"""
@@ -271,9 +221,7 @@ class TestNormalizePunctuationIntegration:
 
         result = normalize_punctuation(input_text)
 
-        assert "では、" not in result, (
-            f"No comma after では in exclusion pattern: got '{result}'"
-        )
+        assert "では、" not in result, f"No comma after では in exclusion pattern: got '{result}'"
 
     def test_normalize_punctuation_combined_example(self):
         """複合例での統合テスト"""

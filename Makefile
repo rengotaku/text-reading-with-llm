@@ -19,7 +19,7 @@ SPEED ?= 1.0
 
 LLM_MODEL ?= gpt-oss:20b
 
-.PHONY: help setup setup-voicevox xml-tts test clean clean-all gen-dict
+.PHONY: help setup setup-dev setup-voicevox xml-tts test lint format clean clean-all gen-dict
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -42,11 +42,26 @@ $(VOICEVOX_DIR)/onnxruntime/lib:
 	./$(VOICEVOX_DOWNLOADER) --output $(VOICEVOX_DIR)
 	rm -f $(VOICEVOX_DOWNLOADER)
 
+setup-dev: $(VENV)/bin/activate ## Install dev dependencies + pre-commit hooks
+	$(PIP) install -r requirements-dev.txt
+	$(VENV)/bin/pre-commit install
+
+lint: ## Run ruff linter and format check
+	$(VENV)/bin/ruff check .
+	$(VENV)/bin/ruff format --check .
+
+format: ## Auto-format code with ruff
+	$(VENV)/bin/ruff check --fix .
+	$(VENV)/bin/ruff format .
+
 xml-tts: ## Run XML to TTS pipeline (INPUT=file)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml2_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
 
-test:
+test: ## Run tests
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v
+
+coverage: ## Run tests with coverage report
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v --cov=src --cov-report=term-missing
 
 gen-dict:
 	PYTHONPATH=$(CURDIR) $(PYTHON) src/generate_reading_dict.py "$(INPUT)" --model "$(LLM_MODEL)" --merge

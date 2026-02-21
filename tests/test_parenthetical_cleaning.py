@@ -4,8 +4,6 @@ Phase 5 RED Tests - US5: 括弧付き用語の重複読み防止
 Tests for _clean_parenthetical_english function that removes English terms in parentheses.
 """
 
-import pytest
-
 from src.text_cleaner import _clean_parenthetical_english
 
 
@@ -19,10 +17,7 @@ class TestCleanParentheticalFullWidth:
 
         result = _clean_parenthetical_english(input_text)
 
-        assert result == expected, (
-            f"全角括弧内の英語表記は削除されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"全角括弧内の英語表記は削除されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_parenthetical_english_full_width_multi_word(self):
         """複数単語の英語を削除"""
@@ -53,10 +48,7 @@ class TestCleanParentheticalHalfWidth:
 
         result = _clean_parenthetical_english(input_text)
 
-        assert result == expected, (
-            f"半角括弧内の英語表記は削除されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"半角括弧内の英語表記は削除されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_parenthetical_english_half_width_multi_word(self):
         """半角括弧内の複数単語英語を削除"""
@@ -87,10 +79,7 @@ class TestCleanParentheticalPreserve:
 
         result = _clean_parenthetical_english(input_text)
 
-        assert result == expected, (
-            f"括弧内が日本語の場合は保持されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"括弧内が日本語の場合は保持されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_parenthetical_preserve_hiragana(self):
         """ひらがなのみの括弧内容は保持"""
@@ -131,8 +120,7 @@ class TestCleanParentheticalAlphabetTerm:
         result = _clean_parenthetical_english(input_text)
 
         assert result == expected, (
-            f"アルファベット用語の括弧付き英語も削除されるべき: "
-            f"got '{result}', expected '{expected}'"
+            f"アルファベット用語の括弧付き英語も削除されるべき: got '{result}', expected '{expected}'"
         )
 
     def test_clean_parenthetical_alphabet_term_lowercase(self):
@@ -164,10 +152,7 @@ class TestCleanParentheticalEdgeCases:
 
         result = _clean_parenthetical_english(input_text)
 
-        assert result == expected, (
-            f"英語括弧のみ削除、日本語括弧は保持: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"英語括弧のみ削除、日本語括弧は保持: got '{result}', expected '{expected}'"
 
     def test_clean_parenthetical_numbers_with_japanese(self):
         """数字+日本語の括弧内容は保持"""
@@ -176,10 +161,7 @@ class TestCleanParentheticalEdgeCases:
 
         result = _clean_parenthetical_english(input_text)
 
-        assert result == expected, (
-            f"数字+日本語は保持されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"数字+日本語は保持されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_parenthetical_multiple_english(self):
         """複数の英語括弧を削除"""
@@ -188,10 +170,7 @@ class TestCleanParentheticalEdgeCases:
 
         result = _clean_parenthetical_english(input_text)
 
-        assert result == expected, (
-            f"複数の英語括弧を正しく削除すべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"複数の英語括弧を正しく削除すべき: got '{result}', expected '{expected}'"
 
     def test_clean_parenthetical_empty_parens(self):
         """空括弧は保持"""
@@ -200,10 +179,7 @@ class TestCleanParentheticalEdgeCases:
 
         result = _clean_parenthetical_english(input_text)
 
-        assert result == expected, (
-            f"空括弧は保持されるべき: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"空括弧は保持されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_parenthetical_empty_half_width_parens(self):
         """半角空括弧は保持"""
@@ -243,10 +219,7 @@ class TestCleanParentheticalIdempotent:
 
         result = _clean_parenthetical_english(input_text)
 
-        assert result == expected, (
-            f"括弧のないテキストは変化すべきでない: "
-            f"got '{result}', expected '{expected}'"
-        )
+        assert result == expected, f"括弧のないテキストは変化すべきでない: got '{result}', expected '{expected}'"
 
     def test_clean_parenthetical_idempotent_already_processed(self):
         """処理済みテキストを再処理しても変化しない"""
@@ -255,8 +228,7 @@ class TestCleanParentheticalIdempotent:
         second_pass = _clean_parenthetical_english(first_pass)
 
         assert first_pass == second_pass, (
-            f"冪等性が保証されるべき: "
-            f"first pass: '{first_pass}', second pass: '{second_pass}'"
+            f"冪等性が保証されるべき: first pass: '{first_pass}', second pass: '{second_pass}'"
         )
 
     def test_clean_parenthetical_empty_string(self):

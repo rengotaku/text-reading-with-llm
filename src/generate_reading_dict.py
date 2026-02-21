@@ -65,7 +65,12 @@ def generate_readings_batch(
 
     for i in range(0, len(terms), batch_size):
         batch = terms[i : i + batch_size]
-        logger.info("Processing batch %d/%d (%d terms)", i // batch_size + 1, (len(terms) + batch_size - 1) // batch_size, len(batch))
+        logger.info(
+            "Processing batch %d/%d (%d terms)",
+            i // batch_size + 1,
+            (len(terms) + batch_size - 1) // batch_size,
+            len(batch),
+        )
 
         terms_list = "\n".join(f"- {term}" for term in batch)
         prompt = f"""以下の技術用語・略語の日本語での読み方をカタカナで答えてください。
@@ -86,7 +91,12 @@ JSON形式で出力してください。例:
 JSON出力:"""
 
         messages = [
-            {"role": "system", "content": "あなたは技術用語の読み方を教える専門家です。正確なカタカナ読みをJSON形式で出力してください。"},
+            {
+                "role": "system",
+                "content": (
+                    "あなたは技術用語の読み方を教える専門家です。正確なカタカナ読みをJSON形式で出力してください。"
+                ),
+            },
             {"role": "user", "content": prompt},
         ]
 
@@ -96,6 +106,7 @@ JSON出力:"""
 
             # Extract JSON from response
             import re
+
             # Try to find JSON object in response
             json_match = re.search(r"\{[\s\S]*\}", response_text)
             if json_match:
@@ -171,8 +182,7 @@ def main():
             terms = extract_technical_terms(combined_text)
             all_terms.update(terms)
 
-        logger.info("Extracted terms from %d chapter groups",
-                    len(set(item.chapter_number for item in items)))
+        logger.info("Extracted terms from %d chapter groups", len(set(item.chapter_number for item in items)))
 
     elif input_path.suffix == ".md":
         # MD flow: existing logic (unchanged)
