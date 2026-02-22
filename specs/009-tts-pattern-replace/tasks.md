@@ -50,16 +50,16 @@
 
 ### Input
 
-- [ ] T007 Read previous phase output: specs/009-tts-pattern-replace/tasks/ph1-output.md
+- [X] T007 Read previous phase output: specs/009-tts-pattern-replace/tasks/ph1-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T008 [P] [US1] Update test for bare URL replacement in tests/test_url_cleaning.py (期待値: "" → "ウェブサイト")
-- [ ] T009 [P] [US1] Add test for URL-as-link-text replacement in tests/test_url_cleaning.py (期待値: "" → "ウェブサイト")
-- [ ] T010 [P] [US1] Add test for multiple consecutive URLs in tests/test_url_cleaning.py
-- [ ] T011 [P] [US1] Add test for URL with trailing punctuation in tests/test_url_cleaning.py
-- [ ] T012 Verify `make test` FAIL (RED) - 変更したテストが失敗することを確認
-- [ ] T013 Generate RED output: specs/009-tts-pattern-replace/red-tests/ph2-test.md
+- [X] T008 [P] [US1] Update test for bare URL replacement in tests/test_url_cleaning.py (期待値: "" → "ウェブサイト")
+- [X] T009 [P] [US1] Add test for URL-as-link-text replacement in tests/test_url_cleaning.py (期待値: "" → "ウェブサイト")
+- [X] T010 [P] [US1] Add test for multiple consecutive URLs in tests/test_url_cleaning.py
+- [X] T011 [P] [US1] Add test for URL with trailing punctuation in tests/test_url_cleaning.py
+- [X] T012 Verify `make test` FAIL (RED) - 変更したテストが失敗することを確認
+- [X] T013 Generate RED output: specs/009-tts-pattern-replace/red-tests/ph2-test.md
 
 ### Implementation (GREEN)
 
