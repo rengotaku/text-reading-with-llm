@@ -85,18 +85,18 @@
 
 ### Input
 
-- [ ] T020 Read setup analysis: specs/009-tts-pattern-replace/tasks/ph1-output.md
-- [ ] T021 Read previous phase output: specs/009-tts-pattern-replace/tasks/ph2-output.md
+- [X] T020 Read setup analysis: specs/009-tts-pattern-replace/tasks/ph1-output.md
+- [X] T021 Read previous phase output: specs/009-tts-pattern-replace/tasks/ph2-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T022 [P] [US2] Create test file tests/test_number_prefix.py with basic No.X tests
-- [ ] T023 [P] [US2] Add case-insensitive test (no., NO., No.) in tests/test_number_prefix.py
-- [ ] T024 [P] [US2] Add test for No. without number (置換しない) in tests/test_number_prefix.py
-- [ ] T025 [P] [US2] Create test file tests/test_chapter_conversion.py with basic Chapter X tests
-- [ ] T026 [P] [US2] Add case-insensitive test (chapter, CHAPTER) in tests/test_chapter_conversion.py
-- [ ] T027 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
-- [ ] T028 Generate RED output: specs/009-tts-pattern-replace/red-tests/ph3-test.md
+- [X] T022 [P] [US2] Create test file tests/test_number_prefix.py with basic No.X tests
+- [X] T023 [P] [US2] Add case-insensitive test (no., NO., No.) in tests/test_number_prefix.py
+- [X] T024 [P] [US2] Add test for No. without number (置換しない) in tests/test_number_prefix.py
+- [X] T025 [P] [US2] Create test file tests/test_chapter_conversion.py with basic Chapter X tests
+- [X] T026 [P] [US2] Add case-insensitive test (chapter, CHAPTER) in tests/test_chapter_conversion.py
+- [X] T027 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
+- [X] T028 Generate RED output: specs/009-tts-pattern-replace/red-tests/ph3-test.md
 
 ### Implementation (GREEN)
 
