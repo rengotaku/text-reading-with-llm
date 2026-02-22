@@ -125,16 +125,16 @@
 
 ### Input
 
-- [ ] T038 Read setup analysis: specs/009-tts-pattern-replace/tasks/ph1-output.md
-- [ ] T039 Read previous phase output: specs/009-tts-pattern-replace/tasks/ph3-output.md
+- [X] T038 Read setup analysis: specs/009-tts-pattern-replace/tasks/ph1-output.md
+- [X] T039 Read previous phase output: specs/009-tts-pattern-replace/tasks/ph3-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T040 [P] [US3] Add test for parenthetical ISBN removal in tests/test_isbn_cleaning.py: 「この本（ISBN: 978-...）は」→「この本は」
-- [ ] T041 [P] [US3] Add test for ISBN with label removal in tests/test_isbn_cleaning.py: 「ISBN: 978-...」→「」
-- [ ] T042 [P] [US3] Add test for space normalization after ISBN removal in tests/test_isbn_cleaning.py
-- [ ] T043 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
-- [ ] T044 Generate RED output: specs/009-tts-pattern-replace/red-tests/ph4-test.md
+- [X] T040 [P] [US3] Add test for parenthetical ISBN removal in tests/test_isbn_cleaning.py: 「この本（ISBN: 978-...）は」→「この本は」
+- [X] T041 [P] [US3] Add test for ISBN with label removal in tests/test_isbn_cleaning.py: 「ISBN: 978-...」→「」
+- [X] T042 [P] [US3] Add test for space normalization after ISBN removal in tests/test_isbn_cleaning.py
+- [X] T043 Verify `make test` FAIL (RED) - 新規テストが失敗することを確認
+- [X] T044 Generate RED output: specs/009-tts-pattern-replace/red-tests/ph4-test.md
 
 ### Implementation (GREEN)
 
