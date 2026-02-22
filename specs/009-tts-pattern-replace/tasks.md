@@ -100,18 +100,18 @@
 
 ### Implementation (GREEN)
 
-- [ ] T029 Read RED tests: specs/009-tts-pattern-replace/red-tests/ph3-test.md
-- [ ] T030 [P] [US2] Add NUMBER_PREFIX_PATTERN constant in src/text_cleaner.py
-- [ ] T031 [P] [US2] Add CHAPTER_PATTERN constant in src/text_cleaner.py
-- [ ] T032 [US2] Add `_clean_number_prefix()` function in src/text_cleaner.py
-- [ ] T033 [US2] Add `_clean_chapter()` function in src/text_cleaner.py
-- [ ] T034 [US2] Integrate new functions into `clean_page_text()` in src/text_cleaner.py
-- [ ] T035 Verify `make test` PASS (GREEN)
+- [X] T029 Read RED tests: specs/009-tts-pattern-replace/red-tests/ph3-test.md
+- [X] T030 [P] [US2] Add NUMBER_PREFIX_PATTERN constant in src/text_cleaner.py
+- [X] T031 [P] [US2] Add CHAPTER_PATTERN constant in src/text_cleaner.py
+- [X] T032 [US2] Add `_clean_number_prefix()` function in src/text_cleaner.py
+- [X] T033 [US2] Add `_clean_chapter()` function in src/text_cleaner.py
+- [X] T034 [US2] Integrate new functions into `clean_page_text()` in src/text_cleaner.py
+- [X] T035 Verify `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T036 Verify `make test` passes all tests (US1 回帰含む)
-- [ ] T037 Generate phase output: specs/009-tts-pattern-replace/tasks/ph3-output.md
+- [X] T036 Verify `make test` passes all tests (US1 回帰含む)
+- [X] T037 Generate phase output: specs/009-tts-pattern-replace/tasks/ph3-output.md
 
 **Checkpoint**: US1 および US2 が独立して機能すること
 

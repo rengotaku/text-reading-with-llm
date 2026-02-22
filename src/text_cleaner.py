@@ -39,6 +39,14 @@ REFERENCE_PATTERNS = [
     (re.compile(r"注(\d+)"), r"ちゅう\1"),  # 注X
 ]
 
+# Number prefix pattern (US2)
+# No.X pattern (case insensitive)
+NUMBER_PREFIX_PATTERN = re.compile(r"No\.(\d+)", re.IGNORECASE)
+
+# Chapter pattern (US2)
+# Chapter X pattern (case insensitive)
+CHAPTER_PATTERN = re.compile(r"Chapter\s+(\d+)", re.IGNORECASE)
+
 # ISBN patterns (US4)
 # ISBN-13: 978/979 + 10 digits with optional hyphens
 # ISBN-10: 10 digits/chars with optional hyphens (last char can be X)
@@ -153,6 +161,30 @@ def _normalize_references(text: str) -> str:
     return text
 
 
+def _clean_number_prefix(text: str) -> str:
+    """Replace No.X pattern with ナンバーX for TTS.
+
+    Converts:
+    - No.21 → ナンバー21
+    - no.5 → ナンバー5 (case insensitive)
+    - NO.100 → ナンバー100
+    """
+    return NUMBER_PREFIX_PATTERN.sub(r"ナンバー\1", text)
+
+
+def _clean_chapter(text: str) -> str:
+    """Replace Chapter X pattern with 第X章 for TTS.
+
+    Converts:
+    - Chapter 5 → 第5章
+    - chapter 12 → 第12章 (case insensitive)
+    - CHAPTER 1 → 第1章
+
+    Note: 第X章 will be further converted to だいXしょう by normalize_numbers()
+    """
+    return CHAPTER_PATTERN.sub(r"第\1章", text)
+
+
 def _clean_isbn(text: str) -> str:
     """Remove ISBN numbers from text for TTS.
 
@@ -199,6 +231,8 @@ def clean_page_text(text: str, heading_marker: str | None = None) -> str:
     # Process in specific order to avoid interference
     text = _clean_urls(text)  # US1: Remove URLs
     text = _clean_isbn(text)  # US4: Remove ISBN
+    text = _clean_number_prefix(text)  # US2: No.X → ナンバーX
+    text = _clean_chapter(text)  # US2: Chapter X → 第X章
     text = _clean_parenthetical_english(text)  # US5: Remove (English)
     text = _normalize_references(text)  # US2/3: 図X.Y → ずXのY
 
