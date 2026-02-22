@@ -10,6 +10,55 @@ logger = logging.getLogger(__name__)
 # Default dictionary file path
 DEFAULT_DICT_PATH = Path(__file__).parent.parent / "data" / "llm_reading_dict.json"
 
+# Stop words to exclude from technical terms
+STOP_WORDS = {
+    "and",
+    "or",
+    "of",
+    "in",
+    "if",
+    "on",
+    "the",
+    "to",
+    "is",
+    "it",
+    "at",
+    "by",
+    "for",
+    "an",
+    "as",
+    "do",
+    "no",
+    "so",
+    "up",
+    "we",
+    "he",
+    "be",
+    "https",
+    "http",
+    "with",
+    "use",
+}
+
+
+def _should_exclude(term: str) -> bool:
+    """Check if a term should be excluded from technical terms."""
+    if term.lower() in STOP_WORDS:
+        return True
+    if term.startswith(("www.", "http")):
+        return True
+    # Exclude domain-like patterns (e.g., github.com)
+    domain_suffixes = ("com", "org", "net", "io", "jp", "co", "uk", "us", "dev")
+    if "." in term and term.split(".")[-1] in domain_suffixes:
+        return True
+    if term.startswith("ISBN"):
+        return True
+    if re.match(r"^No\.\d", term):
+        return True
+    if len(term) <= 2 and term.islower():
+        return True
+    return False
+
 
 def extract_technical_terms(text: str) -> list[str]:
     """Extract potential technical terms (alphabet-based) from text."""
@@ -22,7 +71,7 @@ def extract_technical_terms(text: str) -> list[str]:
     unique_terms = []
     for term in matches:
         normalized = term.strip()
-        if normalized and normalized not in seen:
+        if normalized and normalized not in seen and not _should_exclude(normalized):
             seen.add(normalized)
             unique_terms.append(normalized)
 
