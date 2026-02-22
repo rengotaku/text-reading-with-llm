@@ -63,15 +63,15 @@
 
 ### Implementation (GREEN)
 
-- [ ] T014 Read RED tests: specs/009-tts-pattern-replace/red-tests/ph2-test.md
-- [ ] T015 [US1] Modify `_clean_urls()` in src/text_cleaner.py: BARE_URL_PATTERN.sub("ウェブサイト", text)
-- [ ] T016 [US1] Modify `_clean_urls()` in src/text_cleaner.py: URL-as-link-text → "ウェブサイト"
-- [ ] T017 Verify `make test` PASS (GREEN)
+- [X] T014 Read RED tests: specs/009-tts-pattern-replace/red-tests/ph2-test.md
+- [X] T015 [US1] Modify `_clean_urls()` in src/text_cleaner.py: BARE_URL_PATTERN.sub("ウェブサイト", text)
+- [X] T016 [US1] Modify `_clean_urls()` in src/text_cleaner.py: URL-as-link-text → "ウェブサイト"
+- [X] T017 Verify `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T018 Verify `make test` passes all tests (回帰なし)
-- [ ] T019 Generate phase output: specs/009-tts-pattern-replace/tasks/ph2-output.md
+- [X] T018 Verify `make test` passes all tests (回帰なし)
+- [X] T019 Generate phase output: specs/009-tts-pattern-replace/tasks/ph2-output.md
 
 **Checkpoint**: US1 が独立して機能し、テスト可能であること
 

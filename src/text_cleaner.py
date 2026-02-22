@@ -117,25 +117,25 @@ def split_into_pages(markdown: str) -> list[Page]:
 
 
 def _clean_urls(text: str) -> str:
-    """Remove URLs from text for TTS.
+    """Replace URLs with 'ウェブサイト' for TTS.
 
     - Markdown links: Keep link text, remove URL
-    - URL as link text: Remove entirely
-    - Bare URLs: Remove entirely
+    - URL as link text: Replace with 'ウェブサイト'
+    - Bare URLs: Replace with 'ウェブサイト'
     """
 
     # Step 1: Handle Markdown links
     def replace_markdown_link(match):
         link_text = match.group(1)
-        # If link text is a URL, remove entirely
+        # If link text is a URL, replace with 'ウェブサイト'
         if URL_TEXT_PATTERN.match(link_text):
-            return ""
+            return "ウェブサイト"
         return link_text
 
     text = MARKDOWN_LINK_PATTERN.sub(replace_markdown_link, text)
 
-    # Step 2: Remove bare URLs
-    text = BARE_URL_PATTERN.sub("", text)
+    # Step 2: Replace bare URLs with 'ウェブサイト'
+    text = BARE_URL_PATTERN.sub("ウェブサイト", text)
 
     return text
 
