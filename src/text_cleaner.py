@@ -27,7 +27,9 @@ ENABLE_KANJI_CONVERSION = True
 MARKDOWN_LINK_PATTERN = re.compile(r"\[([^\]]+)\]\([^)]+\)")
 # Match bare URLs but stop before Japanese characters, parentheses, and brackets
 BARE_URL_PATTERN = re.compile(r"https?://[^\s\u3000-\u9fff\uff00-\uffef）」』】\]]+")
-URL_TEXT_PATTERN = re.compile(r"^https?://")
+# Match www. URLs (e.g., www.example.com)
+WWW_URL_PATTERN = re.compile(r"www\.[^\s\u3000-\u9fff\uff00-\uffef）」』】\]]+")
+URL_TEXT_PATTERN = re.compile(r"^(?:https?://|www\.)")
 
 # Reference patterns for TTS normalization (US2/US3)
 REFERENCE_PATTERNS = [
@@ -158,7 +160,8 @@ def _clean_urls(text: str) -> str:
 
     - Markdown links: Keep link text, remove URL
     - URL as link text: Replace with 'ウェブサイト'
-    - Bare URLs: Replace with 'ウェブサイト'
+    - Bare URLs (http(s)://...): Replace with 'ウェブサイト'
+    - www. URLs: Replace with 'ウェブサイト'
     """
 
     # Step 1: Handle Markdown links
@@ -171,8 +174,11 @@ def _clean_urls(text: str) -> str:
 
     text = MARKDOWN_LINK_PATTERN.sub(replace_markdown_link, text)
 
-    # Step 2: Replace bare URLs with 'ウェブサイト'
+    # Step 2: Replace bare http(s):// URLs with 'ウェブサイト'
     text = BARE_URL_PATTERN.sub("ウェブサイト", text)
+
+    # Step 3: Replace www. URLs with 'ウェブサイト'
+    text = WWW_URL_PATTERN.sub("ウェブサイト", text)
 
     return text
 
