@@ -60,6 +60,35 @@ ISBN_PATTERN = re.compile(
     r")"
 )
 
+# ISBN with context pattern (US3 Phase 4)
+# Matches ISBNs with brackets and labels:
+# - （ISBN: 978-...） or (ISBN: 978-...)
+# - ISBN: 978-... or ISBN-10: ... or ISBN-13: ...
+# - （978-...） (ISBN without label in brackets) - only for ISBN-13 starting with 978/979
+ISBN_WITH_CONTEXT_PATTERN = re.compile(
+    r"(?:"
+    # Pattern 1: Bracketed ISBN with optional label
+    r"[（(]"  # Opening bracket (full-width or half-width)
+    r"(?:[Ii][Ss][Bb][Nn](?:-1[03])?[\s:：-]*)?"  # Optional ISBN/ISBN-10/ISBN-13 label
+    r"(?:"
+    r"97[89][-\s]?\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?\d"  # ISBN-13 with hyphens
+    r"|97[89]\d{10}"  # ISBN-13 without hyphens
+    r"|\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?[\dXx]"  # ISBN-10 with hyphens
+    r"|\d{9}[\dXx]"  # ISBN-10 without hyphens
+    r")"
+    r"[）)]"  # Closing bracket (must match opening)
+    r"|"
+    # Pattern 2: ISBN with label (no brackets required)
+    r"[Ii][Ss][Bb][Nn](?:-1[03])?[\s:：-]+"  # ISBN/ISBN-10/ISBN-13 label (required)
+    r"(?:"
+    r"97[89][-\s]?\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?\d"  # ISBN-13 with hyphens
+    r"|97[89]\d{10}"  # ISBN-13 without hyphens
+    r"|\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?[\dXx]"  # ISBN-10 with hyphens
+    r"|\d{9}[\dXx]"  # ISBN-10 without hyphens
+    r")"
+    r")"
+)
+
 # Parenthetical patterns for English term removal (US5)
 # Matches brackets containing only ASCII letters, numbers, spaces, hyphens, periods, commas
 # But preserves brackets containing Japanese characters or empty content
@@ -188,9 +217,39 @@ def _clean_chapter(text: str) -> str:
 def _clean_isbn(text: str) -> str:
     """Remove ISBN numbers from text for TTS.
 
-    Removes all ISBN patterns (ISBN-10 and ISBN-13, with or without hyphens).
+    Removes all ISBN patterns including:
+    - Parenthetical ISBNs: （ISBN: 978-...） → removed with brackets
+    - Labeled ISBNs: ISBN: 978-... → removed with label
+    - Bare ISBNs: ISBN978-... → removed
+
+    Also normalizes spaces after removal:
+    - Full-width spaces (　) → removed completely
+    - Exactly 2 consecutive half-width spaces → removed completely
+    - 3+ consecutive half-width spaces → collapsed to single space
+
+    Note: Does not strip leading/trailing spaces to preserve text structure.
+    Whitespace-only input is preserved as-is.
     """
-    return ISBN_PATTERN.sub("", text)
+    # Preserve whitespace-only input unchanged
+    if not text.strip():
+        return text
+
+    # Step 1: Remove ISBNs with context (brackets, labels)
+    text = ISBN_WITH_CONTEXT_PATTERN.sub("", text)
+
+    # Step 2: Remove any remaining bare ISBNs
+    text = ISBN_PATTERN.sub("", text)
+
+    # Step 3: Normalize spaces
+    # First, remove all full-width spaces
+    text = text.replace("\u3000", "")
+    # Then, handle half-width spaces:
+    # - 3+ consecutive spaces → single space
+    text = re.sub(r" {3,}", " ", text)
+    # - Exactly 2 consecutive spaces → no space
+    text = text.replace("  ", "")
+
+    return text
 
 
 def _clean_parenthetical_english(text: str) -> str:

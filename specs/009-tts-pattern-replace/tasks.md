@@ -138,16 +138,16 @@
 
 ### Implementation (GREEN)
 
-- [ ] T045 Read RED tests: specs/009-tts-pattern-replace/red-tests/ph4-test.md
-- [ ] T046 [P] [US3] Add ISBN_WITH_CONTEXT_PATTERN constant in src/text_cleaner.py
-- [ ] T047 [US3] Enhance `_clean_isbn()` function in src/text_cleaner.py: 括弧・ラベル対応
-- [ ] T048 [US3] Add space normalization after ISBN removal in src/text_cleaner.py
-- [ ] T049 Verify `make test` PASS (GREEN)
+- [X] T045 Read RED tests: specs/009-tts-pattern-replace/red-tests/ph4-test.md
+- [X] T046 [P] [US3] Add ISBN_WITH_CONTEXT_PATTERN constant in src/text_cleaner.py
+- [X] T047 [US3] Enhance `_clean_isbn()` function in src/text_cleaner.py: 括弧・ラベル対応
+- [X] T048 [US3] Add space normalization after ISBN removal in src/text_cleaner.py
+- [X] T049 Verify `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T050 Verify `make test` passes all tests (US1, US2 回帰含む)
-- [ ] T051 Generate phase output: specs/009-tts-pattern-replace/tasks/ph4-output.md
+- [X] T050 Verify `make test` passes all tests (US1, US2 回帰含む)
+- [X] T051 Generate phase output: specs/009-tts-pattern-replace/tasks/ph4-output.md
 
 **Checkpoint**: US1, US2, US3 がすべて独立して機能すること
 
