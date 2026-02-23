@@ -85,17 +85,17 @@
 
 ### Input
 
-- [ ] T022 セットアップ分析を読む: specs/010-split-xml-pipeline/tasks/ph1-output.md
-- [ ] T023 前フェーズ出力を読む: specs/010-split-xml-pipeline/tasks/ph2-output.md
+- [x] T022 セットアップ分析を読む: specs/010-split-xml-pipeline/tasks/ph1-output.md
+- [x] T023 前フェーズ出力を読む: specs/010-split-xml-pipeline/tasks/ph2-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T024 [P] [US2] --cleaned-text オプションパーステストを追加: tests/test_xml2_pipeline.py に test_parse_args_cleaned_text_option テスト
-- [ ] T025 [P] [US2] --cleaned-text 指定時のテキストクリーニングスキップテストを追加: tests/test_xml2_pipeline.py に test_main_with_cleaned_text_skips_cleaning テスト
-- [ ] T026 [P] [US2] --cleaned-text ファイル不存在時のエラーテストを追加: tests/test_xml2_pipeline.py に test_cleaned_text_file_not_found テスト
-- [ ] T027 [P] [US2] 後方互換性テストを追加: tests/test_xml2_pipeline.py に test_backward_compatibility_without_cleaned_text テスト
-- [ ] T028 `make test` FAIL (RED) を確認
-- [ ] T029 RED 出力を生成: specs/010-split-xml-pipeline/red-tests/ph3-test.md
+- [x] T024 [P] [US2] --cleaned-text オプションパーステストを追加: tests/test_xml2_pipeline.py に test_parse_args_cleaned_text_option テスト
+- [x] T025 [P] [US2] --cleaned-text 指定時のテキストクリーニングスキップテストを追加: tests/test_xml2_pipeline.py に test_main_with_cleaned_text_skips_cleaning テスト
+- [x] T026 [P] [US2] --cleaned-text ファイル不存在時のエラーテストを追加: tests/test_xml2_pipeline.py に test_cleaned_text_file_not_found テスト
+- [x] T027 [P] [US2] 後方互換性テストを追加: tests/test_xml2_pipeline.py に test_backward_compatibility_without_cleaned_text テスト
+- [x] T028 `make test` FAIL (RED) を確認
+- [x] T029 RED 出力を生成: specs/010-split-xml-pipeline/red-tests/ph3-test.md
 
 ### Implementation (GREEN)
 
