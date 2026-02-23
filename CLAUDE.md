@@ -90,8 +90,5 @@ specs/                       # フィーチャー仕様格納
 ## Recent Changes
 - 009-tts-pattern-replace: Added Python 3.10+ + re (標準ライブラリ)、fugashi/unidic-lite (既存)
 - 008-ruff-precommit-setup: Added Python 3.10+ + ruff, pre-commit（開発用依存関係として追加）
-- 007-cleanup-unused-code: Added Python 3.10+ + xml.etree.ElementTree, voicevox_core, MeCab, soundfile, numpy
 
 ## Active Technologies
-- Python 3.10+ + re (標準ライブラリ)、fugashi/unidic-lite (既存) (009-tts-pattern-replace)
-- N/A (テキスト処理のみ) (009-tts-pattern-replace)
