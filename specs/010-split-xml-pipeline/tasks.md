@@ -61,17 +61,17 @@
 
 ### Implementation (GREEN)
 
-- [ ] T014 RED テストを読む: specs/010-split-xml-pipeline/red-tests/ph2-test.md
-- [ ] T015 [P] [US1] parse_args() 関数を実装: src/text_cleaner_cli.py に argparse で --input, --output オプション
-- [ ] T016 [P] [US1] main() 関数を実装: src/text_cleaner_cli.py に XML パース → テキストクリーニング → cleaned_text.txt 保存
-- [ ] T017 [US1] Makefile に clean-text ターゲットを追加: Makefile
-- [ ] T018 `make test` PASS (GREEN) を確認
+- [x] T014 RED テストを読む: specs/010-split-xml-pipeline/red-tests/ph2-test.md
+- [x] T015 [P] [US1] parse_args() 関数を実装: src/text_cleaner_cli.py に argparse で --input, --output オプション
+- [x] T016 [P] [US1] main() 関数を実装: src/text_cleaner_cli.py に XML パース → テキストクリーニング → cleaned_text.txt 保存
+- [x] T017 [US1] Makefile に clean-text ターゲットを追加: Makefile
+- [x] T018 `make test` PASS (GREEN) を確認
 
 ### Verification
 
-- [ ] T019 `make test` で全テスト通過を確認（リグレッションなし）
-- [ ] T020 `make clean-text INPUT=tests/fixtures/sample_book2.xml` で動作確認
-- [ ] T021 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph2-output-template.md → ph2-output.md
+- [x] T019 `make test` で全テスト通過を確認（リグレッションなし）
+- [x] T020 `make clean-text INPUT=tests/fixtures/sample_book2.xml` で動作確認
+- [x] T021 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph2-output-template.md → ph2-output.md
 
 **チェックポイント**: User Story 1 が完全に機能し、独立してテスト可能であること
 

@@ -188,10 +188,23 @@ class TestMainGeneratesCleanedText:
         """cleaned_text.txt に章区切りマーカーが含まれる"""
         from src.text_cleaner_cli import main
 
+        # Create XML with <chapter> tags to test chapter marker generation
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <chapter number="1" title="First Chapter">
+    <paragraph>Content of first chapter.</paragraph>
+  </chapter>
+  <chapter number="2" title="Second Chapter">
+    <paragraph>Content of second chapter.</paragraph>
+  </chapter>
+</book>"""
+        xml_path = tmp_path / "test_chapters.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
         output_dir = tmp_path / "output"
 
         with patch("src.text_cleaner_cli.init_for_content"):
-            main(["--input", str(SAMPLE_BOOK2_XML), "--output", str(output_dir)])
+            main(["--input", str(xml_path), "--output", str(output_dir)])
 
         cleaned_files = list(output_dir.rglob("cleaned_text.txt"))
         assert len(cleaned_files) >= 1, "cleaned_text.txt が生成されるべき"
