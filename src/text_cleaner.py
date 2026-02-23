@@ -27,7 +27,9 @@ ENABLE_KANJI_CONVERSION = True
 MARKDOWN_LINK_PATTERN = re.compile(r"\[([^\]]+)\]\([^)]+\)")
 # Match bare URLs but stop before Japanese characters, parentheses, and brackets
 BARE_URL_PATTERN = re.compile(r"https?://[^\s\u3000-\u9fff\uff00-\uffef）」』】\]]+")
-URL_TEXT_PATTERN = re.compile(r"^https?://")
+# Match www. URLs (e.g., www.example.com)
+WWW_URL_PATTERN = re.compile(r"www\.[^\s\u3000-\u9fff\uff00-\uffef）」』】\]]+")
+URL_TEXT_PATTERN = re.compile(r"^(?:https?://|www\.)")
 
 # Reference patterns for TTS normalization (US2/US3)
 REFERENCE_PATTERNS = [
@@ -39,6 +41,14 @@ REFERENCE_PATTERNS = [
     (re.compile(r"注(\d+)"), r"ちゅう\1"),  # 注X
 ]
 
+# Number prefix pattern (US2)
+# No.X pattern (case insensitive)
+NUMBER_PREFIX_PATTERN = re.compile(r"No\.(\d+)", re.IGNORECASE)
+
+# Chapter pattern (US2)
+# Chapter X pattern (case insensitive)
+CHAPTER_PATTERN = re.compile(r"Chapter\s+(\d+)", re.IGNORECASE)
+
 # ISBN patterns (US4)
 # ISBN-13: 978/979 + 10 digits with optional hyphens
 # ISBN-10: 10 digits/chars with optional hyphens (last char can be X)
@@ -49,6 +59,35 @@ ISBN_PATTERN = re.compile(
     r"|97[89]\d{10}"  # ISBN-13 without hyphens
     r"|\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?[\dXx]"  # ISBN-10 with hyphens
     r"|\d{9}[\dXx]"  # ISBN-10 without hyphens
+    r")"
+)
+
+# ISBN with context pattern (US3 Phase 4)
+# Matches ISBNs with brackets and labels:
+# - （ISBN: 978-...） or (ISBN: 978-...)
+# - ISBN: 978-... or ISBN-10: ... or ISBN-13: ...
+# - （978-...） (ISBN without label in brackets) - only for ISBN-13 starting with 978/979
+ISBN_WITH_CONTEXT_PATTERN = re.compile(
+    r"(?:"
+    # Pattern 1: Bracketed ISBN with optional label
+    r"[（(]"  # Opening bracket (full-width or half-width)
+    r"(?:[Ii][Ss][Bb][Nn](?:-1[03])?[\s:：-]*)?"  # Optional ISBN/ISBN-10/ISBN-13 label
+    r"(?:"
+    r"97[89][-\s]?\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?\d"  # ISBN-13 with hyphens
+    r"|97[89]\d{10}"  # ISBN-13 without hyphens
+    r"|\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?[\dXx]"  # ISBN-10 with hyphens
+    r"|\d{9}[\dXx]"  # ISBN-10 without hyphens
+    r")"
+    r"[）)]"  # Closing bracket (must match opening)
+    r"|"
+    # Pattern 2: ISBN with label (no brackets required)
+    r"[Ii][Ss][Bb][Nn](?:-1[03])?[\s:：-]+"  # ISBN/ISBN-10/ISBN-13 label (required)
+    r"(?:"
+    r"97[89][-\s]?\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?\d"  # ISBN-13 with hyphens
+    r"|97[89]\d{10}"  # ISBN-13 without hyphens
+    r"|\d[-\s]?\d{1,5}[-\s]?\d{1,7}[-\s]?[\dXx]"  # ISBN-10 with hyphens
+    r"|\d{9}[\dXx]"  # ISBN-10 without hyphens
+    r")"
     r")"
 )
 
@@ -117,25 +156,29 @@ def split_into_pages(markdown: str) -> list[Page]:
 
 
 def _clean_urls(text: str) -> str:
-    """Remove URLs from text for TTS.
+    """Replace URLs with 'ウェブサイト' for TTS.
 
     - Markdown links: Keep link text, remove URL
-    - URL as link text: Remove entirely
-    - Bare URLs: Remove entirely
+    - URL as link text: Replace with 'ウェブサイト'
+    - Bare URLs (http(s)://...): Replace with 'ウェブサイト'
+    - www. URLs: Replace with 'ウェブサイト'
     """
 
     # Step 1: Handle Markdown links
     def replace_markdown_link(match):
         link_text = match.group(1)
-        # If link text is a URL, remove entirely
+        # If link text is a URL, replace with 'ウェブサイト'
         if URL_TEXT_PATTERN.match(link_text):
-            return ""
+            return "ウェブサイト"
         return link_text
 
     text = MARKDOWN_LINK_PATTERN.sub(replace_markdown_link, text)
 
-    # Step 2: Remove bare URLs
-    text = BARE_URL_PATTERN.sub("", text)
+    # Step 2: Replace bare http(s):// URLs with 'ウェブサイト'
+    text = BARE_URL_PATTERN.sub("ウェブサイト", text)
+
+    # Step 3: Replace www. URLs with 'ウェブサイト'
+    text = WWW_URL_PATTERN.sub("ウェブサイト", text)
 
     return text
 
@@ -153,12 +196,66 @@ def _normalize_references(text: str) -> str:
     return text
 
 
+def _clean_number_prefix(text: str) -> str:
+    """Replace No.X pattern with ナンバーX for TTS.
+
+    Converts:
+    - No.21 → ナンバー21
+    - no.5 → ナンバー5 (case insensitive)
+    - NO.100 → ナンバー100
+    """
+    return NUMBER_PREFIX_PATTERN.sub(r"ナンバー\1", text)
+
+
+def _clean_chapter(text: str) -> str:
+    """Replace Chapter X pattern with 第X章 for TTS.
+
+    Converts:
+    - Chapter 5 → 第5章
+    - chapter 12 → 第12章 (case insensitive)
+    - CHAPTER 1 → 第1章
+
+    Note: 第X章 will be further converted to だいXしょう by normalize_numbers()
+    """
+    return CHAPTER_PATTERN.sub(r"第\1章", text)
+
+
 def _clean_isbn(text: str) -> str:
     """Remove ISBN numbers from text for TTS.
 
-    Removes all ISBN patterns (ISBN-10 and ISBN-13, with or without hyphens).
+    Removes all ISBN patterns including:
+    - Parenthetical ISBNs: （ISBN: 978-...） → removed with brackets
+    - Labeled ISBNs: ISBN: 978-... → removed with label
+    - Bare ISBNs: ISBN978-... → removed
+
+    Also normalizes spaces after removal:
+    - Full-width spaces (　) → removed completely
+    - Exactly 2 consecutive half-width spaces → removed completely
+    - 3+ consecutive half-width spaces → collapsed to single space
+
+    Note: Does not strip leading/trailing spaces to preserve text structure.
+    Whitespace-only input is preserved as-is.
     """
-    return ISBN_PATTERN.sub("", text)
+    # Preserve whitespace-only input unchanged
+    if not text.strip():
+        return text
+
+    # Step 1: Remove ISBNs with context (brackets, labels)
+    text = ISBN_WITH_CONTEXT_PATTERN.sub("", text)
+
+    # Step 2: Remove any remaining bare ISBNs
+    text = ISBN_PATTERN.sub("", text)
+
+    # Step 3: Normalize spaces
+    # First, remove all full-width spaces
+    text = text.replace("\u3000", "")
+    # Then, handle half-width spaces:
+    # - 3+ consecutive spaces → single space
+    text = re.sub(r" {3,}", " ", text)
+    # - Exactly 2 consecutive spaces → no space
+    text = text.replace("  ", "")
+
+    return text
 
 
 def _clean_parenthetical_english(text: str) -> str:
@@ -199,6 +296,8 @@ def clean_page_text(text: str, heading_marker: str | None = None) -> str:
     # Process in specific order to avoid interference
     text = _clean_urls(text)  # US1: Remove URLs
     text = _clean_isbn(text)  # US4: Remove ISBN
+    text = _clean_number_prefix(text)  # US2: No.X → ナンバーX
+    text = _clean_chapter(text)  # US2: Chapter X → 第X章
     text = _clean_parenthetical_english(text)  # US5: Remove (English)
     text = _normalize_references(text)  # US2/3: 図X.Y → ずXのY
 

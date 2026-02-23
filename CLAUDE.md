@@ -88,9 +88,10 @@ specs/                       # フィーチャー仕様格納
 - **phase-executor** (sonnet): 実装 → GREEN 確認 → 検証 → `tasks/ph{N}-output.md` 出力
 
 ## Recent Changes
+- 009-tts-pattern-replace: Added Python 3.10+ + re (標準ライブラリ)、fugashi/unidic-lite (既存)
 - 008-ruff-precommit-setup: Added Python 3.10+ + ruff, pre-commit（開発用依存関係として追加）
 - 007-cleanup-unused-code: Added Python 3.10+ + xml.etree.ElementTree, voicevox_core, MeCab, soundfile, numpy
-- 006-xml-dict-support: Added Python 3.10+ + xml.etree.ElementTree（標準ライブラリ）, src/xml2_parser, src/dict_manager, src/llm_reading_generator
 
 ## Active Technologies
-- Python 3.10+ + ruff, pre-commit（開発用依存関係として追加） (008-ruff-precommit-setup)
+- Python 3.10+ + re (標準ライブラリ)、fugashi/unidic-lite (既存) (009-tts-pattern-replace)
+- N/A (テキスト処理のみ) (009-tts-pattern-replace)

@@ -32,23 +32,23 @@ class TestCleanUrlsMarkdownLink:
 
 
 class TestCleanUrlsUrlAsLinkText:
-    """Test when URL itself is the link text: [url](url) -> removed"""
+    """Test when URL itself is the link text: [url](url) -> ウェブサイト"""
 
-    def test_clean_urls_url_as_link_text_complete_removal(self):
-        """URLがリンクテキストの場合は完全削除"""
+    def test_clean_urls_url_as_link_text_replaced_with_website(self):
+        """URLがリンクテキストの場合は「ウェブサイト」に置換"""
         input_text = "[https://example.com](https://example.com)をクリック"
-        expected = "をクリック"
+        expected = "ウェブサイトをクリック"
 
         result = _clean_urls(input_text)
 
         assert result == expected, (
-            f"URLがリンクテキストの場合は完全に削除されるべき: got '{result}', expected '{expected}'"
+            f"URLがリンクテキストの場合は「ウェブサイト」に置換されるべき: got '{result}', expected '{expected}'"
         )
 
     def test_clean_urls_url_as_link_text_with_path(self):
-        """パス付きURLがリンクテキストの場合も完全削除"""
+        """パス付きURLがリンクテキストの場合も「ウェブサイト」に置換"""
         input_text = "詳細は[https://example.com/docs](https://example.com/docs)を参照"
-        expected = "詳細はを参照"
+        expected = "詳細はウェブサイトを参照"
 
         result = _clean_urls(input_text)
 
@@ -56,30 +56,30 @@ class TestCleanUrlsUrlAsLinkText:
 
 
 class TestCleanUrlsBareUrl:
-    """Test bare URL removal: https://... -> removed"""
+    """Test bare URL replacement: https://... -> ウェブサイト"""
 
-    def test_clean_urls_bare_url_complete_removal(self):
-        """裸のURLは完全削除"""
+    def test_clean_urls_bare_url_replaced_with_website(self):
+        """裸のURLは「ウェブサイト」に置換"""
         input_text = "アクセス先はhttps://example.com/path?query=1です"
-        expected = "アクセス先はです"
+        expected = "アクセス先はウェブサイトです"
 
         result = _clean_urls(input_text)
 
-        assert result == expected, f"裸のURLは完全に削除されるべき: got '{result}', expected '{expected}'"
+        assert result == expected, f"裸のURLは「ウェブサイト」に置換されるべき: got '{result}', expected '{expected}'"
 
     def test_clean_urls_bare_url_http(self):
-        """HTTPプロトコルのURLも削除"""
+        """HTTPプロトコルのURLも「ウェブサイト」に置換"""
         input_text = "古いサイトはhttp://legacy.example.comにあります"
-        expected = "古いサイトはにあります"
+        expected = "古いサイトはウェブサイトにあります"
 
         result = _clean_urls(input_text)
 
         assert result == expected
 
     def test_clean_urls_bare_url_with_fragment(self):
-        """フラグメント付きURLも削除"""
+        """フラグメント付きURLも「ウェブサイト」に置換"""
         input_text = "セクションはhttps://docs.example.com/guide#section-1を参照"
-        expected = "セクションはを参照"
+        expected = "セクションはウェブサイトを参照"
 
         result = _clean_urls(input_text)
 
@@ -101,16 +101,25 @@ class TestCleanUrlsMultipleUrls:
     def test_clean_urls_mixed_markdown_and_bare(self):
         """Markdownリンクと裸URLの混在"""
         input_text = "[公式サイト](https://official.com)とhttps://example.comを参照"
-        expected = "公式サイトとを参照"
+        expected = "公式サイトとウェブサイトを参照"
 
         result = _clean_urls(input_text)
 
         assert result == expected
 
     def test_clean_urls_multiple_bare_urls(self):
-        """複数の裸URL"""
+        """複数の裸URLがそれぞれ「ウェブサイト」に置換"""
         input_text = "サイトAはhttps://a.com、サイトBはhttps://b.comです"
-        expected = "サイトAは、サイトBはです"
+        expected = "サイトAはウェブサイト、サイトBはウェブサイトです"
+
+        result = _clean_urls(input_text)
+
+        assert result == expected
+
+    def test_clean_urls_multiple_consecutive_bare_urls(self):
+        """連続する複数の裸URLがそれぞれ個別に置換される"""
+        input_text = "参考: https://example.com https://another.com を参照"
+        expected = "参考: ウェブサイト ウェブサイト を参照"
 
         result = _clean_urls(input_text)
 
@@ -141,11 +150,42 @@ class TestCleanUrlsIdempotent:
 
     def test_clean_urls_idempotent_plain_text(self):
         """プレーンテキストの冪等性"""
-        input_text = "リンクとを参照"  # Already processed result
+        input_text = "リンクとウェブサイトを参照"  # Already processed result
 
         result = _clean_urls(input_text)
 
         assert result == input_text
+
+
+class TestCleanUrlsTrailingPunctuation:
+    """Test URL with trailing punctuation: punctuation should be preserved"""
+
+    def test_clean_urls_bare_url_followed_by_period(self):
+        """URL直後の句点は保持される"""
+        input_text = "詳細はhttps://example.comを参照。次の項目へ"
+        expected = "詳細はウェブサイトを参照。次の項目へ"
+
+        result = _clean_urls(input_text)
+
+        assert result == expected, f"URL後の句点は保持されるべき: got '{result}', expected '{expected}'"
+
+    def test_clean_urls_bare_url_followed_by_comma(self):
+        """URL直後の読点は保持される"""
+        input_text = "https://example.com、これは参考サイトです"
+        expected = "ウェブサイト、これは参考サイトです"
+
+        result = _clean_urls(input_text)
+
+        assert result == expected
+
+    def test_clean_urls_bare_url_at_end_of_sentence(self):
+        """文末のURLが「ウェブサイト」に置換される"""
+        input_text = "公式サイトはhttps://example.com"
+        expected = "公式サイトはウェブサイト"
+
+        result = _clean_urls(input_text)
+
+        assert result == expected
 
 
 class TestCleanUrlsEdgeCases:

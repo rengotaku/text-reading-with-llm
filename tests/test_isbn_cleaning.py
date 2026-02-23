@@ -180,3 +180,156 @@ class TestCleanIsbnIdempotent:
         """空白のみのテキスト"""
         result = _clean_isbn("   ")
         assert result == "   "
+
+
+class TestCleanIsbnParentheticalRemoval:
+    """Test parenthetical ISBN removal: 括弧ごとISBNを削除 (US3 Phase 4)"""
+
+    def test_parenthetical_isbn_fullwidth_brackets(self):
+        """全角括弧内のISBNを括弧ごと削除"""
+        input_text = "この本（ISBN: 978-4-7981-8771-6）は良書です"
+        expected = "この本は良書です"
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected, f"括弧ごとISBNが削除されるべき: got '{result}', expected '{expected}'"
+
+    def test_parenthetical_isbn_halfwidth_brackets(self):
+        """半角括弧内のISBNを括弧ごと削除"""
+        input_text = "この本(ISBN: 978-4-7981-8771-6)は良書です"
+        expected = "この本は良書です"
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected, f"半角括弧でも括弧ごと削除されるべき: got '{result}', expected '{expected}'"
+
+    def test_parenthetical_isbn_no_space_after_colon(self):
+        """コロン後スペースなしでも括弧ごと削除"""
+        input_text = "この本（ISBN:978-4-7981-8771-6）は良書です"
+        expected = "この本は良書です"
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected
+
+    def test_parenthetical_isbn_10_digit(self):
+        """ISBN-10を括弧ごと削除"""
+        input_text = "参考書（ISBN: 4-7981-8771-X）を読んでください"
+        expected = "参考書を読んでください"
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected
+
+    def test_parenthetical_isbn_without_label(self):
+        """ラベルなしでISBNのみ括弧内にある場合も削除"""
+        input_text = "この本（978-4-7981-8771-6）は良書です"
+        expected = "この本は良書です"
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected
+
+
+class TestCleanIsbnLabelRemoval:
+    """Test ISBN with label removal: ラベル付きISBNを完全削除 (US3 Phase 4)"""
+
+    def test_isbn_with_colon_label(self):
+        """ISBN: ラベル付きISBNを完全削除"""
+        input_text = "ISBN: 978-4-7981-8771-6"
+        expected = ""
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected, f"ISBN:ラベル付きISBNは完全に削除されるべき: got '{result}', expected '{expected}'"
+
+    def test_isbn10_with_label(self):
+        """ISBN-10: ラベル付きISBNを完全削除"""
+        input_text = "ISBN-10: 4-7981-8771-X"
+        expected = ""
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected, f"ISBN-10:ラベルも削除されるべき: got '{result}', expected '{expected}'"
+
+    def test_isbn13_with_label(self):
+        """ISBN-13: ラベル付きISBNを完全削除"""
+        input_text = "ISBN-13: 978-4-7981-8771-6"
+        expected = ""
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected, f"ISBN-13:ラベルも削除されるべき: got '{result}', expected '{expected}'"
+
+    def test_isbn_label_in_sentence(self):
+        """文中のISBN:ラベル付きパターンを削除"""
+        input_text = "書籍情報はISBN: 978-4-7981-8771-6です"
+        expected = "書籍情報はです"
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected
+
+    def test_isbn_label_at_beginning(self):
+        """文頭のISBN:ラベル付きパターンを削除"""
+        input_text = "ISBN: 978-4-7981-8771-6 この本は良書です"
+        expected = "この本は良書です"
+
+        result = _clean_isbn(input_text)
+
+        assert result.strip() == expected, (
+            f"文頭のISBNラベル削除後、先頭空白も正規化されるべき: got '{result.strip()}', expected '{expected}'"
+        )
+
+
+class TestCleanIsbnSpaceNormalization:
+    """Test space normalization after ISBN removal (US3 Phase 4)"""
+
+    def test_double_space_after_isbn_removal(self):
+        """ISBN削除後の二重スペースを正規化"""
+        input_text = "この本  は良書です"
+        expected = "この本は良書です"
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected, f"二重スペースが正規化されるべき: got '{result}', expected '{expected}'"
+
+    def test_leading_space_after_isbn_removal(self):
+        """ISBN削除後の先頭スペースを除去"""
+        input_text = "ISBN978-4-7981-8771-6 は良書です"
+        expected = "は良書です"
+
+        result = _clean_isbn(input_text)
+
+        assert result.strip() == expected, (
+            f"先頭スペースが正規化されるべき: got '{result.strip()}', expected '{expected}'"
+        )
+
+    def test_trailing_space_after_isbn_removal(self):
+        """ISBN削除後の末尾スペースを除去"""
+        input_text = "この本は ISBN978-4-7981-8771-6"
+        expected = "この本は"
+
+        result = _clean_isbn(input_text)
+
+        assert result.strip() == expected, (
+            f"末尾スペースが正規化されるべき: got '{result.strip()}', expected '{expected}'"
+        )
+
+    def test_multiple_spaces_collapse(self):
+        """複数スペースを単一スペースに"""
+        input_text = "この本   は   良書です"
+        expected = "この本 は 良書です"
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected, f"複数スペースが単一に正規化されるべき: got '{result}', expected '{expected}'"
+
+    def test_fullwidth_space_normalization(self):
+        """全角スペースも正規化対象"""
+        input_text = "この本\u3000\u3000は良書です"
+        expected = "この本は良書です"
+
+        result = _clean_isbn(input_text)
+
+        assert result == expected, f"全角スペースも正規化されるべき: got '{result}', expected '{expected}'"

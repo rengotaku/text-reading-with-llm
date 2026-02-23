@@ -285,3 +285,127 @@ class TestIntegrationEdgeCases:
         assert "：" not in result
         assert "「" not in result
         assert "」" not in result
+
+
+class TestTTSPatternReplacementIntegration:
+    """Integration tests for TTS pattern replacement (009-tts-pattern-replace).
+
+    Tests for edge cases from spec.md:
+    - 文中の複数URLが連続する場合、各URLが個別に置換される
+    - URL直後に句読点がある場合、句読点は保持される
+    - 「No.」の後に数字がない場合（「No. を参照」）、置換しない
+    - ISBNが文頭にある場合、後続テキストの先頭空白は正規化される
+    - 「NO.」「no.」など大文字小文字の混在も「ナンバー」に置換される
+    """
+
+    def test_multiple_consecutive_urls(self):
+        """文中の複数URLが連続する場合、各URLが個別に置換される"""
+        input_text = "参照: https://example.com と https://github.com を確認"
+        result = clean_page_text(input_text)
+
+        # Both URLs should be replaced
+        assert "https://" not in result
+        assert "example.com" not in result
+        assert "github.com" not in result
+        # Should contain "ウェブサイト" twice (or kana conversion of it)
+        # After MeCab conversion, just verify URLs are gone
+
+    def test_url_with_trailing_punctuation(self):
+        """URL直後に句読点がある場合、句読点は保持される"""
+        input_text = "詳細は https://example.com、こちらを参照。"
+        result = clean_page_text(input_text)
+
+        # URL should be replaced
+        assert "https://" not in result
+        assert "example.com" not in result
+        # Punctuation should be preserved (will be transformed by normalize_punctuation)
+
+    def test_no_prefix_without_number(self):
+        """「No.」の後に数字がない場合（「No. を参照」）、置換しない"""
+        # "No." without number should remain unchanged
+        # After MeCab, it may be converted to kana, but should not become "ナンバー"
+        # We test the pattern function directly to avoid MeCab transformation complexity
+        from src.text_cleaner import _clean_number_prefix
+
+        assert _clean_number_prefix("詳細は No. を参照") == "詳細は No. を参照"
+
+    def test_isbn_at_beginning_with_space_normalization(self):
+        """ISBNが文頭にある場合、後続テキストの先頭空白は正規化される"""
+        from src.text_cleaner import _clean_isbn
+
+        input_text = "ISBN978-4-7981-8771-6  この本は良書です"
+        result = _clean_isbn(input_text)
+
+        # ISBN should be removed, double space should be removed
+        assert "ISBN" not in result
+        assert "978" not in result
+        assert "  " not in result  # Double space should be removed
+        assert "この本は良書です" in result
+
+    def test_no_prefix_case_insensitive(self):
+        """「NO.」「no.」など大文字小文字の混在も「ナンバー」に置換される"""
+        from src.text_cleaner import _clean_number_prefix
+
+        assert _clean_number_prefix("No.5") == "ナンバー5"
+        assert _clean_number_prefix("NO.10") == "ナンバー10"
+        assert _clean_number_prefix("no.3") == "ナンバー3"
+        assert _clean_number_prefix("nO.7") == "ナンバー7"
+
+    def test_combined_url_isbn_number_chapter(self):
+        """URL、ISBN、No.X、Chapter X が混在したテキストの統合テスト"""
+        input_text = """詳細は https://example.com を参照。
+この本 ISBN978-4-7981-8771-6 の No.21 および Chapter 5 を確認してください。"""
+
+        result = clean_page_text(input_text)
+
+        # URL should be replaced
+        assert "https://" not in result
+        assert "example.com" not in result
+
+        # ISBN should be removed
+        assert "ISBN" not in result
+        assert "978-4-7981-8771-6" not in result
+
+        # No.21 should become ナンバー21 (or kana after MeCab)
+        # Chapter 5 should become 第5章 (or kana after MeCab)
+        # These will be converted by MeCab, so just verify originals are gone
+        assert "No.21" not in result
+        assert "Chapter 5" not in result
+
+    def test_success_criteria_sc001_url_components(self):
+        """SC-001: TTS出力に「ダブリュー」「ドット」などのURL構成要素が含まれない"""
+        input_text = "詳細は www.example.com を参照"
+        result = clean_page_text(input_text)
+
+        # URL should be replaced with "ウェブサイト" (then converted by MeCab)
+        assert "www." not in result
+        assert "example.com" not in result
+        # The actual output will be kana, but original URL components should be gone
+
+    def test_success_criteria_sc002_no_prefix(self):
+        """SC-002: `No.X`形式が「ナンバーX」で読み上げられる"""
+        from src.text_cleaner import _clean_number_prefix
+
+        result = _clean_number_prefix("詳細は No.21 で説明します")
+        assert "ナンバー" in result
+        assert "No." not in result
+
+    def test_success_criteria_sc003_isbn_removed(self):
+        """SC-003: ISBN形式文字列がTTS出力に含まれない"""
+        input_text = "この本（ISBN: 978-4-7981-8771-6）は良書です"
+        result = clean_page_text(input_text)
+
+        assert "ISBN" not in result
+        assert "978" not in result
+
+    def test_success_criteria_sc004_no_double_spaces(self):
+        """SC-004: 二重空白や不自然な句読点配置が発生しない"""
+        from src.text_cleaner import _clean_isbn
+
+        # ISBN removal should normalize spaces
+        result = _clean_isbn("この本 ISBN978-4-7981-8771-6  良書です")
+        assert "  " not in result  # No double spaces
+
+        # Test with parenthetical ISBN
+        result2 = _clean_isbn("この本（ISBN: 978-4-7981-8771-6）は良書です")
+        assert "  " not in result2
