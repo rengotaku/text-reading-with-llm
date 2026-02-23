@@ -31,12 +31,12 @@
 
 **目的**: プロジェクト初期化、既存コード調査、変更準備
 
-- [ ] T001 現在の実装を読む: src/xml2_pipeline.py の main() 関数（L88-224）
-- [ ] T002 [P] 現在の実装を読む: src/text_cleaner.py の clean_page_text() 関数
-- [ ] T003 [P] 現在の実装を読む: src/dict_manager.py の get_content_hash() 関数
-- [ ] T004 [P] 既存テストを読む: tests/test_xml2_pipeline.py
-- [ ] T005 [P] 既存 Makefile を読む: Makefile の gen-dict, xml-tts ターゲット
-- [ ] T006 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph1-output-template.md → ph1-output.md
+- [x] T001 現在の実装を読む: src/xml2_pipeline.py の main() 関数（L88-224）
+- [x] T002 [P] 現在の実装を読む: src/text_cleaner.py の clean_page_text() 関数
+- [x] T003 [P] 現在の実装を読む: src/dict_manager.py の get_content_hash() 関数
+- [x] T004 [P] 既存テストを読む: tests/test_xml2_pipeline.py
+- [x] T005 [P] 既存 Makefile を読む: Makefile の gen-dict, xml-tts ターゲット
+- [x] T006 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph1-output-template.md → ph1-output.md
 
 ---
 
