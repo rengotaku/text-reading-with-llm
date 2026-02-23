@@ -48,16 +48,16 @@
 
 ### Input
 
-- [ ] T007 前フェーズ出力を読む: specs/010-split-xml-pipeline/tasks/ph1-output.md
+- [x] T007 前フェーズ出力を読む: specs/010-split-xml-pipeline/tasks/ph1-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T008 [P] [US1] CLI 引数パーステストを実装: tests/test_text_cleaner_cli.py に test_parse_args_* クラス
-- [ ] T009 [P] [US1] XML → cleaned_text.txt 生成テストを実装: tests/test_text_cleaner_cli.py に test_main_* テスト
-- [ ] T010 [P] [US1] エラーハンドリングテストを実装: tests/test_text_cleaner_cli.py に test_file_not_found, test_invalid_xml テスト
-- [ ] T011 [P] [US1] 出力ディレクトリ自動作成テストを実装: tests/test_text_cleaner_cli.py に test_output_directory_creation テスト
-- [ ] T012 `make test` FAIL (RED) を確認
-- [ ] T013 RED 出力を生成: specs/010-split-xml-pipeline/red-tests/ph2-test.md
+- [x] T008 [P] [US1] CLI 引数パーステストを実装: tests/test_text_cleaner_cli.py に test_parse_args_* クラス
+- [x] T009 [P] [US1] XML → cleaned_text.txt 生成テストを実装: tests/test_text_cleaner_cli.py に test_main_* テスト
+- [x] T010 [P] [US1] エラーハンドリングテストを実装: tests/test_text_cleaner_cli.py に test_file_not_found, test_invalid_xml テスト
+- [x] T011 [P] [US1] 出力ディレクトリ自動作成テストを実装: tests/test_text_cleaner_cli.py に test_output_directory_creation テスト
+- [x] T012 `make test` FAIL (RED) を確認
+- [x] T013 RED 出力を生成: specs/010-split-xml-pipeline/red-tests/ph2-test.md
 
 ### Implementation (GREEN)
 
