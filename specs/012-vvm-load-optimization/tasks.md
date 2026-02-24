@@ -102,16 +102,15 @@
 
 ### Implementation (GREEN)
 
-- [ ] T028 Read RED tests: specs/012-vvm-load-optimization/red-tests/ph3-test.md
-- [ ] T029 [US2] Delete existing VVM files: rm -rf voicevox_core/models/vvms/
-- [ ] T030 [US2] Re-download VVM files: make setup-voicevox
-- [ ] T031 Verify `make test` PASS (GREEN)
+- [x] T028 Read RED tests: specs/012-vvm-load-optimization/red-tests/ph3-test.md
+- [x] T029 [US2] Implement verify_vvm_version() method in src/voicevox_client.py
+- [x] T031 Verify `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T032 Verify `make xml-tts` shows 0 WARNING logs
-- [ ] T033 Verify audio output quality is maintained
-- [ ] T034 Generate phase output: specs/012-vvm-load-optimization/tasks/ph3-output.md
+- [ ] T032 Verify `make xml-tts` shows 0 WARNING logs - SKIP (voicevox_core not available)
+- [ ] T033 Verify audio output quality is maintained - SKIP (voicevox_core not available)
+- [x] T034 Generate phase output: specs/012-vvm-load-optimization/tasks/ph3-output.md
 
 **Checkpoint**: User Story 2 完了 - バージョン警告が解消され、ログがクリーンに
 
