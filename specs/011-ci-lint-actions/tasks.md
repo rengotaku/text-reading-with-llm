@@ -96,20 +96,20 @@ jobs:
 
 ### Input
 
-- [ ] T011 Read setup analysis: specs/011-ci-lint-actions/tasks/ph1-output.md
-- [ ] T012 Read previous phase output: specs/011-ci-lint-actions/tasks/ph2-output.md
+- [x] T011 Read setup analysis: specs/011-ci-lint-actions/tasks/ph1-output.md
+- [x] T012 Read previous phase output: specs/011-ci-lint-actions/tasks/ph2-output.md
 
 ### Verification Tasks
 
-- [ ] T013 PR を作成し、CI が自動実行されることを確認（SC-001, SC-002 検証）
-- [ ] T014 CI の実行時間が 5 分以内であることを確認（SC-001）
-- [ ] T015 [P] CI ログと `make lint` の出力を比較し、一致を確認（SC-003）
-- [ ] T016 [P] 意図的な lint エラーで CI が失敗することを確認（SC-002）
+- [x] T013 PR を作成し、CI が自動実行されることを確認（SC-001, SC-002 検証）
+- [x] T014 CI の実行時間が 5 分以内であることを確認（SC-001）
+- [x] T015 [P] CI ログと `make lint` の出力を比較し、一致を確認（SC-003）
+- [x] T016 [P] 意図的な lint エラーで CI が失敗することを確認（SC-002）
 
 ### Documentation
 
-- [ ] T017 成功基準チェックリストを更新: specs/011-ci-lint-actions/checklists/requirements.md
-- [ ] T018 Phase 出力を生成: specs/011-ci-lint-actions/tasks/ph3-output.md
+- [x] T017 成功基準チェックリストを更新: specs/011-ci-lint-actions/checklists/requirements.md
+- [x] T018 Phase 出力を生成: specs/011-ci-lint-actions/tasks/ph3-output.md
 
 ---
 
