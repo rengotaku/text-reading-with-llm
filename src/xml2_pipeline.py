@@ -82,6 +82,11 @@ def parse_args(args=None):
     parser.add_argument("--max-chunk-chars", type=int, default=500, help="Max characters per TTS chunk (default: 500)")
     parser.add_argument("--start-page", type=int, default=1, help="Start page number (default: 1)")
     parser.add_argument("--end-page", type=int, default=None, help="End page number (default: last page)")
+    parser.add_argument(
+        "--cleaned-text",
+        default=None,
+        help="Path to existing cleaned_text.txt (skip text cleaning if provided)",
+    )
 
     return parser.parse_args(args)
 
@@ -131,49 +136,57 @@ def main(args=None):
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Output directory: %s", output_dir)
 
-    # Save cleaned text
-    cleaned_text_path = output_dir / "cleaned_text.txt"
-    with open(cleaned_text_path, "w", encoding="utf-8") as f:
-        current_chapter = None
+    # Check if --cleaned-text option is provided
+    if parsed.cleaned_text:
+        # Use existing cleaned_text.txt file
+        cleaned_text_path = Path(parsed.cleaned_text)
+        if not cleaned_text_path.exists():
+            raise FileNotFoundError(f"Cleaned text file not found: {parsed.cleaned_text}")
+        logger.info("Using existing cleaned text: %s", cleaned_text_path)
+    else:
+        # Save cleaned text
+        cleaned_text_path = output_dir / "cleaned_text.txt"
+        with open(cleaned_text_path, "w", encoding="utf-8") as f:
+            current_chapter = None
 
-        for item in content_items:
-            # Insert chapter separator when chapter changes
-            if item.chapter_number is not None and item.chapter_number != current_chapter:
-                current_chapter = item.chapter_number
+            for item in content_items:
+                # Insert chapter separator when chapter changes
+                if item.chapter_number is not None and item.chapter_number != current_chapter:
+                    current_chapter = item.chapter_number
 
-                # Find chapter title from heading info
-                chapter_title = "Untitled"
-                if item.item_type == "heading" and item.heading_info and item.heading_info.level == 1:
-                    chapter_title = item.heading_info.title
+                    # Find chapter title from heading info
+                    chapter_title = "Untitled"
+                    if item.item_type == "heading" and item.heading_info and item.heading_info.level == 1:
+                        chapter_title = item.heading_info.title
 
-                f.write(f"=== Chapter {current_chapter}: {chapter_title} ===\n\n")
+                    f.write(f"=== Chapter {current_chapter}: {chapter_title} ===\n\n")
 
-            # Remove markers before cleaning
-            text = item.text
-            if text.startswith(CHAPTER_MARKER):
-                text = text[len(CHAPTER_MARKER) :]
-            elif text.startswith(SECTION_MARKER):
-                text = text[len(SECTION_MARKER) :]
+                # Remove markers before cleaning
+                text = item.text
+                if text.startswith(CHAPTER_MARKER):
+                    text = text[len(CHAPTER_MARKER) :]
+                elif text.startswith(SECTION_MARKER):
+                    text = text[len(SECTION_MARKER) :]
 
-            # Apply clean_page_text to remove URLs, parenthetical English, convert numbers, etc.
-            cleaned = clean_page_text(text)
+                # Apply clean_page_text to remove URLs, parenthetical English, convert numbers, etc.
+                cleaned = clean_page_text(text)
 
-            # For headings, ensure they end with single period (。)
-            # Remove any trailing punctuation and add one period
-            if item.item_type == "heading" and cleaned.strip():
-                cleaned = cleaned.rstrip()
-                # Remove all trailing punctuation (、。！？)
-                while cleaned and cleaned[-1] in "、。！？":
-                    cleaned = cleaned[:-1]
-                # Add single period at the end
-                cleaned = cleaned + "。"
+                # For headings, ensure they end with single period (。)
+                # Remove any trailing punctuation and add one period
+                if item.item_type == "heading" and cleaned.strip():
+                    cleaned = cleaned.rstrip()
+                    # Remove all trailing punctuation (、。！？)
+                    while cleaned and cleaned[-1] in "、。！？":
+                        cleaned = cleaned[:-1]
+                    # Add single period at the end
+                    cleaned = cleaned + "。"
 
-            # Skip empty content
-            if cleaned.strip():
-                f.write(cleaned)
-                f.write("\n\n")
+                # Skip empty content
+                if cleaned.strip():
+                    f.write(cleaned)
+                    f.write("\n\n")
 
-    logger.info("Saved cleaned text: %s", cleaned_text_path)
+        logger.info("Saved cleaned text: %s", cleaned_text_path)
 
     # Load sound effects if specified
     chapter_sound = None

@@ -11,7 +11,47 @@ make setup
 
 ## 基本的な使い方
 
-### 1. 音声生成（章分割あり）
+### 1. XML パイプライン（段階的実行）
+
+#### 1.1 全パイプライン一括実行
+
+```bash
+# 辞書生成 → テキストクリーニング → TTS を順次実行
+make run INPUT=path/to/book.xml
+```
+
+#### 1.2 段階的実行（推奨）
+
+各ステップを個別に実行することで、中間結果の確認やデバッグが容易になります。
+
+```bash
+# Step 1: 読み辞書生成（固有名詞・専門用語の読み方を LLM で生成）
+make gen-dict INPUT=path/to/book.xml
+
+# Step 2: テキストクリーニング（URL除去、数字変換等）
+# → data/{hash}/cleaned_text.txt が生成される
+make clean-text INPUT=path/to/book.xml
+
+# Step 3: TTS 音声生成（cleaned_text.txt から音声生成）
+make xml-tts INPUT=path/to/book.xml
+```
+
+#### 1.3 TTS パラメータ調整時の時短テクニック
+
+テキストクリーニングは1回実行すれば、TTS パラメータ（速度、スタイル等）の調整時に再実行不要です。
+
+```bash
+# 初回: 全パイプライン実行
+make run INPUT=sample.xml
+
+# 2回目以降: TTS のみ再実行（テキストクリーニングをスキップ）
+make xml-tts INPUT=sample.xml SPEED=1.5
+make xml-tts INPUT=sample.xml STYLE_ID=3  # ずんだもん
+```
+
+**処理時間**: テキストクリーニングのスキップにより処理時間が約50%短縮されます。
+
+### 2. Markdown パイプライン（章分割あり）
 
 ```bash
 # config.yamlのinputを使用
@@ -36,13 +76,13 @@ data/{content_hash}/
 │   ...
 ```
 
-### 2. 音声生成（章分割なし）
+### 3. 音声生成（章分割なし）
 
 ```bash
 make run-simple
 ```
 
-### 3. 既存データの章分割
+### 4. 既存データの章分割
 
 すでにページ単位のWAVがある場合、後から章ごとに整理できる。
 
@@ -91,11 +131,21 @@ chapters:
 ```bash
 make help          # ヘルプ表示
 make setup         # 環境構築
-make run           # TTS実行（章分割あり）
+
+# パイプライン実行（XML処理）
+make run           # 全パイプライン実行（辞書生成 → テキストクリーニング → TTS）
+make gen-dict      # 読み辞書生成のみ
+make clean-text    # テキストクリーニングのみ（XML → cleaned_text.txt）
+make xml-tts       # TTS生成のみ（INPUT指定または既存cleaned_text.txt使用）
+
+# その他のパイプライン
 make run-simple    # TTS実行（章分割なし）
 make toc           # TOC生成のみ
 make organize      # 既存ページを章整理
-make gen-dict      # LLM読み辞書生成
+
+# 開発・メンテナンス
+make test          # テスト実行
+make lint          # リンター実行
 make clean         # 生成ファイル削除
 make clean-all     # 全削除（venv含む）
 ```
