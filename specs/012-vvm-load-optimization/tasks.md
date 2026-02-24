@@ -36,12 +36,12 @@
 
 **Purpose**: 既存実装の分析と変更箇所の特定
 
-- [ ] T001 Read current implementation in src/voicevox_client.py
-- [ ] T002 [P] Read current implementation in src/xml2_pipeline.py
-- [ ] T003 [P] Read existing tests in tests/test_xml2_pipeline.py
-- [ ] T004 [P] Read VOICEVOX Core version in Makefile
-- [ ] T005 Identify current load_all_models() call location and usage pattern
-- [ ] T006 Generate phase output: specs/012-vvm-load-optimization/tasks/ph1-output.md
+- [x] T001 Read current implementation in src/voicevox_client.py
+- [x] T002 [P] Read current implementation in src/xml2_pipeline.py
+- [x] T003 [P] Read existing tests in tests/test_xml2_pipeline.py
+- [x] T004 [P] Read VOICEVOX Core version in Makefile
+- [x] T005 Identify current load_all_models() call location and usage pattern
+- [x] T006 Generate phase output: specs/012-vvm-load-optimization/tasks/ph1-output.md
 
 ---
 
