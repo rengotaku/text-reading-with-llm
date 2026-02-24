@@ -91,14 +91,14 @@
 
 ### Input
 
-- [ ] T023 Read setup analysis: specs/012-vvm-load-optimization/tasks/ph1-output.md
-- [ ] T024 Read previous phase output: specs/012-vvm-load-optimization/tasks/ph2-output.md
+- [x] T023 Read setup analysis: specs/012-vvm-load-optimization/tasks/ph1-output.md
+- [x] T024 Read previous phase output: specs/012-vvm-load-optimization/tasks/ph2-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T025 [US2] Implement test_no_version_warning in tests/test_voicevox_client.py
-- [ ] T026 Verify `make test` FAIL (RED) - 現状の VVM でバージョン警告が出ることを確認
-- [ ] T027 Generate RED output: specs/012-vvm-load-optimization/red-tests/ph3-test.md
+- [x] T025 [US2] Implement test_no_version_warning in tests/test_voicevox_client.py
+- [x] T026 Verify `make test` FAIL (RED) - 現状の VVM でバージョン警告が出ることを確認
+- [x] T027 Generate RED output: specs/012-vvm-load-optimization/red-tests/ph3-test.md
 
 ### Implementation (GREEN)
 

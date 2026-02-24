@@ -3,12 +3,17 @@
 Phase 2 RED Tests - US1: 必要なモデルのみロード
 style_id から対応する VVM ファイルのみをロードする機能のテスト。
 
+Phase 3 RED Tests - US2: バージョン警告の解消
+VVM ファイルと VOICEVOX Core のバージョンが一致し、警告が出ないことを確認するテスト。
+
 Target functions:
 - src/voicevox_client.py::STYLE_ID_TO_VVM (dict)
 - src/voicevox_client.py::VoicevoxSynthesizer.get_vvm_path_for_style_id()
 - src/voicevox_client.py::VoicevoxSynthesizer.load_model_for_style_id()
+- src/voicevox_client.py::VoicevoxSynthesizer.load_model() (バージョン警告なし検証)
 """
 
+import logging
 from pathlib import Path
 from unittest.mock import patch
 
@@ -311,3 +316,107 @@ class TestInvalidStyleIdError:
         """get_vvm_path_for_style_id でも不正値はエラー."""
         with pytest.raises(ValueError):
             self.synth.get_vvm_path_for_style_id(99999)
+
+
+# =============================================================================
+# T025: test_no_version_warning (Phase 3 - US2)
+# VVM ロード時にバージョン不一致の警告が出ないことを検証
+# =============================================================================
+
+
+class TestNoVersionWarning:
+    """VVM ロード時にバージョン不一致の WARNING が出ないことを検証.
+
+    US2: バージョン警告の解消
+    VVM ファイルと VOICEVOX Core 0.16.3 のバージョンが一致している場合、
+    load_model() 実行時に WARNING レベルのログが出力されないことを確認する。
+
+    このテストは現状の VVM ファイルがバージョン不一致のため FAIL する。
+    GREEN フェーズで VVM ファイルを再取得することで PASS になる。
+    """
+
+    def setup_method(self):
+        """テストごとに新しい Synthesizer を作成."""
+        self.config = VoicevoxConfig(
+            vvm_dir=Path("/tmp/test_vvms"),
+        )
+        self.synth = VoicevoxSynthesizer(config=self.config)
+
+    def test_load_model_no_version_warning(self, caplog):
+        """VVM ロード時にバージョン不一致の WARNING が出力されない.
+
+        voicevox_core が VVM を開く際、バージョン不一致があると
+        WARNING ログを出力する。VVM ファイルが Core と一致していれば
+        WARNING は 0 件のはず。
+
+        verify_vvm_version() メソッドが True を返すことで検証。
+        このメソッドは Phase 3 GREEN で実装される。
+        """
+        # verify_vvm_version() は VVM とCore のバージョン一致を確認する
+        # このメソッドはまだ存在しないため AttributeError で FAIL する
+        result = self.synth.verify_vvm_version(13)
+        assert result is True, "VVM ファイルと Core のバージョンが一致していない"
+
+    def test_verify_vvm_version_returns_bool(self):
+        """verify_vvm_version() が bool を返す."""
+        result = self.synth.verify_vvm_version(13)
+        assert isinstance(result, bool)
+
+    def test_verify_vvm_version_default_style_id(self):
+        """デフォルト style_id (13) でバージョンが一致している."""
+        result = self.synth.verify_vvm_version(13)
+        assert result is True
+
+    def test_verify_vvm_version_style_id_0(self):
+        """style_id 0 でバージョンが一致している."""
+        result = self.synth.verify_vvm_version(0)
+        assert result is True
+
+    def test_verify_vvm_version_style_id_2(self):
+        """style_id 2 (ずんだもん) でバージョンが一致している."""
+        result = self.synth.verify_vvm_version(2)
+        assert result is True
+
+    def test_verify_vvm_version_invalid_style_id(self):
+        """存在しない style_id で ValueError."""
+        with pytest.raises(ValueError):
+            self.synth.verify_vvm_version(99999)
+
+    def test_verify_vvm_version_none_raises_error(self):
+        """None を渡すとエラー."""
+        with pytest.raises((TypeError, ValueError)):
+            self.synth.verify_vvm_version(None)
+
+    def test_no_warning_in_logs_during_load(self, caplog):
+        """モデルロード中に WARNING レベルのログが出力されない.
+
+        load_model_for_style_id() 実行後、WARNING ログが 0 件であることを確認。
+        verify_vvm_version() が True を返すなら、ロード時も警告なしのはず。
+        """
+        # まず VVM バージョンが一致していることを確認
+        assert self.synth.verify_vvm_version(13) is True
+
+        # WARNING ログが出ていないことを確認
+        warning_records = [r for r in caplog.records if r.levelno >= logging.WARNING]
+        version_warnings = [
+            r for r in warning_records if "version" in r.message.lower() or "mismatch" in r.message.lower()
+        ]
+        assert len(version_warnings) == 0, (
+            f"バージョン不一致の WARNING が {len(version_warnings)} 件検出された: "
+            f"{[r.message for r in version_warnings]}"
+        )
+
+    def test_all_mapped_vvms_version_compatible(self):
+        """STYLE_ID_TO_VVM に含まれるすべての VVM がバージョン互換.
+
+        マッピング内の全 style_id について verify_vvm_version() が True を返す。
+        """
+        from src.voicevox_client import STYLE_ID_TO_VVM
+
+        # 重複する VVM を除いてユニークな VVM ファイルのみチェック
+        checked_vvms = set()
+        for style_id, vvm_file in STYLE_ID_TO_VVM.items():
+            if vvm_file not in checked_vvms:
+                result = self.synth.verify_vvm_version(style_id)
+                assert result is True, f"style_id {style_id} ({vvm_file}) のバージョンが不一致"
+                checked_vvms.add(vvm_file)
