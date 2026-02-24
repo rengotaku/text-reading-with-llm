@@ -28,20 +28,48 @@ def get_content_hash(content: str, length: int = 12) -> str:
     return full_hash[:length]
 
 
+def get_xml_content_hash(xml_path: Path) -> str:
+    """Get content hash for XML file using parsed text.
+
+    This ensures gen-dict and xml-tts use the same hash by parsing
+    the XML and combining the text content before hashing.
+
+    Args:
+        xml_path: Path to the XML file
+
+    Returns:
+        Short hex hash string (12 chars)
+
+    Raises:
+        xml.etree.ElementTree.ParseError: If the XML is malformed
+    """
+    from src.xml2_parser import parse_book2_xml
+
+    # Let ParseError propagate - caller should handle it
+    items = parse_book2_xml(xml_path)
+    combined_text = " ".join(item.text for item in items)
+    return get_content_hash(combined_text)
+
+
 def get_dict_path(input_path: Path) -> Path:
     """Get the dictionary path for a given input file.
 
     Uses content hash to uniquely identify the book.
 
     Args:
-        input_path: Path to the input markdown file
+        input_path: Path to the input markdown or XML file
 
     Returns:
         Path to the corresponding dictionary JSON file
     """
-    content = input_path.read_text(encoding="utf-8")
-    content_hash = get_content_hash(content)
-    return DICT_BASE_DIR / f"{content_hash}.json"
+    # Use XML-specific hash for .xml files
+    if input_path.suffix == ".xml":
+        content_hash = get_xml_content_hash(input_path)
+        return DATA_BASE_DIR / content_hash / "readings.json"
+    else:
+        content = input_path.read_text(encoding="utf-8")
+        content_hash = get_content_hash(content)
+        return DICT_BASE_DIR / f"{content_hash}.json"
 
 
 def get_output_dir(content: str) -> Path:
@@ -85,12 +113,18 @@ def load_dict(input_path: Path) -> dict[str, str]:
     """Load the reading dictionary for a given input file.
 
     Args:
-        input_path: Path to the input markdown file
+        input_path: Path to the input markdown or XML file
 
     Returns:
         Dictionary mapping terms to readings, or empty dict if not found
     """
-    dict_path = get_dict_path(input_path)
+    # Use XML-specific hash for .xml files
+    if input_path.suffix == ".xml":
+        content_hash = get_xml_content_hash(input_path)
+        dict_path = DATA_BASE_DIR / content_hash / "readings.json"
+    else:
+        dict_path = get_dict_path(input_path)
+
     if dict_path.exists():
         with open(dict_path, encoding="utf-8") as f:
             data = json.load(f)
@@ -113,8 +147,9 @@ def load_dict_from_content(content: str) -> dict[str, str]:
     if dict_path.exists():
         with open(dict_path, encoding="utf-8") as f:
             data = json.load(f)
-            logger.debug("Loaded %d readings from %s", len(data), dict_path.name)
+            logger.info("Loaded %d readings from %s", len(data), dict_path)
             return data
+    logger.warning("No dictionary found (expected: %s)", dict_path)
     return {}
 
 
@@ -123,13 +158,18 @@ def save_dict(readings: dict[str, str], input_path: Path) -> Path:
 
     Args:
         readings: Dictionary mapping terms to readings
-        input_path: Path to the input markdown file
+        input_path: Path to the input markdown or XML file
 
     Returns:
         Path where the dictionary was saved
     """
-    content = input_path.read_text(encoding="utf-8")
-    content_hash = get_content_hash(content)
+    # Use XML-specific hash for .xml files
+    if input_path.suffix == ".xml":
+        content_hash = get_xml_content_hash(input_path)
+    else:
+        content = input_path.read_text(encoding="utf-8")
+        content_hash = get_content_hash(content)
+
     # Save to new path: data/{hash}/readings.json
     dict_path = DATA_BASE_DIR / content_hash / "readings.json"
     dict_path.parent.mkdir(parents=True, exist_ok=True)

@@ -161,7 +161,11 @@ def main():
     if args.output:
         output_path = args.output
     else:
-        output_path = get_dict_path(input_path)
+        try:
+            output_path = get_dict_path(input_path)
+        except ET.ParseError as e:
+            logger.error("Failed to parse XML file: %s", e)
+            sys.exit(1)
     logger.info("Dictionary path: %s", output_path)
 
     # Load existing dictionary if merging or if auto-hash file exists
