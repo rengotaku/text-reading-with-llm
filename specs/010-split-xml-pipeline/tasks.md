@@ -99,15 +99,15 @@
 
 ### Implementation (GREEN)
 
-- [ ] T030 RED テストを読む: specs/010-split-xml-pipeline/red-tests/ph3-test.md
-- [ ] T031 [US2] parse_args() に --cleaned-text オプションを追加: src/xml2_pipeline.py
-- [ ] T032 [US2] main() を修正して --cleaned-text 指定時はクリーニングスキップ: src/xml2_pipeline.py
-- [ ] T033 `make test` PASS (GREEN) を確認
+- [x] T030 RED テストを読む: specs/010-split-xml-pipeline/red-tests/ph3-test.md
+- [x] T031 [US2] parse_args() に --cleaned-text オプションを追加: src/xml2_pipeline.py
+- [x] T032 [US2] main() を修正して --cleaned-text 指定時はクリーニングスキップ: src/xml2_pipeline.py
+- [x] T033 `make test` PASS (GREEN) を確認
 
 ### Verification
 
-- [ ] T034 `make test` で全テスト通過を確認（US1 テスト含む）
-- [ ] T035 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph3-output-template.md → ph3-output.md
+- [x] T034 `make test` で全テスト通過を確認（US1 テスト含む）
+- [x] T035 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph3-output-template.md → ph3-output.md
 
 **チェックポイント**: User Story 1 と 2 の両方が独立して動作すること
 
