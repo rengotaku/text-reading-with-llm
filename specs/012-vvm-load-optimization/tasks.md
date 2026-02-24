@@ -66,18 +66,18 @@
 
 ### Implementation (GREEN)
 
-- [ ] T014 Read RED tests: specs/012-vvm-load-optimization/red-tests/ph2-test.md
-- [ ] T015 [P] [US1] Add STYLE_ID_TO_VVM dict in src/voicevox_client.py
-- [ ] T016 [P] [US1] Implement get_vvm_path_for_style_id() in src/voicevox_client.py
-- [ ] T017 [US1] Implement load_model_for_style_id() in src/voicevox_client.py
-- [ ] T018 [US1] Replace load_all_models() with load_model_for_style_id() in src/xml2_pipeline.py
-- [ ] T019 Verify `make test` PASS (GREEN)
+- [x] T014 Read RED tests: specs/012-vvm-load-optimization/red-tests/ph2-test.md
+- [x] T015 [P] [US1] Add STYLE_ID_TO_VVM dict in src/voicevox_client.py
+- [x] T016 [P] [US1] Implement get_vvm_path_for_style_id() in src/voicevox_client.py
+- [x] T017 [US1] Implement load_model_for_style_id() in src/voicevox_client.py
+- [x] T018 [US1] Replace load_all_models() with load_model_for_style_id() in src/xml2_pipeline.py
+- [x] T019 Verify `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T020 Verify `make test` passes all tests (no regressions)
-- [ ] T021 Verify `make xml-tts` loads only 1 VVM file (check log output)
-- [ ] T022 Generate phase output: specs/012-vvm-load-optimization/tasks/ph2-output.md
+- [x] T020 Verify `make test` passes all tests (no regressions)
+- [ ] T021 Verify `make xml-tts` loads only 1 VVM file (check log output) - SKIP if voicevox_core not available
+- [x] T022 Generate phase output: specs/012-vvm-load-optimization/tasks/ph2-output.md
 
 **Checkpoint**: User Story 1 完了 - 単一モデルロードが機能し、起動時間短縮を達成
 

@@ -223,7 +223,7 @@ def main(args=None):
     )
     synthesizer = VoicevoxSynthesizer(config)
     synthesizer.initialize()
-    synthesizer.load_all_models()
+    synthesizer.load_model_for_style_id(parsed.style_id)
     logger.info("VOICEVOX initialized (style_id=%d)", parsed.style_id)
 
     # Process content and generate audio
