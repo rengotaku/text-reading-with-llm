@@ -14,16 +14,15 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
-2. **Setup output templates**:
+2. **Setup output files**:
    Run `.specify/scripts/bash/setup-implement.sh --json` to:
    - Parse tasks.md and detect all phases (Phase 1, 2, ..., N)
    - Determine which phases are TDD (have "Test Implementation" section)
-   - Create output templates in FEATURE_DIR:
-     - `tasks/ph1-output-template.md` (Phase 1)
-     - `tasks/ph{N}-output-template.md` (Phase 2+)
-     - `red-tests/ph{N}-test-template.md` (TDD phases only)
-   - Templates are copied from `.specify/templates/` and edited during execution
-   - After editing, agents rename `*-template.md` → `*.md`
+   - Create output files in FEATURE_DIR with final names:
+     - `tasks/ph1-output.md` (Phase 1)
+     - `tasks/ph{N}-output.md` (Phase 2+)
+     - `red-tests/ph{N}-test.md` (TDD phases only)
+   - Files are copied from `.specify/templates/` and edited directly by agents
 
 3. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
    - Scan all checklist files in the checklists/ directory
@@ -81,8 +80,8 @@ You **MUST** consider the user input before proceeding (if not empty).
    | Phase Type | Executor | Reason |
    |------------|----------|--------|
    | **Setup** (Phase 1) | Main agent | Requires context preservation |
-   | **TDD Phase** (has test design section) | tdd-generator → phase-executor | TDD flow |
-   | **Standard Phase** (Polish/Documentation) | phase-executor only | Integration test/verification only |
+   | **TDD Phase** (has test design section) | speckit:tdd-generator → speckit:phase-executor | TDD flow |
+   | **Standard Phase** (Polish/Documentation) | speckit:phase-executor only | Integration test/verification only |
 
    Detection: Phase name contains "setup" → main, has "### Test Design" or "### Test Implementation" → TDD, otherwise → standard
 
@@ -92,12 +91,8 @@ You **MUST** consider the user input before proceeding (if not empty).
    1. Extract Phase 1 tasks from tasks.md
    2. Execute each task sequentially
    3. Update tasks.md (`- [ ]` → `- [X]`)
-   4. Edit `{FEATURE_DIR}/tasks/ph1-output-template.md` (format: `.specify/templates/ph1-output-template.md`)
-   5. Rename: `ph1-output-template.md` → `ph1-output.md`
-      ```bash
-      mv "{FEATURE_DIR}/tasks/ph1-output-template.md" "{FEATURE_DIR}/tasks/ph1-output.md"
-      ```
-   6. **Commit setup changes**:
+   4. Edit `{FEATURE_DIR}/tasks/ph1-output.md` (format: `.specify/templates/ph1-output-template.md`)
+   5. **Commit setup changes**:
       ```bash
       git add -A && git commit -m "chore(phase-1): Setup - {brief description}"
       ```
@@ -105,8 +100,8 @@ You **MUST** consider the user input before proceeding (if not empty).
    ### 6.3 TDD Flow (User Story / Foundational Phase)
 
    **Step 1: Test Implementation (RED)**
-   - Invoke `tdd-generator` via Task tool (`model: opus`)
-   - Refer to `.claude/agents/tdd-generator.md` for input/output format
+   - Invoke `speckit:tdd-generator` via Task tool (`model: opus`)
+   - Refer to `.claude/resources/speckit/agents/tdd-generator.md` for input/output format
    - Verify tests are in FAIL state after completion
    - **Commit RED**:
      ```bash
@@ -114,8 +109,8 @@ You **MUST** consider the user input before proceeding (if not empty).
      ```
 
    **Step 2: Implementation (GREEN) + Verification**
-   - Invoke `phase-executor` via Task tool (`model: sonnet`)
-   - Refer to `.claude/agents/phase-executor.md` for input/output format
+   - Invoke `speckit:phase-executor` via Task tool (`model: sonnet`)
+   - Refer to `.claude/resources/speckit/agents/phase-executor.md` for input/output format
    - Verify all tests PASS after completion
    - **Commit GREEN**:
      ```bash
@@ -124,12 +119,12 @@ You **MUST** consider the user input before proceeding (if not empty).
 
    **Step 3: Coverage Verification**
    - Verify ≥80% with `make coverage`
-   - If insufficient, request additional tests from tdd-generator
+   - If insufficient, request additional tests from speckit:tdd-generator
 
    ### 6.4 Standard Flow (Polish/Documentation Phase)
 
-   - Invoke `phase-executor` via Task tool (`model: sonnet`)
-   - Refer to `.claude/agents/phase-executor.md` for input/output format
+   - Invoke `speckit:phase-executor` via Task tool (`model: sonnet`)
+   - Refer to `.claude/resources/speckit/agents/phase-executor.md` for input/output format
    - **Commit phase changes**:
      ```bash
      git add -A && git commit -m "feat(phase-{N}): Polish - {brief description}"
@@ -140,7 +135,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    After phase completion:
    1. Display phase completion summary
    2. Display deliverables list
-   3. Generate `{FEATURE_DIR}/tasks/ph{N}-output.md`
+   3. Verify output file edited: `{FEATURE_DIR}/tasks/ph{N}-output.md`
    4. **Save session context**:
       ```bash
       /sc:save   # Saves branch, status=in_progress, timestamp
@@ -178,8 +173,8 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Agent Input Reference
 
-| Document | implement(親) | tdd-generator | phase-executor |
-|----------|:-------------:|:-------------:|:--------------:|
+| Document | implement (parent) | speckit:tdd-generator | speckit:phase-executor |
+|----------|:------------------:|:-------------:|:--------------:|
 | tasks.md | ✅ REQUIRED | - | - |
 | plan.md | ✅ REQUIRED | ✅ REQUIRED | ✅ REQUIRED |
 | spec.md | - | ✅ REQUIRED | - |
@@ -193,7 +188,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Notes
 
-- This command requires `@phase-executor` and `@tdd-generator` subagents in `.claude/agents/`
+- This command requires `speckit:phase-executor` and `speckit:tdd-generator` subagents in `.claude/resources/speckit/agents/`
 - If tasks.md is incomplete, run `/speckit.tasks` first
-- **Task tool model parameter**: tdd-generator → `opus`, phase-executor → `sonnet`
+- **Task tool model parameter**: speckit:tdd-generator → `opus`, speckit:phase-executor → `sonnet`
 - For completed tasks, mark as `[X]` in tasks.md

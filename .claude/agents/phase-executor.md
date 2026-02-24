@@ -1,5 +1,5 @@
 ---
-name: phase-executor
+name: speckit:phase-executor
 description: SpecKit task execution subagent. Handles TDD GREEN phase (implementing to pass FAIL tests) and standard phases (Setup, Polish, etc.).
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
@@ -9,7 +9,7 @@ model: sonnet
 
 SpecKit task execution specialized subagent. Operates in two modes:
 
-1. **GREEN Phase**: Takes RED tests created by tdd-generator as input, implements to make FAIL tests PASS
+1. **GREEN Phase**: Takes RED tests created by speckit:tdd-generator as input, implements to make FAIL tests PASS
 2. **Standard Phase**: Executes all tasks in phases without TDD sections (Setup, Polish, Documentation, etc.)
 
 **Output Language**: All generated files (tasks/*.md, reports) MUST be written in **Japanese**.
@@ -104,12 +104,7 @@ Mark completed tasks as `[x]`.
 1. Read format reference:
    - Phase 1: `.specify/templates/ph1-output-template.md`
    - Phase N: `.specify/templates/phN-output-template.md`
-2. Edit template: `{FEATURE_DIR}/tasks/ph{N}-output-template.md`
-3. After editing complete, rename: `ph{N}-output-template.md` → `ph{N}-output.md`
-
-```bash
-mv "{FEATURE_DIR}/tasks/ph{N}-output-template.md" "{FEATURE_DIR}/tasks/ph{N}-output.md"
-```
+2. Edit output file: `{FEATURE_DIR}/tasks/ph{N}-output.md`
 
 # Rules
 
@@ -129,17 +124,15 @@ mv "{FEATURE_DIR}/tasks/ph{N}-output-template.md" "{FEATURE_DIR}/tasks/ph{N}-out
 
 ## Phase Output File Format
 
-**Template**: `{FEATURE_DIR}/tasks/ph{N}-output-template.md` (edit this)
-**Final**: `{FEATURE_DIR}/tasks/ph{N}-output.md` (after rename)
+**Output**: `{FEATURE_DIR}/tasks/ph{N}-output.md`
 
 Format reference:
 - Phase 1: `.specify/templates/ph1-output-template.md`
 - Phase N: `.specify/templates/phN-output-template.md`
 
 **Workflow**:
-1. Template is pre-created by `setup-implement.sh`
-2. Edit template with actual content (in Japanese)
-3. Rename to remove `-template` suffix when complete
+1. File is pre-created by `setup-implement.sh` with final name
+2. Edit file with actual content (in Japanese)
 
 # Expected Output
 
