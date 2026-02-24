@@ -45,11 +45,11 @@
 
 ### Input
 
-- [ ] T006 Read setup analysis: specs/011-ci-lint-actions/tasks/ph1-output.md
+- [x] T006 Read setup analysis: specs/011-ci-lint-actions/tasks/ph1-output.md
 
 ### Implementation
 
-- [ ] T007 [US1] [US2] [US3] `.github/workflows/lint.yml` を作成（quickstart.md の構成を使用）
+- [x] T007 [US1] [US2] [US3] `.github/workflows/lint.yml` を作成（quickstart.md の構成を使用）
 
 **ワークフロー構成**:
 ```yaml
@@ -82,9 +82,9 @@ jobs:
 
 ### Verification
 
-- [ ] T008 `make lint` がローカルで成功することを確認
-- [ ] T009 YAML 構文検証（yamllint または IDE）
-- [ ] T010 Phase 出力を生成: specs/011-ci-lint-actions/tasks/ph2-output.md
+- [x] T008 `make lint` がローカルで成功することを確認
+- [x] T009 YAML 構文検証（yamllint または IDE）
+- [x] T010 Phase 出力を生成: specs/011-ci-lint-actions/tasks/ph2-output.md
 
 **Checkpoint**: ワークフローファイル作成完了。PR 作成で CI 動作を検証可能。
 
