@@ -19,7 +19,7 @@ SPEED ?= 1.0
 
 LLM_MODEL ?= gpt-oss:20b
 
-.PHONY: help setup setup-dev setup-voicevox gen-dict clean-text xml-tts test coverage lint format clean clean-all
+.PHONY: help setup setup-dev setup-voicevox gen-dict clean-text xml-tts run test coverage lint format clean clean-all
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -58,6 +58,8 @@ clean-text: ## Generate cleaned_text.txt from XML (INPUT=file)
 
 xml-tts: ## Run XML to TTS pipeline (INPUT=file)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml2_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
+
+run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → TTS (INPUT=file)
 
 # --- Quality ---
 

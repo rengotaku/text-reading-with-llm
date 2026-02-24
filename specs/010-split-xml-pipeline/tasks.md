@@ -121,20 +121,20 @@
 
 ### Input
 
-- [ ] T036 セットアップ分析を読む: specs/010-split-xml-pipeline/tasks/ph1-output.md
-- [ ] T037 前フェーズ出力を読む: specs/010-split-xml-pipeline/tasks/ph3-output.md
+- [x] T036 セットアップ分析を読む: specs/010-split-xml-pipeline/tasks/ph1-output.md
+- [x] T037 前フェーズ出力を読む: specs/010-split-xml-pipeline/tasks/ph3-output.md
 
 ### Implementation
 
-- [ ] T038 [US3] Makefile に run ターゲットを追加: gen-dict → clean-text → xml-tts の順次実行
-- [ ] T039 [US3] Makefile の .PHONY に run を追加
-- [ ] T040 [US3] Makefile の help ターゲットが run を表示することを確認
+- [x] T038 [US3] Makefile に run ターゲットを追加: gen-dict → clean-text → xml-tts の順次実行
+- [x] T039 [US3] Makefile の .PHONY に run を追加
+- [x] T040 [US3] Makefile の help ターゲットが run を表示することを確認
 
 ### Verification
 
-- [ ] T041 `make test` で全テスト通過を確認
-- [ ] T042 `make help` で run ターゲットの説明が表示されることを確認
-- [ ] T043 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph4-output-template.md → ph4-output.md
+- [x] T041 `make test` で全テスト通過を確認
+- [x] T042 `make help` で run ターゲットの説明が表示されることを確認
+- [x] T043 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph4-output-template.md → ph4-output.md
 
 **チェックポイント**: 全ユーザーストーリーが完成し、`make run` で一括実行可能
 
