@@ -57,12 +57,12 @@
 
 ### Test Implementation (RED)
 
-- [ ] T008 [P] [US1] Implement test_style_id_to_vvm_mapping in tests/test_voicevox_client.py
-- [ ] T009 [P] [US1] Implement test_get_vvm_path_for_style_id in tests/test_voicevox_client.py
-- [ ] T010 [P] [US1] Implement test_load_model_for_style_id in tests/test_voicevox_client.py
-- [ ] T011 [P] [US1] Implement test_invalid_style_id_error in tests/test_voicevox_client.py
-- [ ] T012 Verify `make test` FAIL (RED)
-- [ ] T013 Generate RED output: specs/012-vvm-load-optimization/red-tests/ph2-test.md
+- [x] T008 [P] [US1] Implement test_style_id_to_vvm_mapping in tests/test_voicevox_client.py
+- [x] T009 [P] [US1] Implement test_get_vvm_path_for_style_id in tests/test_voicevox_client.py
+- [x] T010 [P] [US1] Implement test_load_model_for_style_id in tests/test_voicevox_client.py
+- [x] T011 [P] [US1] Implement test_invalid_style_id_error in tests/test_voicevox_client.py
+- [x] T012 Verify `make test` FAIL (RED)
+- [x] T013 Generate RED output: specs/012-vvm-load-optimization/red-tests/ph2-test.md
 
 ### Implementation (GREEN)
 
