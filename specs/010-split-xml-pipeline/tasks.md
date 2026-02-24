@@ -146,21 +146,21 @@
 
 ### Input
 
-- [ ] T044 セットアップ分析を読む: specs/010-split-xml-pipeline/tasks/ph1-output.md
-- [ ] T045 前フェーズ出力を読む: specs/010-split-xml-pipeline/tasks/ph4-output.md
+- [x] T044 セットアップ分析を読む: specs/010-split-xml-pipeline/tasks/ph1-output.md
+- [x] T045 前フェーズ出力を読む: specs/010-split-xml-pipeline/tasks/ph4-output.md
 
 ### Implementation
 
-- [ ] T046 [P] コードクリーンアップ: 不要なコメントや重複コード削除
-- [ ] T047 [P] ドキュメント更新: README.md に新しい Makefile ターゲットの説明追加
-- [ ] T048 成功基準の検証: SC-001 テキストクリーニング 10 秒以内
-- [ ] T049 成功基準の検証: SC-004 `make help` で全ターゲットの説明表示
+- [x] T046 [P] コードクリーンアップ: 不要なコメントや重複コード削除
+- [x] T047 [P] ドキュメント更新: README.md に新しい Makefile ターゲットの説明追加
+- [x] T048 成功基準の検証: SC-001 テキストクリーニング 10 秒以内
+- [x] T049 成功基準の検証: SC-004 `make help` で全ターゲットの説明表示
 
 ### Verification
 
-- [ ] T050 `make test` で全テスト通過を確認
-- [ ] T051 `make lint` でリンターエラーなしを確認
-- [ ] T052 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph5-output-template.md → ph5-output.md
+- [x] T050 `make test` で全テスト通過を確認
+- [x] T051 `make lint` でリンターエラーなしを確認
+- [x] T052 編集・リネーム: specs/010-split-xml-pipeline/tasks/ph5-output-template.md → ph5-output.md
 
 ---
 
