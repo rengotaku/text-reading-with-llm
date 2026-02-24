@@ -1,5 +1,5 @@
 ---
-name: tdd-generator
+name: speckit:tdd-generator
 description: Subagent responsible for TDD RED phase. Implements tests (including assertions) and creates FAIL state.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
@@ -57,9 +57,17 @@ Identify tasks from the "Test Implementation (RED)" section of the specified Pha
 From each task:
 - Target functions/classes to test
 - Expected behavior (input → output)
-- Edge cases (empty input, boundary values, errors, Unicode)
+- Edge cases (see Required Edge Cases below)
 
-### 5. Implement Tests (with assertions)
+### 5. Determine Test Types
+
+| Type | Target | Priority |
+|------|--------|----------|
+| **Unit** | Individual functions/methods | Required |
+| **Integration** | API endpoints, DB operations | Required |
+| **E2E** | Critical user flows | Critical paths only |
+
+### 6. Implement Tests (with assertions)
 
 Follow existing test directory structure, create **complete tests with assertions**.
 
@@ -68,7 +76,7 @@ Follow existing test directory structure, create **complete tests with assertion
 - Write assertions with specific expected values
 - Set up mocks/stubs as needed
 
-### 6. Verify RED
+### 7. Verify RED
 
 ```bash
 make test
@@ -76,19 +84,39 @@ make test
 
 Verify new tests FAIL. If they PASS, either tests are incorrect or implementation already exists.
 
-### 7. Update tasks.md
+### 8. Update tasks.md
 
 Mark test implementation tasks as `[x]`.
 
-### 8. Generate RED Output
+### 9. Generate RED Output
 
 1. Read format reference: `.specify/templates/red-test-template.md`
-2. Edit template: `{FEATURE_DIR}/red-tests/ph{N}-test-template.md`
-3. After editing complete, rename: `ph{N}-test-template.md` → `ph{N}-test.md`
+2. Edit output file: `{FEATURE_DIR}/red-tests/ph{N}-test.md`
 
-```bash
-mv "{FEATURE_DIR}/red-tests/ph{N}-test-template.md" "{FEATURE_DIR}/red-tests/ph{N}-test.md"
-```
+# Required Edge Cases
+
+**MUST** include tests for the following:
+
+| Category | Test Cases |
+|----------|------------|
+| **Null/None** | null, undefined, None input |
+| **Empty values** | Empty string, empty array, empty object |
+| **Type errors** | Invalid type input |
+| **Boundary values** | Min, max, zero, negative numbers |
+| **Error paths** | Network failure, DB error, timeout |
+| **Concurrency** | Race conditions, simultaneous execution |
+| **Large data** | Performance with 1000+ items |
+| **Special chars** | Unicode, emoji, SQL special chars, HTML |
+
+# Anti-Patterns (Avoid)
+
+| ❌ NG | ✅ OK |
+|-------|-------|
+| Test implementation internals | Test behavior (input → output) |
+| Share state between tests | Each test is independent/isolated |
+| Vague/missing assertions | Verify with specific expected values |
+| Use external dependencies directly | Isolate with mocks/stubs |
+| Use `pass` or `skip` as placeholder | Write complete assertions |
 
 # Rules
 
@@ -99,21 +127,30 @@ mv "{FEATURE_DIR}/red-tests/ph{N}-test-template.md" "{FEATURE_DIR}/red-tests/ph{
 - Test names should clearly indicate intent
 - 1 feature = 1 test class or 1 test function group
 - Do not break existing tests
-- Always consider edge cases: empty input/None, boundary values, error cases, large data, Unicode/special characters
+
+# RED Phase Checklist
+
+Verify before completion:
+
+- [ ] All public functions have unit tests
+- [ ] Edge cases covered (null, empty, invalid)
+- [ ] Error paths tested (not just happy path)
+- [ ] External dependencies are mocked
+- [ ] Tests are independent (no shared state)
+- [ ] Assertions are specific and meaningful
+- [ ] `make test` shows new tests FAIL
 
 # Output Format
 
 ## RED Output File Format
 
-**Template**: `{FEATURE_DIR}/red-tests/ph{N}-test-template.md` (edit this)
-**Final**: `{FEATURE_DIR}/red-tests/ph{N}-test.md` (after rename)
+**Output**: `{FEATURE_DIR}/red-tests/ph{N}-test.md`
 
 Format reference: `.specify/templates/red-test-template.md`
 
 **Workflow**:
-1. Template is pre-created by `setup-implement.sh`
-2. Edit template with actual content (in Japanese)
-3. Rename to remove `-template` suffix when complete
+1. File is pre-created by `setup-implement.sh` with final name
+2. Edit file with actual content (in Japanese)
 
 # Expected Output
 
@@ -125,7 +162,7 @@ Report in Japanese including:
 - Executed tasks table
 - Created files table
 - RED output location
-- Next step: phase-executor executes Implementation (GREEN) → Verification
+- Next step: speckit:phase-executor executes Implementation (GREEN) → Verification
 
 ## On Error
 

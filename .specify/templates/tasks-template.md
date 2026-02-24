@@ -171,9 +171,9 @@ description: "Task list template for feature implementation (TDD workflow)"
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: No dependencies - Main agent direct execution
-- **User Stories (Phase 2+)**: TDD flow (tdd-generator → phase-executor)
+- **User Stories (Phase 2+)**: TDD flow (speckit:tdd-generator → speckit:phase-executor)
   - User stories proceed sequentially in priority order (P1 → P2 → P3)
-- **Polish (Final Phase)**: Depends on all user stories - phase-executor only
+- **Polish (Final Phase)**: Depends on all user stories - speckit:phase-executor only
 
 ### Within Each User Story Phase (TDD Flow)
 
@@ -185,8 +185,8 @@ description: "Task list template for feature implementation (TDD workflow)"
 ### Agent Delegation
 
 - **Phase 1 (Setup)**: Main agent direct execution
-- **Phase 2+ (User Stories)**: tdd-generator (RED) → phase-executor (GREEN + Verification)
-- **Phase N (Polish)**: phase-executor only
+- **Phase 2+ (User Stories)**: speckit:tdd-generator (RED) → speckit:phase-executor (GREEN + Verification)
+- **Phase N (Polish)**: speckit:phase-executor only
 
 ### [P] Marker (No Dependencies)
 
