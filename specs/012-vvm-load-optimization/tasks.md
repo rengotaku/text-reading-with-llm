@@ -53,7 +53,7 @@
 
 ### Input
 
-- [ ] T007 Read previous phase output: specs/012-vvm-load-optimization/tasks/ph1-output.md
+- [x] T007 Read previous phase output: specs/012-vvm-load-optimization/tasks/ph1-output.md
 
 ### Test Implementation (RED)
 
@@ -76,7 +76,7 @@
 ### Verification
 
 - [x] T020 Verify `make test` passes all tests (no regressions)
-- [ ] T021 Verify `make xml-tts` loads only 1 VVM file (check log output) - SKIP if voicevox_core not available
+- [x] T021 Verify `make xml-tts` loads only 1 VVM file - SKIPPED (voicevox_core not available)
 - [x] T022 Generate phase output: specs/012-vvm-load-optimization/tasks/ph2-output.md
 
 **Checkpoint**: User Story 1 完了 - 単一モデルロードが機能し、起動時間短縮を達成
@@ -108,8 +108,8 @@
 
 ### Verification
 
-- [ ] T032 Verify `make xml-tts` shows 0 WARNING logs - SKIP (voicevox_core not available)
-- [ ] T033 Verify audio output quality is maintained - SKIP (voicevox_core not available)
+- [x] T032 Verify `make xml-tts` shows 0 WARNING logs - SKIPPED (voicevox_core not available)
+- [x] T033 Verify audio output quality is maintained - SKIPPED (voicevox_core not available)
 - [x] T034 Generate phase output: specs/012-vvm-load-optimization/tasks/ph3-output.md
 
 **Checkpoint**: User Story 2 完了 - バージョン警告が解消され、ログがクリーンに
@@ -130,8 +130,8 @@
 ### Verification
 
 - [x] T037 [US3] Run `make test` to verify all existing tests pass
-- [ ] T038 [US3] Run `make xml-tts` with default style_id and verify output - SKIP (voicevox_core not available)
-- [ ] T039 [US3] Compare audio output with pre-optimization baseline (if available) - SKIP (no baseline)
+- [x] T038 [US3] Run `make xml-tts` with default style_id - SKIPPED (voicevox_core not available)
+- [x] T039 [US3] Compare audio output with baseline - SKIPPED (no baseline available)
 - [x] T040 Verify SC-001: モデルロード時間 80% 以上短縮を確認 - DOCUMENTED theoretical improvement
 
 ### Cleanup
@@ -230,10 +230,10 @@ specs/012-vvm-load-optimization/
 ```
 
 **Checklist**:
-- [ ] style_id 入力のバリデーションテスト
-- [ ] マッピング解決テスト（正常・異常）
-- [ ] VVM パス取得テスト
-- [ ] モデルロードの統合テスト
+- [x] style_id 入力のバリデーションテスト
+- [x] マッピング解決テスト（正常・異常）
+- [x] VVM パス取得テスト
+- [x] モデルロードの統合テスト
 
 ---
 
