@@ -28,10 +28,10 @@ help: ## Show this help
 
 setup: $(VENV)/bin/activate setup-voicevox ## Create venv and install all dependencies
 
-$(VENV)/bin/activate: requirements.txt
+$(VENV)/bin/activate: pyproject.toml
 	python3 -m venv $(VENV)
 	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements.txt
+	$(PIP) install -e ".[dev]"
 	$(PIP) install https://github.com/VOICEVOX/voicevox_core/releases/download/$(VOICEVOX_VERSION)/$(VOICEVOX_WHEEL)
 	touch $(VENV)/bin/activate
 

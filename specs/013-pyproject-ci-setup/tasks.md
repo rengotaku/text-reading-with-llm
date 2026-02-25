@@ -52,21 +52,21 @@
 
 ### Input
 
-- [ ] T008 Read previous phase output: specs/013-pyproject-ci-setup/tasks/ph1-output.md
+- [x] T008 Read previous phase output: specs/013-pyproject-ci-setup/tasks/ph1-output.md
 
 ### Implementation
 
-- [ ] T009 [US1] pyproject.toml に [project] セクション追加（name, version, requires-python）: pyproject.toml
-- [ ] T010 [US1] pyproject.toml に dependencies 追加（soundfile, pyyaml, numpy, requests, fugashi, unidic-lite）: pyproject.toml
-- [ ] T011 [US1] pyproject.toml に [project.optional-dependencies] dev 追加（ruff, pre-commit, pytest, pytest-cov）: pyproject.toml
-- [ ] T012 [US1] Makefile の setup ターゲットを `pip install -e ".[dev]"` に更新: Makefile
+- [x] T009 [US1] pyproject.toml に [project] セクション追加（name, version, requires-python）: pyproject.toml
+- [x] T010 [US1] pyproject.toml に dependencies 追加（soundfile, pyyaml, numpy, requests, fugashi, unidic-lite）: pyproject.toml
+- [x] T011 [US1] pyproject.toml に [project.optional-dependencies] dev 追加（ruff, pre-commit, pytest, pytest-cov）: pyproject.toml
+- [x] T012 [US1] Makefile の setup ターゲットを `pip install -e ".[dev]"` に更新: Makefile
 
 ### Verification
 
-- [ ] T013 venv を再作成し `pip install -e ".[dev]"` が成功することを確認
-- [ ] T014 `make test` が成功することを確認（509件全パス）
-- [ ] T015 `make lint` が成功することを確認
-- [ ] T016 Edit: specs/013-pyproject-ci-setup/tasks/ph2-output.md
+- [x] T013 venv を再作成し `pip install -e ".[dev]"` が成功することを確認
+- [x] T014 `make test` が成功することを確認（509件全パス）
+- [x] T015 `make lint` が成功することを確認
+- [x] T016 Edit: specs/013-pyproject-ci-setup/tasks/ph2-output.md
 
 **Checkpoint**: User Story 1 完了。pyproject.toml でのセットアップが機能。
 

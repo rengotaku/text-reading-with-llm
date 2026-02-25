@@ -1,3 +1,25 @@
+[project]
+name = "text-reading-with-llm"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "soundfile",
+    "pyyaml",
+    "numpy",
+    "requests",
+    "fugashi",
+    "unidic-lite",
+    "scipy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+]
+
 [tool.ruff]
 line-length = 120
 target-version = "py310"
