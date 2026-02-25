@@ -1,11 +1,12 @@
 #!/bin/bash
 # Session analyzer: Generate human-readable + Claude-analyzable report
-# Usage: analyze-session.sh [session_id] [--json] [--output DIR] [--type TYPE]
+# Usage: analyze-session.sh [session_id] [--json] [--output DIR] [--type TYPE] [--auto]
 #
 # Options:
 #   --json       Output JSON to stdout
 #   --output DIR Save reports to directory (creates .json and .md files)
 #   --type TYPE  Session type for filename (default: session)
+#   --auto       Auto-detect FEATURE_DIR from git branch and save there
 
 set -euo pipefail
 
@@ -17,6 +18,7 @@ SESSION_ID=""
 OUTPUT_JSON=""
 OUTPUT_DIR=""
 SESSION_TYPE="session"
+AUTO_OUTPUT=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -40,6 +42,10 @@ while [[ $# -gt 0 ]]; do
       SESSION_TYPE="${1#*=}"
       shift
       ;;
+    --auto)
+      AUTO_OUTPUT="true"
+      shift
+      ;;
     -*)
       echo "Unknown option: $1" >&2
       exit 1
@@ -52,6 +58,40 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# ============================================================
+# Auto-detect output directory from git branch
+# ============================================================
+
+if [[ -n "$AUTO_OUTPUT" && -z "$OUTPUT_DIR" ]]; then
+  # Find check-prerequisites.sh
+  PREREQ_SCRIPT=".specify/scripts/bash/check-prerequisites.sh"
+  if [[ ! -f "$PREREQ_SCRIPT" ]]; then
+    PREREQ_SCRIPT="$HOME/.claude/scripts/check-prerequisites.sh"
+  fi
+
+  if [[ ! -f "$PREREQ_SCRIPT" ]]; then
+    echo "ERROR: check-prerequisites.sh not found" >&2
+    echo "Expected: .specify/scripts/bash/check-prerequisites.sh or ~/.claude/scripts/check-prerequisites.sh" >&2
+    exit 1
+  fi
+
+  # Get FEATURE_DIR from check-prerequisites.sh
+  FEATURE_DIR=$("$PREREQ_SCRIPT" --paths-only | grep "^FEATURE_DIR:" | cut -d: -f2 | tr -d ' ')
+
+  if [[ -z "$FEATURE_DIR" ]]; then
+    echo "ERROR: Failed to detect FEATURE_DIR from check-prerequisites.sh" >&2
+    exit 1
+  fi
+
+  if [[ ! -d "$FEATURE_DIR" ]]; then
+    echo "ERROR: FEATURE_DIR does not exist: $FEATURE_DIR" >&2
+    exit 1
+  fi
+
+  OUTPUT_DIR="${FEATURE_DIR}/analyzed-action"
+  mkdir -p "$OUTPUT_DIR"
+fi
 
 # ============================================================
 # Session detection
