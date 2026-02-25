@@ -23,6 +23,12 @@ source .venv/bin/activate
 ### 3. 依存関係インストール
 
 ```bash
+# 推奨: 全依存を一括インストール（venv作成 + 依存関係 + VOICEVOX）
+make setup
+```
+
+手動でインストールする場合:
+```bash
 # 本番 + 開発依存を一括インストール
 pip install -e ".[dev]"
 

@@ -132,19 +132,19 @@
 
 ### Input
 
-- [ ] T033 Read setup analysis: specs/013-pyproject-ci-setup/tasks/ph1-output.md
-- [ ] T034 Read previous phase output: specs/013-pyproject-ci-setup/tasks/ph4-output.md
+- [x] T033 Read setup analysis: specs/013-pyproject-ci-setup/tasks/ph1-output.md
+- [x] T034 Read previous phase output: specs/013-pyproject-ci-setup/tasks/ph4-output.md
 
 ### Implementation
 
-- [ ] T035 quickstart.md の手順が実際の動作と一致することを確認
-- [ ] T036 README.md のセットアップ手順を更新（必要な場合）: README.md
+- [x] T035 quickstart.md の手順が実際の動作と一致することを確認
+- [x] T036 README.md のセットアップ手順を更新（必要な場合）: README.md
 
 ### Verification
 
-- [ ] T037 `make test` で全テストがパスすることを最終確認
-- [ ] T038 `make lint` でリントがパスすることを最終確認
-- [ ] T039 Edit: specs/013-pyproject-ci-setup/tasks/ph5-output.md
+- [x] T037 `make test` で全テストがパスすることを最終確認
+- [x] T038 `make lint` でリントがパスすることを最終確認
+- [x] T039 Edit: specs/013-pyproject-ci-setup/tasks/ph5-output.md
 
 ---
 
