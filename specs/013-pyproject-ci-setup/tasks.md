@@ -106,21 +106,21 @@
 
 ### Input
 
-- [ ] T024 Read setup analysis: specs/013-pyproject-ci-setup/tasks/ph1-output.md
-- [ ] T025 Read previous phase output: specs/013-pyproject-ci-setup/tasks/ph3-output.md
+- [x] T024 Read setup analysis: specs/013-pyproject-ci-setup/tasks/ph1-output.md
+- [x] T025 Read previous phase output: specs/013-pyproject-ci-setup/tasks/ph3-output.md
 
 ### Implementation
 
-- [ ] T026 [P] [US3] requirements.txt を削除
-- [ ] T027 [P] [US3] requirements-dev.txt を削除
-- [ ] T028 [P] [US3] src/UNKNOWN.egg-info/ ディレクトリを削除
-- [ ] T029 [US3] .gitignore に egg-info パターンが含まれていることを確認: .gitignore
+- [x] T026 [P] [US3] requirements.txt を削除
+- [x] T027 [P] [US3] requirements-dev.txt を削除
+- [x] T028 [P] [US3] src/UNKNOWN.egg-info/ ディレクトリを削除
+- [x] T029 [US3] .gitignore に egg-info パターンが含まれていることを確認: .gitignore
 
 ### Verification
 
-- [ ] T030 venv を再作成し `pip install -e ".[dev]"` が成功することを確認
-- [ ] T031 `make test` が成功することを確認（509件全パス）
-- [ ] T032 Edit: specs/013-pyproject-ci-setup/tasks/ph4-output.md
+- [x] T030 venv を再作成し `pip install -e ".[dev]"` が成功することを確認
+- [x] T031 `make test` が成功することを確認（509件全パス）
+- [x] T032 Edit: specs/013-pyproject-ci-setup/tasks/ph4-output.md
 
 **Checkpoint**: User Story 3 完了。依存関係が pyproject.toml に一元化。
 
