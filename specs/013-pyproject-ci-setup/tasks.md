@@ -80,19 +80,19 @@
 
 ### Input
 
-- [ ] T017 Read setup analysis: specs/013-pyproject-ci-setup/tasks/ph1-output.md
-- [ ] T018 Read previous phase output: specs/013-pyproject-ci-setup/tasks/ph2-output.md
+- [x] T017 Read setup analysis: specs/013-pyproject-ci-setup/tasks/ph1-output.md
+- [x] T018 Read previous phase output: specs/013-pyproject-ci-setup/tasks/ph2-output.md
 
 ### Implementation
 
-- [ ] T019 [US2] GitHub Actions workflow に依存関係インストールステップ更新: .github/workflows/lint.yml
-- [ ] T020 [US2] GitHub Actions workflow に pytest ステップ追加: .github/workflows/lint.yml
-- [ ] T021 [US2] ワークフローファイル名を ci.yml に変更（オプション）: .github/workflows/
+- [x] T019 [US2] GitHub Actions workflow に依存関係インストールステップ更新: .github/workflows/lint.yml
+- [x] T020 [US2] GitHub Actions workflow に pytest ステップ追加: .github/workflows/lint.yml
+- [x] T021 [US2] ワークフローファイル名を ci.yml に変更（オプション）: .github/workflows/
 
 ### Verification
 
-- [ ] T022 ローカルで `make test` が成功することを確認
-- [ ] T023 Edit: specs/013-pyproject-ci-setup/tasks/ph3-output.md
+- [x] T022 ローカルで `make test` が成功することを確認
+- [x] T023 Edit: specs/013-pyproject-ci-setup/tasks/ph3-output.md
 
 **Checkpoint**: User Story 2 完了。CI でテスト自動実行が設定済み。
 
