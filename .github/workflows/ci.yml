@@ -9,6 +9,7 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -28,4 +29,5 @@ jobs:
         run: ruff format --check .
 
       - name: Run pytest
-        run: PYTHONPATH=. pytest tests/ -v
+        run: PYTHONPATH=. pytest tests/ --timeout=60 -v
+        timeout-minutes: 10

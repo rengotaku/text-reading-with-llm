@@ -18,6 +18,7 @@ dev = [
     "pre-commit",
     "pytest",
     "pytest-cov",
+    "pytest-timeout",
 ]
 
 [tool.ruff]
