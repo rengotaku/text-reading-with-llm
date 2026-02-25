@@ -88,10 +88,10 @@ specs/                       # フィーチャー仕様格納
 - **phase-executor** (sonnet): 実装 → GREEN 確認 → 検証 → `tasks/ph{N}-output.md` 出力
 
 ## Recent Changes
+- 012-vvm-load-optimization: Added Python 3.10+ + voicevox_core 0.16.3, numpy, soundfile
 - 011-ci-lint-actions: Added Python 3.10+ + ruff (requirements-dev.txt)
 - 009-tts-pattern-replace: Added Python 3.10+ + re (標準ライブラリ)、fugashi/unidic-lite (既存)
-- 008-ruff-precommit-setup: Added Python 3.10+ + ruff, pre-commit（開発用依存関係として追加）
 
 ## Active Technologies
-- Python 3.10+ + ruff (requirements-dev.txt) (011-ci-lint-actions)
-- N/A (CI 設定のみ) (011-ci-lint-actions)
+- Python 3.10+ + voicevox_core 0.16.3, numpy, soundfile (012-vvm-load-optimization)
+- N/A（VVM ファイルはローカルファイルシステム） (012-vvm-load-optimization)

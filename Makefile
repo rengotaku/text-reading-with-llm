@@ -19,7 +19,7 @@ SPEED ?= 1.0
 
 LLM_MODEL ?= gpt-oss:20b
 
-.PHONY: help setup setup-dev setup-voicevox gen-dict clean-text xml-tts run test coverage lint format clean clean-all
+.PHONY: help setup setup-dev setup-voicevox reset-vvm gen-dict clean-text xml-tts run test coverage lint format clean clean-all
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -43,6 +43,13 @@ $(VOICEVOX_DIR)/onnxruntime/lib:
 	chmod +x $(VOICEVOX_DOWNLOADER)
 	./$(VOICEVOX_DOWNLOADER) --output $(VOICEVOX_DIR)
 	rm -f $(VOICEVOX_DOWNLOADER)
+
+reset-vvm: ## Re-download VVM files (fixes version mismatch warnings)
+	@echo "Removing existing VVM files..."
+	rm -rf $(VOICEVOX_DIR)/models/vvms/
+	rm -rf $(VOICEVOX_DIR)/onnxruntime/lib
+	@echo "Re-downloading VOICEVOX Core files..."
+	$(MAKE) setup-voicevox
 
 setup-dev: $(VENV)/bin/activate ## Install dev dependencies + pre-commit hooks
 	$(PIP) install -r requirements-dev.txt
