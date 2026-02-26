@@ -19,6 +19,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-timeout",
+    "pytest-forked",
 ]
 
 [tool.ruff]

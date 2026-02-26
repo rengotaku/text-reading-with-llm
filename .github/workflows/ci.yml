@@ -29,5 +29,5 @@ jobs:
         run: ruff format --check .
 
       - name: Run pytest
-        run: PYTHONPATH=. pytest tests/ --tb=short -q
+        run: PYTHONPATH=. pytest tests/ --forked --tb=short -q
         timeout-minutes: 10
