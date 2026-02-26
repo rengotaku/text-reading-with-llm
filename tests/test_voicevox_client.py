@@ -253,7 +253,16 @@ class TestLoadModelForStyleId:
 # 不正な style_id に対するエラーハンドリングテスト
 # =============================================================================
 
+# voicevox_core がインストールされているかチェック
+try:
+    import voicevox_core  # noqa: F401
 
+    HAS_VOICEVOX_CORE = True
+except ImportError:
+    HAS_VOICEVOX_CORE = False
+
+
+@pytest.mark.skipif(not HAS_VOICEVOX_CORE, reason="voicevox_core not installed")
 class TestInvalidStyleIdError:
     """不正な style_id でのエラーハンドリングテスト."""
 

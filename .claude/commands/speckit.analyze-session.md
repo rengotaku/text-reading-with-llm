@@ -58,15 +58,25 @@ Run without `--auto` to show immediate feedback:
 .specify/scripts/bash/analyze-session.sh --type implement
 ```
 
-### 4. Run Stage 2: Generate Insights
+### 4. Run Stage 2: Generate Insights (Subagent)
 
-Read the generated JSON file and generate improvement recommendations:
+**Launch `insights-generator` subagent** with Sonnet model:
 
-1. Read the `.json` file from the output directory
-2. Analyze using the categories below
-3. Write `{timestamp}-{type}-insights.md` to the same directory
+```
+Task tool:
+  subagent_type: general-purpose
+  model: sonnet
+  prompt: |
+    You are an insights-generator agent.
+    Read: .claude/agents/insights-generator.md for instructions.
 
-**Insights Analysis Categories:**
+    Input: {json_file_path}
+    Output: {output_dir}/{timestamp}-{type}-insights.md
+
+    Generate improvement insights based on the JSON data.
+```
+
+The subagent analyzes:
 
 | Category | What to Check |
 |----------|---------------|
