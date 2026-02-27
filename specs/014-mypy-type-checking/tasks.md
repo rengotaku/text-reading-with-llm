@@ -138,24 +138,24 @@ lint: ## Run ruff linter, format check, and mypy
 
 ### Input
 
-- [ ] T028 Read: specs/014-mypy-type-checking/tasks/ph1-output.md
-- [ ] T029 Read: specs/014-mypy-type-checking/tasks/ph3-output.md
+- [x] T028 Read: specs/014-mypy-type-checking/tasks/ph1-output.md
+- [x] T029 Read: specs/014-mypy-type-checking/tasks/ph3-output.md
 
 ### 検証準備 (RED 相当)
 
-- [ ] T030 [US4] 型ヒントのない関数を特定し、リストアップする
-- [ ] T031 Generate RED output: specs/014-mypy-type-checking/red-tests/ph4-test.md
+- [x] T030 [US4] 型ヒントのない関数を特定し、リストアップする
+- [x] T031 Generate RED output: specs/014-mypy-type-checking/red-tests/ph4-test.md
 
 ### Implementation (GREEN)
 
-- [ ] T032 Read RED tests: specs/014-mypy-type-checking/red-tests/ph4-test.md
-- [ ] T033 [US4] `mypy src/` を実行し、型ヒントなしコードでもエラーが出ないことを確認する
-- [ ] T034 [US4] エラーが出る場合は `disallow_untyped_defs = false` が有効か確認する
+- [x] T032 Read RED tests: specs/014-mypy-type-checking/red-tests/ph4-test.md
+- [x] T033 [US4] `mypy src/` を実行し、型ヒントなしコードでもエラーが出ないことを確認する
+- [x] T034 [US4] エラーが出る場合は `disallow_untyped_defs = false` が有効か確認する
 
 ### Verification
 
-- [ ] T035 既存コードすべてで `mypy src/` がエラー 0 で完了することを確認する
-- [ ] T036 Edit: specs/014-mypy-type-checking/tasks/ph4-output.md
+- [x] T035 既存コードすべてで `mypy src/` がエラー 0 で完了することを確認する
+- [x] T036 Edit: specs/014-mypy-type-checking/tasks/ph4-output.md
 
 **Checkpoint**: 段階的導入の設定が正しく機能している
 
