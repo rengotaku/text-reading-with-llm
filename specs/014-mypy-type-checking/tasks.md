@@ -91,18 +91,18 @@ files = ["src"]
 
 ### Input
 
-- [ ] T017 Read: specs/014-mypy-type-checking/tasks/ph1-output.md
-- [ ] T018 Read: specs/014-mypy-type-checking/tasks/ph2-output.md
+- [x] T017 Read: specs/014-mypy-type-checking/tasks/ph1-output.md
+- [x] T018 Read: specs/014-mypy-type-checking/tasks/ph2-output.md
 
 ### 検証準備 (RED 相当)
 
-- [ ] T019 [US3] 現時点で `make lint` を実行し、mypy が含まれていないことを確認する
-- [ ] T020 Generate RED output: specs/014-mypy-type-checking/red-tests/ph3-test.md
+- [x] T019 [US3] 現時点で `make lint` を実行し、mypy が含まれていないことを確認する
+- [x] T020 Generate RED output: specs/014-mypy-type-checking/red-tests/ph3-test.md
 
 ### Implementation (GREEN)
 
-- [ ] T021 Read RED tests: specs/014-mypy-type-checking/red-tests/ph3-test.md
-- [ ] T022 [P] [US3] Makefile の lint ターゲットに mypy コマンドを追加する: Makefile
+- [x] T021 Read RED tests: specs/014-mypy-type-checking/red-tests/ph3-test.md
+- [x] T022 [P] [US3] Makefile の lint ターゲットに mypy コマンドを追加する: Makefile
 
 ```makefile
 lint: ## Run ruff linter, format check, and mypy
@@ -111,20 +111,20 @@ lint: ## Run ruff linter, format check, and mypy
 	$(VENV)/bin/mypy src/
 ```
 
-- [ ] T023 [P] [US2] .github/workflows/ci.yml に mypy ステップを追加する: .github/workflows/ci.yml
+- [x] T023 [P] [US2] .github/workflows/ci.yml に mypy ステップを追加する: .github/workflows/ci.yml
 
 ```yaml
       - name: Run mypy
         run: mypy src/
 ```
 
-- [ ] T024 [US3] `make lint` を実行し、mypy が実行されることを確認する (GREEN)
-- [ ] T025 [US2] CI ワークフロー構文を検証する: `python -m py_compile` または `yamllint`（オプション）
+- [x] T024 [US3] `make lint` を実行し、mypy が実行されることを確認する (GREEN)
+- [x] T025 [US2] CI ワークフロー構文を検証する: `python -m py_compile` または `yamllint`（オプション）
 
 ### Verification
 
-- [ ] T026 `make lint` が ruff + mypy を実行することを確認する
-- [ ] T027 Edit: specs/014-mypy-type-checking/tasks/ph3-output.md
+- [x] T026 `make lint` が ruff + mypy を実行することを確認する
+- [x] T027 Edit: specs/014-mypy-type-checking/tasks/ph3-output.md
 
 **Checkpoint**: ローカルと CI の両方で mypy が統合完了
 

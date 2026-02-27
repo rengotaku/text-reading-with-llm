@@ -76,9 +76,10 @@ test: ## Run tests
 coverage: ## Run tests with coverage report
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v --cov=src --cov-report=term-missing
 
-lint: ## Run ruff linter and format check
+lint: ## Run ruff linter, format check, and mypy
 	$(VENV)/bin/ruff check .
 	$(VENV)/bin/ruff format --check .
+	$(VENV)/bin/mypy src/
 
 format: ## Auto-format code with ruff
 	$(VENV)/bin/ruff check --fix .
