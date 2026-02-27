@@ -77,7 +77,7 @@ files = ["src"]
 ### Verification
 
 - [x] T015 [US1] `warn_return_any` が機能することを確認（Any を返す関数があれば警告出力）
-- [ ] T016 Edit: specs/014-mypy-type-checking/tasks/ph2-output.md
+- [x] T016 Edit: specs/014-mypy-type-checking/tasks/ph2-output.md
 
 **Checkpoint**: `mypy src/` が設定に基づいて実行可能
 
