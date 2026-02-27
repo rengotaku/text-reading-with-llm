@@ -167,20 +167,20 @@ lint: ## Run ruff linter, format check, and mypy
 
 ### Input
 
-- [ ] T037 Read: specs/014-mypy-type-checking/tasks/ph1-output.md
-- [ ] T038 Read: specs/014-mypy-type-checking/tasks/ph4-output.md
+- [x] T037 Read: specs/014-mypy-type-checking/tasks/ph1-output.md
+- [x] T038 Read: specs/014-mypy-type-checking/tasks/ph4-output.md
 
 ### Implementation
 
-- [ ] T039 [P] 全体の lint 実行確認: `make lint`
-- [ ] T040 [P] quickstart.md の内容が最新の設定と一致することを確認する
-- [ ] T041 [P] 不要な type: ignore コメントがないことを確認する
+- [x] T039 [P] 全体の lint 実行確認: `make lint`
+- [x] T040 [P] quickstart.md の内容が最新の設定と一致することを確認する
+- [x] T041 [P] 不要な type: ignore コメントがないことを確認する
 
 ### Verification
 
-- [ ] T042 `make test` を実行し、全テストが通過することを確認する
-- [ ] T043 `make lint` を実行し、エラー 0 で完了することを確認する
-- [ ] T044 Edit: specs/014-mypy-type-checking/tasks/ph5-output.md
+- [x] T042 `make test` を実行し、全テストが通過することを確認する
+- [x] T043 `make lint` を実行し、エラー 0 で完了することを確認する
+- [x] T044 Edit: specs/014-mypy-type-checking/tasks/ph5-output.md
 
 ---
 
