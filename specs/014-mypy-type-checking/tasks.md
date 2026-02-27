@@ -48,18 +48,18 @@
 
 ### Input
 
-- [ ] T007 Read: specs/014-mypy-type-checking/tasks/ph1-output.md
+- [x] T007 Read: specs/014-mypy-type-checking/tasks/ph1-output.md
 
 ### 検証準備 (RED 相当)
 
-- [ ] T008 [US1] 現時点で `mypy src/` を実行し、設定なしの状態を記録する
-- [ ] T009 Generate RED output: specs/014-mypy-type-checking/red-tests/ph2-test.md
+- [x] T008 [US1] 現時点で `mypy src/` を実行し、設定なしの状態を記録する
+- [x] T009 Generate RED output: specs/014-mypy-type-checking/red-tests/ph2-test.md
 
 ### Implementation (GREEN)
 
-- [ ] T010 Read RED tests: specs/014-mypy-type-checking/red-tests/ph2-test.md
-- [ ] T011 [US1] pyproject.toml の [project.optional-dependencies] dev に "mypy" を追加する: pyproject.toml
-- [ ] T012 [US1] pyproject.toml に [tool.mypy] セクションを追加する: pyproject.toml
+- [x] T010 Read RED tests: specs/014-mypy-type-checking/red-tests/ph2-test.md
+- [x] T011 [US1] pyproject.toml の [project.optional-dependencies] dev に "mypy" を追加する: pyproject.toml
+- [x] T012 [US1] pyproject.toml に [tool.mypy] セクションを追加する: pyproject.toml
 
 ```toml
 [tool.mypy]
@@ -71,12 +71,12 @@ ignore_missing_imports = true
 files = ["src"]
 ```
 
-- [ ] T013 [US1] mypy をインストールする: `pip install -e ".[dev]"`
-- [ ] T014 [US1] `mypy src/` を実行し、エラー 0 で完了することを確認する (GREEN)
+- [x] T013 [US1] mypy をインストールする: `pip install -e ".[dev]"`
+- [x] T014 [US1] `mypy src/` を実行し、エラー 0 で完了することを確認する (GREEN)
 
 ### Verification
 
-- [ ] T015 [US1] `warn_return_any` が機能することを確認（Any を返す関数があれば警告出力）
+- [x] T015 [US1] `warn_return_any` が機能することを確認（Any を返す関数があれば警告出力）
 - [ ] T016 Edit: specs/014-mypy-type-checking/tasks/ph2-output.md
 
 **Checkpoint**: `mypy src/` が設定に基づいて実行可能
