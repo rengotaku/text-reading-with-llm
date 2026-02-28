@@ -18,10 +18,12 @@ Two-stage session analysis workflow with **automatic file output**:
 │   └→ {timestamp}-{type}.json (raw data + metrics)           │
 │   └→ {timestamp}-{type}.md (statistics summary)             │
 ├─────────────────────────────────────────────────────────────┤
-│ Stage 2: Claude reads JSON → generates insights             │
+│ Stage 2: Subagent reads JSON → generates insights           │
 │   └→ {timestamp}-{type}-insights.md (improvement proposals) │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**IMPORTANT**: Main agent must NOT read the JSON file. Pass only the file path to the subagent.
 
 ## Instructions
 
@@ -43,24 +45,20 @@ Run the script with `--auto` flag (auto-detects FEATURE_DIR from git branch):
 
 If local script not found, use global:
 ```bash
-~/.claude/scripts/analyze-session.sh --auto --type implement
+~/.claude/resources/speckit/scripts/analyze-session.sh --auto --type implement
 ```
 
 This generates in `specs/{branch}/analyzed-action/`:
 - `{timestamp}-{type}.json` - Raw data for insights
 - `{timestamp}-{type}.md` - Human-readable summary
 
-### 3. Display Terminal Summary
+Parse the output to get the JSON file path for Stage 2.
 
-Run without `--auto` to show immediate feedback:
+### 3. Run Stage 2: Generate Insights (Subagent)
 
-```bash
-.specify/scripts/bash/analyze-session.sh --type implement
-```
+**⚠️ DO NOT read the JSON file in main agent. Pass only the path.**
 
-### 4. Run Stage 2: Generate Insights (Subagent)
-
-**Launch `insights-generator` subagent** with Sonnet model:
+Launch `insights-generator` subagent with Sonnet model:
 
 ```
 Task tool:
@@ -68,12 +66,14 @@ Task tool:
   model: sonnet
   prompt: |
     You are an insights-generator agent.
-    Read: .claude/agents/insights-generator.md for instructions.
 
-    Input: {json_file_path}
-    Output: {output_dir}/{timestamp}-{type}-insights.md
+    ## Instructions
+    1. Read .claude/agents/insights-generator.md for detailed instructions
+    2. Read the JSON file at: {json_file_path}
+    3. Analyze the data according to the agent instructions
+    4. Write insights to: {output_dir}/{timestamp}-{type}-insights.md
 
-    Generate improvement insights based on the JSON data.
+    The JSON file contains session metrics. YOU must read it, not the main agent.
 ```
 
 The subagent analyzes:
@@ -86,7 +86,7 @@ The subagent analyzes:
 | **Workflow** | TDD compliance, commit granularity |
 | **Cost** | Token usage, cache hit rate |
 
-### 5. Report Completion
+### 4. Report Completion
 
 ```
 ✅ Session analysis complete
