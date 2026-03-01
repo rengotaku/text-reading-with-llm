@@ -39,6 +39,11 @@ jobs:
         run: PYTHONPATH=. pytest tests/ --forked --tb=short -q
         timeout-minutes: 10
 
+      - name: Run pytest with coverage
+        run: |
+          PYTHONPATH=. pytest tests/ --cov=src --cov-report=xml:coverage.xml --cov-report=term-missing -q --timeout=30
+        timeout-minutes: 5
+
       - name: Coverage comment
         uses: py-cov-action/python-coverage-comment-action@v3
         with:

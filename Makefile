@@ -73,8 +73,8 @@ run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → T
 test: ## Run tests
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v
 
-coverage: ## Run tests with coverage report
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v --cov=src --cov-report=term-missing
+coverage: ## Run tests with coverage report (threshold: 70%)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=70
 
 lint: ## Run ruff linter, format check, and mypy
 	$(VENV)/bin/ruff check .
