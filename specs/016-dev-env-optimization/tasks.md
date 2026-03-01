@@ -77,22 +77,22 @@
 
 ### Input
 
-- [ ] T013 セットアップ分析を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
-- [ ] T014 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph2-output.md
+- [x] T013 セットアップ分析を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
+- [x] T014 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph2-output.md
 
 ### Implementation
 
-- [ ] T015 [US2] .github/workflows/ci.yml に permissions セクションを追加
+- [x] T015 [US2] .github/workflows/ci.yml に permissions セクションを追加
   - `contents: write`
   - `pull-requests: write`
-- [ ] T016 [US2] pytest ステップにカバレッジオプションを追加（pyproject.toml の設定が適用されることを確認）
-- [ ] T017 [US2] py-cov-action/python-coverage-comment-action ステップを追加
+- [x] T016 [US2] pytest ステップにカバレッジオプションを追加（pyproject.toml の設定が適用されることを確認）
+- [x] T017 [US2] py-cov-action/python-coverage-comment-action ステップを追加
   - `GITHUB_TOKEN`, `MINIMUM_GREEN`, `MINIMUM_ORANGE` を設定
 
 ### Verification
 
-- [ ] T018 CI ワークフロー構文を検証: `gh workflow view ci.yml`
-- [ ] T019 作成: specs/016-dev-env-optimization/tasks/ph3-output.md
+- [x] T018 CI ワークフロー構文を検証: `gh workflow view ci.yml`
+- [x] T019 作成: specs/016-dev-env-optimization/tasks/ph3-output.md
 
 **Checkpoint**: CI 設定が構文的に正しく、PR コメント機能が設定されている
 

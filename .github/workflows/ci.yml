@@ -6,6 +6,10 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -34,3 +38,10 @@ jobs:
       - name: Run pytest
         run: PYTHONPATH=. pytest tests/ --forked --tb=short -q
         timeout-minutes: 10
+
+      - name: Coverage comment
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          MINIMUM_GREEN: 80
+          MINIMUM_ORANGE: 60
