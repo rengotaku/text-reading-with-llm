@@ -21,6 +21,7 @@ dev = [
     "pytest-timeout",
     "pytest-forked",
     "mypy",
+    "types-requests",
 ]
 
 [tool.ruff]
@@ -45,4 +46,9 @@ disallow_any_generics = false
 no_implicit_optional = false
 disallow_incomplete_defs = false
 namespace_packages = false
+
+# voicevox_core has no type stubs, and CI doesn't have it installed
+[[tool.mypy.overrides]]
+module = ["voicevox_client"]
+ignore_errors = true
 
