@@ -106,18 +106,18 @@
 
 ### Input
 
-- [ ] T020 セットアップ分析を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
-- [ ] T021 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph3-output.md
+- [x] T020 セットアップ分析を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
+- [x] T021 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph3-output.md
 
 ### Implementation
 
-- [ ] T022 [US3] .github/workflows/ci.yml のキャッシュ設定を確認（research.md より既に最適化済み）
-- [ ] T023 [US3] 必要に応じてキャッシュキーの明示化を検討（変更不要の可能性高い）
+- [x] T022 [US3] .github/workflows/ci.yml のキャッシュ設定を確認（research.md より既に最適化済み）
+- [x] T023 [US3] 必要に応じてキャッシュキーの明示化を検討（変更不要の可能性高い）
 
 ### Verification
 
-- [ ] T024 CI 設定のキャッシュ部分を最終確認
-- [ ] T025 作成: specs/016-dev-env-optimization/tasks/ph4-output.md
+- [x] T024 CI 設定のキャッシュ部分を最終確認
+- [x] T025 作成: specs/016-dev-env-optimization/tasks/ph4-output.md
 
 **Checkpoint**: キャッシュ設定が最適な状態
 
