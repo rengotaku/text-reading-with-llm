@@ -26,6 +26,39 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 SAMPLE_BOOK2_XML = FIXTURES_DIR / "sample_book2.xml"
 
 
+# Fixture to prevent PID file and atexit state leaks across tests
+@pytest.fixture
+def mock_pid_management(monkeypatch):
+    """Mock PID file management to prevent atexit accumulation and file conflicts.
+
+    This fixture prevents two issues:
+    1. PID file conflicts when tests use the same input filename
+    2. atexit handler accumulation causing time.sleep(0.5) to stack up
+
+    Use this fixture for tests that call main():
+        def test_something(self, mock_pid_management):
+            ...
+    """
+    import atexit
+    from unittest.mock import MagicMock
+
+    # Mock the PID management functions
+    mock_get_pid = MagicMock(return_value=Path(f"/tmp/test_pid_{id(monkeypatch)}.pid"))
+    mock_kill = MagicMock(return_value=False)
+    mock_write = MagicMock()
+    mock_atexit = MagicMock()
+
+    # Apply mocks using monkeypatch to avoid import-time errors
+    import src.xml2_pipeline
+
+    monkeypatch.setattr(src.xml2_pipeline, "get_pid_file_path", mock_get_pid)
+    monkeypatch.setattr(src.xml2_pipeline, "kill_existing_process", mock_kill)
+    monkeypatch.setattr(src.xml2_pipeline, "write_pid_file", mock_write)
+    monkeypatch.setattr(atexit, "register", mock_atexit)
+
+    yield
+
+
 # =============================================================================
 # Phase 4 RED Tests - US3: 音声パイプライン統合
 # =============================================================================
@@ -497,7 +530,7 @@ class TestMainFunction:
 
         assert callable(main), "main should be a callable function"
 
-    def test_main_file_not_found_raises_error(self):
+    def test_main_file_not_found_raises_error(self, mock_pid_management):
         """存在しないファイルでエラー"""
         from src.xml2_pipeline import main
 
@@ -508,7 +541,7 @@ class TestMainFunction:
 
         assert non_existent in str(exc_info.value), f"Error message should contain file path: {exc_info.value}"
 
-    def test_main_invalid_xml_raises_error(self, tmp_path):
+    def test_main_invalid_xml_raises_error(self, tmp_path, mock_pid_management):
         """不正な XML でエラー"""
         from src.xml2_pipeline import main
 
@@ -1520,7 +1553,7 @@ class TestCleanedTextFileContainsCleanedContent:
     - 数字がカナに変換されている
     """
 
-    def test_cleaned_text_does_not_contain_url(self, tmp_path):
+    def test_cleaned_text_does_not_contain_url(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に URL が含まれていないことを確認する"""
         from src.xml2_pipeline import main
 
@@ -1570,7 +1603,7 @@ class TestCleanedTextFileContainsCleanedContent:
         )
         assert "example.com" not in content, f"cleaned_text.txt にドメイン名が含まれている: {content!r}"
 
-    def test_cleaned_text_does_not_contain_parenthetical_english(self, tmp_path):
+    def test_cleaned_text_does_not_contain_parenthetical_english(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に括弧内英語が含まれていないことを確認する"""
         from src.xml2_pipeline import main
 
@@ -1617,7 +1650,7 @@ class TestCleanedTextFileContainsCleanedContent:
             f"cleaned_text.txt に括弧内英語が含まれている（clean_page_text() が適用されるべき）: {content!r}"
         )
 
-    def test_cleaned_text_numbers_converted_to_kana(self, tmp_path):
+    def test_cleaned_text_numbers_converted_to_kana(self, tmp_path, mock_pid_management):
         """cleaned_text.txt の数字がカナに変換されていることを確認する"""
         from src.xml2_pipeline import main
 
@@ -1664,7 +1697,7 @@ class TestCleanedTextFileContainsCleanedContent:
             f"cleaned_text.txt に生の数字 '123' が含まれている（カナ変換されるべき）: {content!r}"
         )
 
-    def test_cleaned_text_isbn_removed(self, tmp_path):
+    def test_cleaned_text_isbn_removed(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に ISBN が含まれていないことを確認する"""
         from src.xml2_pipeline import main
 
@@ -1720,7 +1753,7 @@ class TestCleanedTextFileHasChapterMarkers:
     - chapter 区切りが識別できる形式で出力されている
     """
 
-    def test_cleaned_text_has_chapter_separator_format(self, tmp_path):
+    def test_cleaned_text_has_chapter_separator_format(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に === Chapter N: Title === 形式の章区切りが含まれる"""
         from src.xml2_pipeline import main
 
@@ -1775,7 +1808,7 @@ class TestCleanedTextFileHasChapterMarkers:
             f"cleaned_text.txt に '=== Chapter 2:' 形式の章区切りが含まれるべき: {content!r}"
         )
 
-    def test_cleaned_text_chapter_separator_contains_title(self, tmp_path):
+    def test_cleaned_text_chapter_separator_contains_title(self, tmp_path, mock_pid_management):
         """cleaned_text.txt の章区切り行にタイトルが含まれる（=== 形式）"""
         from src.xml2_pipeline import main
 
@@ -1826,7 +1859,7 @@ class TestCleanedTextFileHasChapterMarkers:
             f"cleaned_text.txt に '=== ... Introduction ===' 形式の章区切り行が含まれるべき: {content!r}"
         )
 
-    def test_cleaned_text_paragraph_text_is_cleaned(self, tmp_path):
+    def test_cleaned_text_paragraph_text_is_cleaned(self, tmp_path, mock_pid_management):
         """cleaned_text.txt の段落テキストに clean_page_text() が適用されている"""
         from src.xml2_pipeline import main
 
@@ -1876,7 +1909,7 @@ class TestCleanedTextFileHasChapterMarkers:
         assert "(Availability)" not in content, f"cleaned_text.txt に括弧英語が含まれている: {content!r}"
         assert "100" not in content, f"cleaned_text.txt に生の数字 '100' が含まれている: {content!r}"
 
-    def test_cleaned_text_no_item_type_labels(self, tmp_path):
+    def test_cleaned_text_no_item_type_labels(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に '=== paragraph ===' のような
         item_type ラベルが含まれない（クリーニング後の形式を使用）"""
         from src.xml2_pipeline import main
@@ -2008,7 +2041,7 @@ class TestMainWithCleanedTextSkipsCleaning:
     - TTS 生成は通常通り実行される
     """
 
-    def test_main_with_cleaned_text_skips_text_cleaning(self, tmp_path):
+    def test_main_with_cleaned_text_skips_text_cleaning(self, tmp_path, mock_pid_management):
         """--cleaned-text 指定時はテキストクリーニング（clean_page_text）がスキップされる"""
         from src.xml2_pipeline import main
 
@@ -2061,7 +2094,7 @@ class TestMainWithCleanedTextSkipsCleaning:
                 f"{mock_clean.call_count}回呼び出された"
             )
 
-    def test_main_with_cleaned_text_does_not_overwrite_file(self, tmp_path):
+    def test_main_with_cleaned_text_does_not_overwrite_file(self, tmp_path, mock_pid_management):
         """--cleaned-text 指定時は既存の cleaned_text.txt を上書きしない"""
         from src.xml2_pipeline import main
 
@@ -2124,7 +2157,7 @@ class TestCleanedTextFileNotFound:
     - Then 適切なエラーメッセージが表示される
     """
 
-    def test_cleaned_text_file_not_found_raises_error(self):
+    def test_cleaned_text_file_not_found_raises_error(self, mock_pid_management):
         """--cleaned-text で指定したファイルが存在しない場合 FileNotFoundError"""
         from src.xml2_pipeline import main
 
@@ -2144,7 +2177,7 @@ class TestCleanedTextFileNotFound:
             f"エラーメッセージにファイルパスが含まれるべき: {exc_info.value}"
         )
 
-    def test_cleaned_text_file_not_found_error_message_is_descriptive(self):
+    def test_cleaned_text_file_not_found_error_message_is_descriptive(self, mock_pid_management):
         """--cleaned-text ファイル不存在時のエラーメッセージが分かりやすい"""
         from src.xml2_pipeline import main
 
@@ -2175,7 +2208,7 @@ class TestBackwardCompatibilityWithoutCleanedText:
     - 既存の動作が変わらない
     """
 
-    def test_main_without_cleaned_text_runs_cleaning(self, tmp_path):
+    def test_main_without_cleaned_text_runs_cleaning(self, tmp_path, mock_pid_management):
         """--cleaned-text 未指定時は従来通りテキストクリーニングが実行される"""
         from src.xml2_pipeline import main
 
@@ -2221,7 +2254,7 @@ class TestBackwardCompatibilityWithoutCleanedText:
                 "--cleaned-text 未指定時は clean_page_text() が呼び出されるべきだが、呼び出されていない"
             )
 
-    def test_main_without_cleaned_text_generates_cleaned_text_file(self, tmp_path):
+    def test_main_without_cleaned_text_generates_cleaned_text_file(self, tmp_path, mock_pid_management):
         """--cleaned-text 未指定時は cleaned_text.txt が新規生成される"""
         from src.xml2_pipeline import main
 
