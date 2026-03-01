@@ -4,9 +4,11 @@ This module provides functions for processing content items,
 generating chapter-based audio files, and handling audio effects.
 """
 
+import argparse
 import logging
 import re
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import soundfile as sf
@@ -82,9 +84,9 @@ def load_sound(sound_path: Path, target_sr: int = 24000) -> np.ndarray:
 
 def process_chapters(
     content_items: list[ContentItem],
-    synthesizer=None,
-    output_dir: Path = None,
-    args=None,
+    synthesizer: Any = None,
+    output_dir: Path | None = None,
+    args: argparse.Namespace | None = None,
     chapter_sound: np.ndarray | None = None,
     section_sound: np.ndarray | None = None,
 ) -> list[Path]:
@@ -245,9 +247,9 @@ def process_chapters(
 
 def process_content(
     content_items: list[ContentItem],
-    synthesizer=None,
-    output_dir: Path = None,
-    args=None,
+    synthesizer: Any = None,
+    output_dir: Path | None = None,
+    args: argparse.Namespace | None = None,
     chapter_sound: np.ndarray | None = None,
     section_sound: np.ndarray | None = None,
 ) -> list[Path]:

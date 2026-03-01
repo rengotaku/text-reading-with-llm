@@ -165,7 +165,7 @@ def _clean_urls(text: str) -> str:
     """
 
     # Step 1: Handle Markdown links
-    def replace_markdown_link(match):
+    def replace_markdown_link(match: re.Match[str]) -> str:
         link_text = match.group(1)
         # If link text is a URL, replace with 'ウェブサイト'
         if URL_TEXT_PATTERN.match(link_text):

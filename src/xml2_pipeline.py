@@ -48,7 +48,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def parse_args(args=None):
+def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments.
 
     Args:
@@ -91,7 +91,7 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
-def main(args=None):
+def main(args: list[str] | None = None) -> None:
     """Main entry point.
 
     Args:

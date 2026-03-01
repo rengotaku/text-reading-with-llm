@@ -121,7 +121,7 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
     content_items: list[ContentItem] = []
     current_chapter_number: int | None = None
 
-    def process_element(elem) -> None:
+    def process_element(elem: ET.Element) -> None:
         """Recursively process an element and its children."""
         nonlocal current_chapter_number
 
@@ -233,7 +233,7 @@ def parse_book2_xml(xml_path: Union[str, Path]) -> list[ContentItem]:
     return content_items
 
 
-def _should_read_aloud(elem) -> bool:
+def _should_read_aloud(elem: ET.Element) -> bool:
     """Check if element should be read aloud based on readAloud attribute.
 
     Returns True if:

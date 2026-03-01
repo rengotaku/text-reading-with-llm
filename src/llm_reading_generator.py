@@ -4,6 +4,7 @@ import json
 import logging
 import re
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ def extract_technical_terms(text: str) -> list[str]:
 def generate_readings_with_llm(
     terms: list[str],
     model: str = "gpt-oss:20b",
-    ollama_chat_func=None,
+    ollama_chat_func: Any = None,
 ) -> dict[str, str]:
     """Generate readings for terms using LLM.
 

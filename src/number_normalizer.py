@@ -76,7 +76,7 @@ COUNTER_READINGS = {
 }
 
 # 助数詞とその読み変化（特殊ケース）
-COUNTERS = {
+COUNTERS: dict[str, dict[int | str, str]] = {
     # (助数詞, {数字: 読み})
     "個": {
         1: "いっこ",

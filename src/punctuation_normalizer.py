@@ -143,7 +143,7 @@ def _normalize_colons(text: str) -> str:
     # Step 1: Protect time/ratio patterns (digit:digit) with placeholders
     time_ratio_matches = []
 
-    def save_time_ratio(match):
+    def save_time_ratio(match: re.Match[str]) -> str:
         time_ratio_matches.append(match.group(0))
         return f"<<TIME_RATIO_{len(time_ratio_matches) - 1}>>"
 

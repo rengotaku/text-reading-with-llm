@@ -143,7 +143,7 @@ JSON出力:"""
     return all_readings
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generate reading dictionary using LLM")
     parser.add_argument("input", help="Input markdown file")
     parser.add_argument("--model", default="gpt-oss:20b", help="Ollama model name")
@@ -169,7 +169,7 @@ def main():
     logger.info("Dictionary path: %s", output_path)
 
     # Load existing dictionary if merging or if auto-hash file exists
-    existing = {}
+    existing: dict[str, str] = {}
     if args.merge or (args.output is None and output_path.exists()):
         existing = load_dict(input_path) if args.output is None else {}
         if args.output and args.output.exists():
