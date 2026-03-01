@@ -131,19 +131,19 @@
 
 ### Input
 
-- [ ] T026 セットアップ分析を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
-- [ ] T027 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph4-output.md
+- [x] T026 セットアップ分析を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
+- [x] T027 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph4-output.md
 
 ### Implementation
 
-- [ ] T028 [US4] py-cov-action がバッジデータを生成するよう設定確認（Phase 3 で設定済みの可能性）
-- [ ] T029 [US4] README.md にカバレッジバッジマークダウンを追加
+- [x] T028 [US4] py-cov-action がバッジデータを生成するよう設定確認（Phase 3 で設定済みの可能性）
+- [x] T029 [US4] README.md にカバレッジバッジマークダウンを追加
   - shields.io エンドポイント形式
 
 ### Verification
 
-- [ ] T030 README.md のバッジマークダウンが正しい形式であることを確認
-- [ ] T031 作成: specs/016-dev-env-optimization/tasks/ph5-output.md
+- [x] T030 README.md のバッジマークダウンが正しい形式であることを確認
+- [x] T031 作成: specs/016-dev-env-optimization/tasks/ph5-output.md
 
 **Checkpoint**: README にバッジが追加されている
 
