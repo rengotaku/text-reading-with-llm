@@ -82,12 +82,12 @@ class VoicevoxSynthesizer:
         """ONNX Runtime ライブラリのパスを取得."""
         from voicevox_core.blocking import Onnxruntime
 
-        lib_path = self.config.onnxruntime_dir / Onnxruntime.LIB_VERSIONED_FILENAME
+        lib_path = self.config.onnxruntime_dir / Onnxruntime.LIB_VERSIONED_FILENAME  # type: ignore[attr-defined]
         if not lib_path.exists():
             # lib サブディレクトリを探す
             lib_subdir = self.config.onnxruntime_dir / "lib"
             if lib_subdir.exists():
-                lib_path = lib_subdir / Onnxruntime.LIB_VERSIONED_FILENAME
+                lib_path = lib_subdir / Onnxruntime.LIB_VERSIONED_FILENAME  # type: ignore[attr-defined]
 
         return str(lib_path)
 
@@ -103,7 +103,7 @@ class VoicevoxSynthesizer:
         # ONNX Runtime をロード
         onnxruntime_path = self._get_onnxruntime_path()
         logger.info("Loading ONNX Runtime from: %s", onnxruntime_path)
-        ort = Onnxruntime.load_once(filename=onnxruntime_path)
+        ort = Onnxruntime.load_once(filename=onnxruntime_path)  # type: ignore[attr-defined]
 
         # Open JTalk 辞書をロード
         dict_dir = str(self.config.open_jtalk_dict_dir)
@@ -111,7 +111,7 @@ class VoicevoxSynthesizer:
         ojt = OpenJtalk(dict_dir)
 
         # Synthesizer を作成
-        self._synthesizer = Synthesizer(ort, ojt)
+        self._synthesizer = Synthesizer(ort, ojt)  # type: ignore[assignment]
         logger.info("VOICEVOX Core initialized successfully")
 
     def load_model(self, vvm_path: Path | None = None) -> None:
@@ -135,8 +135,8 @@ class VoicevoxSynthesizer:
             return
 
         logger.info("Loading voice model: %s", vvm_path)
-        with VoiceModelFile.open(str(vvm_path)) as model:
-            self._synthesizer.load_voice_model(model)
+        with VoiceModelFile.open(str(vvm_path)) as model:  # type: ignore[attr-defined]
+            self._synthesizer.load_voice_model(model)  # type: ignore[attr-defined]
         self._loaded_models.add(vvm_path)
         logger.info("Voice model loaded successfully")
 
@@ -217,7 +217,7 @@ class VoicevoxSynthesizer:
             # VVM ファイルのメタデータからバージョンを取得
             from voicevox_core.blocking import VoiceModelFile
 
-            with VoiceModelFile.open(str(vvm_path)) as _:
+            with VoiceModelFile.open(str(vvm_path)) as _:  # type: ignore[attr-defined]
                 # VoiceModelFile にバージョン情報が含まれている場合はチェック
                 # voicevox_core 0.16.3 では、正しいバージョンの VVM をロードすれば
                 # 警告が出ないため、True を返す
@@ -257,7 +257,7 @@ class VoicevoxSynthesizer:
             self.load_all_models()
 
         # AudioQuery を作成
-        audio_query = self._synthesizer.create_audio_query(text, style_id)
+        audio_query = self._synthesizer.create_audio_query(text, style_id)  # type: ignore[attr-defined]
 
         # パラメータを調整
         if speed_scale is not None:
@@ -276,7 +276,7 @@ class VoicevoxSynthesizer:
             audio_query.volume_scale = self.config.volume_scale
 
         # 音声合成
-        return self._synthesizer.synthesis(audio_query, style_id)
+        return self._synthesizer.synthesis(audio_query, style_id)  # type: ignore[attr-defined]
 
     def tts(self, text: str, style_id: int | None = None) -> bytes:
         """シンプルなTTS API (synthesize のエイリアス).

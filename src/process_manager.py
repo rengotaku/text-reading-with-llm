@@ -71,7 +71,7 @@ def kill_existing_process(pid_file: Path) -> bool:
         return False
 
 
-def write_pid_file(pid_file: Path):
+def write_pid_file(pid_file: Path) -> None:
     """Write current process PID to file.
 
     Args:
@@ -81,7 +81,7 @@ def write_pid_file(pid_file: Path):
         f.write(str(os.getpid()))
 
 
-def cleanup_pid_file(pid_file: Path):
+def cleanup_pid_file(pid_file: Path) -> None:
     """Remove PID file on exit.
 
     Args:
