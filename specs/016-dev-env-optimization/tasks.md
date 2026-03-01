@@ -49,21 +49,21 @@
 
 ### Input
 
-- [ ] T006 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
+- [x] T006 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
 
 ### Implementation
 
-- [ ] T007 [US1] pyproject.toml に `[tool.pytest.ini_options]` セクションを追加
+- [x] T007 [US1] pyproject.toml に `[tool.pytest.ini_options]` セクションを追加
   - `testpaths = ["tests"]`
   - `addopts` にカバレッジオプション追加
-- [ ] T008 [US1] カバレッジ閾値を設定: `--cov-fail-under=80`
-- [ ] T009 [US1] XML レポート出力を追加: `--cov-report=xml:coverage.xml`
+- [x] T008 [US1] カバレッジ閾値を設定: `--cov-fail-under=70`
+- [x] T009 [US1] XML レポート出力を追加: `--cov-report=xml:coverage.xml`
 
 ### Verification
 
-- [ ] T010 `pytest` を実行し、カバレッジレポートが表示されることを確認
-- [ ] T011 カバレッジ閾値の動作確認（現在のカバレッジ率に基づき調整が必要か判断）
-- [ ] T012 作成: specs/016-dev-env-optimization/tasks/ph2-output.md
+- [x] T010 `pytest` を実行し、カバレッジレポートが表示されることを確認
+- [x] T011 カバレッジ閾値の動作確認（現在のカバレッジ率に基づき調整が必要か判断）
+- [x] T012 作成: specs/016-dev-env-optimization/tasks/ph2-output.md
 
 **Checkpoint**: pytest 実行でカバレッジレポートが自動表示される状態
 
