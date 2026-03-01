@@ -155,19 +155,19 @@
 
 ### Input
 
-- [ ] T032 セットアップ分析を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
-- [ ] T033 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph5-output.md
+- [x] T032 セットアップ分析を読む: specs/016-dev-env-optimization/tasks/ph1-output.md
+- [x] T033 前フェーズ出力を読む: specs/016-dev-env-optimization/tasks/ph5-output.md
 
 ### Implementation
 
-- [ ] T034 [P] 全設定ファイルの整合性確認
-- [ ] T035 [P] quickstart.md の内容と実際の設定が一致しているか確認
-- [ ] T036 [P] coverage.xml が .gitignore に含まれているか確認（必要に応じて追加）
+- [x] T034 [P] 全設定ファイルの整合性確認
+- [x] T035 [P] quickstart.md の内容と実際の設定が一致しているか確認
+- [x] T036 [P] coverage.xml が .gitignore に含まれているか確認（必要に応じて追加）
 
 ### Verification
 
-- [ ] T037 `make test` を実行して全テストがパスすることを確認
-- [ ] T038 作成: specs/016-dev-env-optimization/tasks/ph6-output.md
+- [x] T037 `make test` を実行して全テストがパスすることを確認
+- [x] T038 作成: specs/016-dev-env-optimization/tasks/ph6-output.md
 
 ---
 
