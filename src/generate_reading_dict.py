@@ -17,14 +17,10 @@ import requests
 
 from src.dict_manager import get_dict_path, load_dict, save_dict
 from src.llm_reading_generator import extract_technical_terms
+from src.logging_config import setup_logging
 from src.text_cleaner import split_into_pages
 from src.xml2_parser import parse_book2_xml
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
 logger = logging.getLogger(__name__)
 
 OLLAMA_API_URL = "http://localhost:11434/api/chat"
@@ -144,6 +140,7 @@ JSON出力:"""
 
 
 def main() -> None:
+    setup_logging()
     parser = argparse.ArgumentParser(description="Generate reading dictionary using LLM")
     parser.add_argument("input", help="Input markdown file")
     parser.add_argument("--model", default="gpt-oss:20b", help="Ollama model name")

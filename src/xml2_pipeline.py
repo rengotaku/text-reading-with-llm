@@ -23,6 +23,7 @@ from src.chapter_processor import (  # noqa: F401
     sanitize_filename,
 )
 from src.dict_manager import get_content_hash
+from src.logging_config import setup_logging
 from src.process_manager import (  # noqa: F401
     cleanup_pid_file,
     get_pid_file_path,
@@ -40,11 +41,6 @@ from src.voicevox_client import (  # noqa: F401
 )
 from src.xml2_parser import CHAPTER_MARKER, SECTION_MARKER, ContentItem, parse_book2_xml  # noqa: F401
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
 logger = logging.getLogger(__name__)
 
 
@@ -101,6 +97,7 @@ def main(args: list[str] | None = None) -> None:
         FileNotFoundError: If input file does not exist
         xml.etree.ElementTree.ParseError: If XML is malformed
     """
+    setup_logging()
     parsed = parse_args(args)
 
     # Check file existence

@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 from src.dict_manager import get_content_hash
+from src.logging_config import setup_logging
 from src.text_cleaner import clean_page_text, init_for_content
 from src.xml2_parser import CHAPTER_MARKER, SECTION_MARKER, parse_book2_xml
 
@@ -69,11 +70,8 @@ def main(args: list[str] | None = None) -> None:
     """
     parsed = parse_args(args)
 
-    # Configure logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
+    # Configure Rich logging (Kedro-style)
+    setup_logging()
 
     input_path = Path(parsed.input)
 
