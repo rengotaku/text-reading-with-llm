@@ -1,5 +1,7 @@
 # text-reading-with-llm
 
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/rengotaku/python-coverage-comment-action-data/raw/endpoint.json)
+
 Markdown形式の書籍をVOICEVOX Coreで音声化するTTSパイプライン。
 
 ## セットアップ

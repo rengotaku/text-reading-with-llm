@@ -52,3 +52,22 @@ namespace_packages = false
 module = ["voicevox_client"]
 ignore_errors = true
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+# Note: Coverage options are NOT in addopts because they conflict with --forked
+# Use `make coverage` or `pytest --cov=src` for local coverage testing
+
+[tool.coverage.run]
+source = ["src"]
+relative_files = true
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
