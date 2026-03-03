@@ -15,7 +15,7 @@ import soundfile as sf
 
 from src.text_cleaner import clean_page_text, split_text_into_chunks
 from src.voicevox_client import concatenate_audio_files, generate_audio, normalize_audio, save_audio
-from src.xml2_parser import CHAPTER_MARKER, SECTION_MARKER, ContentItem
+from src.xml_parser import CHAPTER_MARKER, SECTION_MARKER, ContentItem
 
 logger = logging.getLogger(__name__)
 

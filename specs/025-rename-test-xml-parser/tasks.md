@@ -48,28 +48,28 @@
 
 ### Input
 
-- [ ] T006 前フェーズ出力を読む: specs/025-rename-test-xml-parser/tasks/ph1-output.md
+- [x] T006 前フェーズ出力を読む: specs/025-rename-test-xml-parser/tasks/ph1-output.md
 
 ### Implementation
 
 #### ソースファイルのリネーム
 
-- [ ] T007 [US1] `git mv src/xml2_parser.py src/xml_parser.py` を実行
-- [ ] T008 [US1] `git mv src/xml2_pipeline.py src/xml_pipeline.py` を実行
+- [x] T007 [US1] `git mv src/xml2_parser.py src/xml_parser.py` を実行
+- [x] T008 [US1] `git mv src/xml2_pipeline.py src/xml_pipeline.py` を実行
 
 #### ソースファイル内のインポート更新
 
-- [ ] T009 [P] [US1] `src/xml_pipeline.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
-- [ ] T010 [P] [US1] `src/text_cleaner_cli.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
-- [ ] T011 [P] [US1] `src/chapter_processor.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
-- [ ] T012 [P] [US1] `src/generate_reading_dict.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
-- [ ] T013 [P] [US1] `src/dict_manager.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
+- [x] T009 [P] [US1] `src/xml_pipeline.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
+- [x] T010 [P] [US1] `src/text_cleaner_cli.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
+- [x] T011 [P] [US1] `src/chapter_processor.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
+- [x] T012 [P] [US1] `src/generate_reading_dict.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
+- [x] T013 [P] [US1] `src/dict_manager.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
 
 ### Verification
 
-- [ ] T014 インポート検証: `python -c "from src.xml_parser import parse_book2_xml"` が成功
-- [ ] T015 インポート検証: `python -c "from src.xml_pipeline import main"` が成功
-- [ ] T016 出力生成: specs/025-rename-test-xml-parser/tasks/ph2-output.md
+- [x] T014 インポート検証: `python -c "from src.xml_parser import parse_book2_xml"` が成功
+- [x] T015 インポート検証: `python -c "from src.xml_pipeline import main"` が成功
+- [x] T016 出力生成: specs/025-rename-test-xml-parser/tasks/ph2-output.md
 
 **チェックポイント**: ソースファイルのリネームとインポート更新が完了。テストはまだ失敗する可能性あり（テストファイル内のインポートが未更新のため）。
 

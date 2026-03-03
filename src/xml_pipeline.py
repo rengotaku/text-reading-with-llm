@@ -39,7 +39,7 @@ from src.voicevox_client import (  # noqa: F401
     normalize_audio,
     save_audio,
 )
-from src.xml2_parser import CHAPTER_MARKER, SECTION_MARKER, ContentItem, parse_book2_xml  # noqa: F401
+from src.xml_parser import CHAPTER_MARKER, SECTION_MARKER, ContentItem, parse_book2_xml  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
