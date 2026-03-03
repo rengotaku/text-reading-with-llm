@@ -127,18 +127,18 @@
 
 ### Input
 
-- [ ] T036 セットアップ分析を読む: specs/025-rename-test-xml-parser/tasks/ph1-output.md
-- [ ] T037 前フェーズ出力を読む: specs/025-rename-test-xml-parser/tasks/ph3-output.md
+- [x] T036 セットアップ分析を読む: specs/025-rename-test-xml-parser/tasks/ph1-output.md
+- [x] T037 前フェーズ出力を読む: specs/025-rename-test-xml-parser/tasks/ph3-output.md
 
 ### Verification
 
-- [ ] T038 `make test` を実行して全テスト通過を確認
-- [ ] T039 `make coverage` を実行してカバレッジ維持を確認（ph1-output.mdの値と比較、±1%以内）
-- [ ] T040 残存参照チェック: `grep -r "xml2_parser\|xml2_pipeline" src/ tests/` で結果が空
-- [ ] T041 [P] 旧ファイル不在確認: `ls src/xml2_*.py tests/test_xml2_*.py` がエラー
-- [ ] T042 [P] 新ファイル存在確認: `ls src/xml_parser.py src/xml_pipeline.py` が成功
-- [ ] T043 [P] git履歴確認: `git log --follow --oneline -5 src/xml_parser.py` でリネーム履歴が追跡可能
-- [ ] T044 出力生成: specs/025-rename-test-xml-parser/tasks/ph4-output.md
+- [x] T038 `make test` を実行して全テスト通過を確認
+- [x] T039 `make coverage` を実行してカバレッジ維持を確認（ph1-output.mdの値と比較、±1%以内）
+- [x] T040 残存参照チェック: `grep -r "xml2_parser\|xml2_pipeline" src/ tests/` で結果が空
+- [x] T041 [P] 旧ファイル不在確認: `ls src/xml2_*.py tests/test_xml2_*.py` がエラー
+- [x] T042 [P] 新ファイル存在確認: `ls src/xml_parser.py src/xml_pipeline.py` が成功
+- [x] T043 [P] git履歴確認: `git log --follow --oneline -5 src/xml_parser.py` でリネーム履歴が追跡可能
+- [x] T044 出力生成: specs/025-rename-test-xml-parser/tasks/ph4-output.md
 
 ---
 
