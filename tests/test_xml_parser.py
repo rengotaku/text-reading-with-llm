@@ -4,16 +4,16 @@ Phase 2 RED Tests - US1: 新XMLフォーマットの基本パース
 Tests for parse_book2_xml() function and related data classes.
 
 Target functions:
-- src/xml2_parser.py::parse_book2_xml()
-- src/xml2_parser.py::ContentItem dataclass
-- src/xml2_parser.py::HeadingInfo dataclass
+- src/xml_parser.py::parse_book2_xml()
+- src/xml_parser.py::ContentItem dataclass
+- src/xml_parser.py::HeadingInfo dataclass
 
 Test Fixture: tests/fixtures/sample_book2.xml
 """
 
 from pathlib import Path
 
-from src.xml2_parser import (
+from src.xml_parser import (
     CHAPTER_MARKER,
     SECTION_MARKER,
     ContentItem,
@@ -24,7 +24,7 @@ from src.xml2_parser import (
 # Phase 3: format_heading_text はまだ実装されていない
 # RED フェーズではインポートが失敗することを想定
 try:
-    from src.xml2_parser import format_heading_text
+    from src.xml_parser import format_heading_text
 except ImportError:
     format_heading_text = None
 
@@ -392,7 +392,7 @@ class TestFormatHeadingTextChapter:
     def test_format_heading_text_chapter_basic(self):
         """level=1 で「第N章、タイトル」形式になる"""
         assert format_heading_text is not None, (
-            "format_heading_text function should be implemented in src/xml2_parser.py"
+            "format_heading_text function should be implemented in src/xml_parser.py"
         )
         result = format_heading_text(level=1, number="1", title="はじめに")
 
@@ -401,7 +401,7 @@ class TestFormatHeadingTextChapter:
     def test_format_heading_text_chapter_with_different_number(self):
         """level=1 で異なる章番号を処理"""
         assert format_heading_text is not None, (
-            "format_heading_text function should be implemented in src/xml2_parser.py"
+            "format_heading_text function should be implemented in src/xml_parser.py"
         )
         result = format_heading_text(level=1, number="3", title="実装")
 
@@ -410,7 +410,7 @@ class TestFormatHeadingTextChapter:
     def test_format_heading_text_chapter_with_english_title(self):
         """level=1 で英語タイトル"""
         assert format_heading_text is not None, (
-            "format_heading_text function should be implemented in src/xml2_parser.py"
+            "format_heading_text function should be implemented in src/xml_parser.py"
         )
         result = format_heading_text(level=1, number="1", title="Introduction")
 
@@ -423,7 +423,7 @@ class TestFormatHeadingTextSection:
     def test_format_heading_text_section_level2(self):
         """level=2 で「XのY節、タイトル」形式になる"""
         assert format_heading_text is not None, (
-            "format_heading_text function should be implemented in src/xml2_parser.py"
+            "format_heading_text function should be implemented in src/xml_parser.py"
         )
         result = format_heading_text(level=2, number="1.1", title="概要")
 
@@ -432,7 +432,7 @@ class TestFormatHeadingTextSection:
     def test_format_heading_text_section_level3(self):
         """level=3 でも「XのY節、タイトル」形式になる"""
         assert format_heading_text is not None, (
-            "format_heading_text function should be implemented in src/xml2_parser.py"
+            "format_heading_text function should be implemented in src/xml_parser.py"
         )
         result = format_heading_text(level=3, number="1.2.1", title="詳細")
 
@@ -441,7 +441,7 @@ class TestFormatHeadingTextSection:
     def test_format_heading_text_section_level4(self):
         """level=4 でも「XのY節、タイトル」形式になる"""
         assert format_heading_text is not None, (
-            "format_heading_text function should be implemented in src/xml2_parser.py"
+            "format_heading_text function should be implemented in src/xml_parser.py"
         )
         result = format_heading_text(level=4, number="1.2.1.1", title="補足")
 

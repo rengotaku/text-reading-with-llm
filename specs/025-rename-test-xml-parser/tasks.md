@@ -83,39 +83,39 @@
 
 ### Input
 
-- [ ] T017 セットアップ分析を読む: specs/025-rename-test-xml-parser/tasks/ph1-output.md
-- [ ] T018 前フェーズ出力を読む: specs/025-rename-test-xml-parser/tasks/ph2-output.md
+- [x] T017 セットアップ分析を読む: specs/025-rename-test-xml-parser/tasks/ph1-output.md
+- [x] T018 前フェーズ出力を読む: specs/025-rename-test-xml-parser/tasks/ph2-output.md
 
 ### Implementation
 
 #### テストファイルのリネーム
 
-- [ ] T019 [US2] `git mv tests/test_xml2_parser.py tests/test_xml_parser.py` を実行
-- [ ] T020 [P] [US2] `git mv tests/test_xml2_pipeline_args.py tests/test_xml_pipeline_args.py` を実行
-- [ ] T021 [P] [US2] `git mv tests/test_xml2_pipeline_cleaned_text.py tests/test_xml_pipeline_cleaned_text.py` を実行
-- [ ] T022 [P] [US2] `git mv tests/test_xml2_pipeline_integration.py tests/test_xml_pipeline_integration.py` を実行
-- [ ] T023 [P] [US2] `git mv tests/test_xml2_pipeline_output.py tests/test_xml_pipeline_output.py` を実行
-- [ ] T024 [P] [US2] `git mv tests/test_xml2_pipeline_processing.py tests/test_xml_pipeline_processing.py` を実行
+- [x] T019 [US2] `git mv tests/test_xml2_parser.py tests/test_xml_parser.py` を実行
+- [x] T020 [P] [US2] `git mv tests/test_xml2_pipeline_args.py tests/test_xml_pipeline_args.py` を実行
+- [x] T021 [P] [US2] `git mv tests/test_xml2_pipeline_cleaned_text.py tests/test_xml_pipeline_cleaned_text.py` を実行
+- [x] T022 [P] [US2] `git mv tests/test_xml2_pipeline_integration.py tests/test_xml_pipeline_integration.py` を実行
+- [x] T023 [P] [US2] `git mv tests/test_xml2_pipeline_output.py tests/test_xml_pipeline_output.py` を実行
+- [x] T024 [P] [US2] `git mv tests/test_xml2_pipeline_processing.py tests/test_xml_pipeline_processing.py` を実行
 
 #### テストファイル内のインポート更新（リネーム済みファイル）
 
-- [ ] T025 [P] [US2] `tests/test_xml_parser.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
-- [ ] T026 [P] [US2] `tests/test_xml_pipeline_args.py` の `from src.xml2_pipeline` を `from src.xml_pipeline` に更新
-- [ ] T027 [P] [US2] `tests/test_xml_pipeline_cleaned_text.py` の `from src.xml2_pipeline` を `from src.xml_pipeline` に更新
-- [ ] T028 [P] [US2] `tests/test_xml_pipeline_integration.py` の `from src.xml2_pipeline` を `from src.xml_pipeline` に更新
-- [ ] T029 [P] [US2] `tests/test_xml_pipeline_output.py` のインポートを更新（`xml2_parser` と `xml2_pipeline` 両方）
-- [ ] T030 [P] [US2] `tests/test_xml_pipeline_processing.py` のインポートを更新（`xml2_parser` と `xml2_pipeline` 両方）
+- [x] T025 [P] [US2] `tests/test_xml_parser.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
+- [x] T026 [P] [US2] `tests/test_xml_pipeline_args.py` の `from src.xml2_pipeline` を `from src.xml_pipeline` に更新
+- [x] T027 [P] [US2] `tests/test_xml_pipeline_cleaned_text.py` の `from src.xml2_pipeline` を `from src.xml_pipeline` に更新
+- [x] T028 [P] [US2] `tests/test_xml_pipeline_integration.py` の `from src.xml2_pipeline` を `from src.xml_pipeline` に更新
+- [x] T029 [P] [US2] `tests/test_xml_pipeline_output.py` のインポートを更新（`xml2_parser` と `xml2_pipeline` 両方）
+- [x] T030 [P] [US2] `tests/test_xml_pipeline_processing.py` のインポートを更新（`xml2_parser` と `xml2_pipeline` 両方）
 
 #### その他テストファイルのインポート更新
 
-- [ ] T031 [P] [US2] `tests/test_dict_integration.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
-- [ ] T032 [P] [US2] `tests/test_generate_reading_dict.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
-- [ ] T033 [P] [US2] `tests/test_file_split.py` の `from src.xml2_pipeline` を `from src.xml_pipeline` に更新
+- [x] T031 [P] [US2] `tests/test_dict_integration.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
+- [x] T032 [P] [US2] `tests/test_generate_reading_dict.py` の `from src.xml2_parser` を `from src.xml_parser` に更新
+- [x] T033 [P] [US2] `tests/test_file_split.py` の `from src.xml2_pipeline` を `from src.xml_pipeline` に更新
 
 ### Verification
 
-- [ ] T034 テスト検出確認: `pytest --collect-only` が全テストを検出
-- [ ] T035 出力生成: specs/025-rename-test-xml-parser/tasks/ph3-output.md
+- [x] T034 テスト検出確認: `pytest --collect-only` が全テストを検出
+- [x] T035 出力生成: specs/025-rename-test-xml-parser/tasks/ph3-output.md
 
 **チェックポイント**: 全ファイルのリネームとインポート更新が完了。
 

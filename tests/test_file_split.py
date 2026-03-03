@@ -1,12 +1,12 @@
-"""Tests for xml2_pipeline.py file split verification.
+"""Tests for xml_pipeline.py file split verification.
 
-Phase 3 RED Tests - US3: xml2_pipeline.py ファイル分割の検証
+Phase 3 RED Tests - US3: xml_pipeline.py ファイル分割の検証
 分割後の各モジュールが正しくimport可能であり、後方互換性が維持されていることを確認する。
 
 テスト対象:
 - T027: src/process_manager.py のimport互換性
 - T028: src/chapter_processor.py のimport互換性
-- T029: src/xml2_pipeline.py のre-export動作
+- T029: src/xml_pipeline.py のre-export動作
 - T030: 各ファイルの行数上限（600行以下）
 """
 
@@ -99,90 +99,90 @@ class TestChapterProcessorImport:
 
 
 class TestXml2PipelineReExport:
-    """T029: xml2_pipeline.py のre-export動作テスト。
+    """T029: xml_pipeline.py のre-export動作テスト。
 
-    ファイル分割後も xml2_pipeline.py 経由でのimportが動作し、
+    ファイル分割後も xml_pipeline.py 経由でのimportが動作し、
     後方互換性が維持されていることを確認する。
     """
 
     def test_reexport_get_pid_file_path(self):
-        """xml2_pipeline 経由で get_pid_file_path がimport可能であることを確認する。"""
-        from src.xml2_pipeline import get_pid_file_path
+        """xml_pipeline 経由で get_pid_file_path がimport可能であることを確認する。"""
+        from src.xml_pipeline import get_pid_file_path
 
-        assert callable(get_pid_file_path), "get_pid_file_path は xml2_pipeline から import 可能でなければならない"
+        assert callable(get_pid_file_path), "get_pid_file_path は xml_pipeline から import 可能でなければならない"
 
     def test_reexport_kill_existing_process(self):
-        """xml2_pipeline 経由で kill_existing_process がimport可能であることを確認する。"""
-        from src.xml2_pipeline import kill_existing_process
+        """xml_pipeline 経由で kill_existing_process がimport可能であることを確認する。"""
+        from src.xml_pipeline import kill_existing_process
 
         assert callable(kill_existing_process), (
-            "kill_existing_process は xml2_pipeline から import 可能でなければならない"
+            "kill_existing_process は xml_pipeline から import 可能でなければならない"
         )
 
     def test_reexport_write_pid_file(self):
-        """xml2_pipeline 経由で write_pid_file がimport可能であることを確認する。"""
-        from src.xml2_pipeline import write_pid_file
+        """xml_pipeline 経由で write_pid_file がimport可能であることを確認する。"""
+        from src.xml_pipeline import write_pid_file
 
-        assert callable(write_pid_file), "write_pid_file は xml2_pipeline から import 可能でなければならない"
+        assert callable(write_pid_file), "write_pid_file は xml_pipeline から import 可能でなければならない"
 
     def test_reexport_cleanup_pid_file(self):
-        """xml2_pipeline 経由で cleanup_pid_file がimport可能であることを確認する。"""
-        from src.xml2_pipeline import cleanup_pid_file
+        """xml_pipeline 経由で cleanup_pid_file がimport可能であることを確認する。"""
+        from src.xml_pipeline import cleanup_pid_file
 
-        assert callable(cleanup_pid_file), "cleanup_pid_file は xml2_pipeline から import 可能でなければならない"
+        assert callable(cleanup_pid_file), "cleanup_pid_file は xml_pipeline から import 可能でなければならない"
 
     def test_reexport_sanitize_filename(self):
-        """xml2_pipeline 経由で sanitize_filename がimport可能であることを確認する。"""
-        from src.xml2_pipeline import sanitize_filename
+        """xml_pipeline 経由で sanitize_filename がimport可能であることを確認する。"""
+        from src.xml_pipeline import sanitize_filename
 
-        assert callable(sanitize_filename), "sanitize_filename は xml2_pipeline から import 可能でなければならない"
+        assert callable(sanitize_filename), "sanitize_filename は xml_pipeline から import 可能でなければならない"
 
     def test_reexport_load_sound(self):
-        """xml2_pipeline 経由で load_sound がimport可能であることを確認する。"""
-        from src.xml2_pipeline import load_sound
+        """xml_pipeline 経由で load_sound がimport可能であることを確認する。"""
+        from src.xml_pipeline import load_sound
 
-        assert callable(load_sound), "load_sound は xml2_pipeline から import 可能でなければならない"
+        assert callable(load_sound), "load_sound は xml_pipeline から import 可能でなければならない"
 
     def test_reexport_process_chapters(self):
-        """xml2_pipeline 経由で process_chapters がimport可能であることを確認する。"""
-        from src.xml2_pipeline import process_chapters
+        """xml_pipeline 経由で process_chapters がimport可能であることを確認する。"""
+        from src.xml_pipeline import process_chapters
 
-        assert callable(process_chapters), "process_chapters は xml2_pipeline から import 可能でなければならない"
+        assert callable(process_chapters), "process_chapters は xml_pipeline から import 可能でなければならない"
 
     def test_reexport_process_content(self):
-        """xml2_pipeline 経由で process_content がimport可能であることを確認する。"""
-        from src.xml2_pipeline import process_content
+        """xml_pipeline 経由で process_content がimport可能であることを確認する。"""
+        from src.xml_pipeline import process_content
 
-        assert callable(process_content), "process_content は xml2_pipeline から import 可能でなければならない"
+        assert callable(process_content), "process_content は xml_pipeline から import 可能でなければならない"
 
     def test_reexport_parse_args(self):
-        """xml2_pipeline 経由で parse_args がimport可能であることを確認する。"""
-        from src.xml2_pipeline import parse_args
+        """xml_pipeline 経由で parse_args がimport可能であることを確認する。"""
+        from src.xml_pipeline import parse_args
 
-        assert callable(parse_args), "parse_args は xml2_pipeline から import 可能でなければならない"
+        assert callable(parse_args), "parse_args は xml_pipeline から import 可能でなければならない"
 
     def test_reexport_main(self):
-        """xml2_pipeline 経由で main がimport可能であることを確認する。"""
-        from src.xml2_pipeline import main
+        """xml_pipeline 経由で main がimport可能であることを確認する。"""
+        from src.xml_pipeline import main
 
-        assert callable(main), "main は xml2_pipeline から import 可能でなければならない"
+        assert callable(main), "main は xml_pipeline から import 可能でなければならない"
 
     def test_reexport_origin_process_manager(self):
         """re-export された PID管理関数が process_manager モジュール由来であることを確認する。"""
         from src.process_manager import get_pid_file_path as original
-        from src.xml2_pipeline import get_pid_file_path as reexported
+        from src.xml_pipeline import get_pid_file_path as reexported
 
         assert original is reexported, (
-            "xml2_pipeline.get_pid_file_path は process_manager からのre-exportでなければならない"
+            "xml_pipeline.get_pid_file_path は process_manager からのre-exportでなければならない"
         )
 
     def test_reexport_origin_chapter_processor(self):
         """re-export された音声処理関数が chapter_processor モジュール由来であることを確認する。"""
         from src.chapter_processor import sanitize_filename as original
-        from src.xml2_pipeline import sanitize_filename as reexported
+        from src.xml_pipeline import sanitize_filename as reexported
 
         assert original is reexported, (
-            "xml2_pipeline.sanitize_filename は chapter_processor からのre-exportでなければならない"
+            "xml_pipeline.sanitize_filename は chapter_processor からのre-exportでなければならない"
         )
 
 
@@ -199,12 +199,12 @@ class TestFileSizeLimit:
         """ファイルの行数をカウントする。"""
         return len(filepath.read_text(encoding="utf-8").splitlines())
 
-    def test_xml2_pipeline_line_count(self):
-        """src/xml2_pipeline.py が600行以下であることを確認する。"""
-        filepath = PROJECT_ROOT / "src" / "xml2_pipeline.py"
+    def test_xml_pipeline_line_count(self):
+        """src/xml_pipeline.py が600行以下であることを確認する。"""
+        filepath = PROJECT_ROOT / "src" / "xml_pipeline.py"
         assert filepath.exists(), f"{filepath} が存在しない"
         line_count = self._count_lines(filepath)
-        assert line_count <= self.LINE_LIMIT, f"src/xml2_pipeline.py は {line_count} 行（上限: {self.LINE_LIMIT} 行）"
+        assert line_count <= self.LINE_LIMIT, f"src/xml_pipeline.py は {line_count} 行（上限: {self.LINE_LIMIT} 行）"
 
     def test_process_manager_line_count(self):
         """src/process_manager.py が600行以下であることを確認する。"""

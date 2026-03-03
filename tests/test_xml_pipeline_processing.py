@@ -1,4 +1,4 @@
-"""Tests for xml2_pipeline.py - Content processing tests"""
+"""Tests for xml_pipeline.py - Content processing tests"""
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -23,11 +23,11 @@ def mock_pid_management(monkeypatch):
     mock_write = MagicMock()
     mock_atexit = MagicMock()
 
-    import src.xml2_pipeline
+    import src.xml_pipeline
 
-    monkeypatch.setattr(src.xml2_pipeline, "get_pid_file_path", mock_get_pid)
-    monkeypatch.setattr(src.xml2_pipeline, "kill_existing_process", mock_kill)
-    monkeypatch.setattr(src.xml2_pipeline, "write_pid_file", mock_write)
+    monkeypatch.setattr(src.xml_pipeline, "get_pid_file_path", mock_get_pid)
+    monkeypatch.setattr(src.xml_pipeline, "kill_existing_process", mock_kill)
+    monkeypatch.setattr(src.xml_pipeline, "write_pid_file", mock_write)
     monkeypatch.setattr(atexit, "register", mock_atexit)
 
     yield
@@ -47,7 +47,7 @@ class TestLoadSoundMonoConversion:
         """load_sound は numpy 配列を返す"""
         import soundfile as sf
 
-        from src.xml2_pipeline import load_sound
+        from src.xml_pipeline import load_sound
 
         # Create a test mono WAV file
         test_audio = np.sin(2 * np.pi * 440 * np.linspace(0, 1, 24000)).astype(np.float32)
@@ -62,7 +62,7 @@ class TestLoadSoundMonoConversion:
         """ステレオ音声をモノラルに変換する"""
         import soundfile as sf
 
-        from src.xml2_pipeline import load_sound
+        from src.xml_pipeline import load_sound
 
         # Create a stereo WAV file
         duration = 0.5
@@ -87,7 +87,7 @@ class TestLoadSoundMonoConversion:
         """異なるサンプルレートをリサンプリングする"""
         import soundfile as sf
 
-        from src.xml2_pipeline import load_sound
+        from src.xml_pipeline import load_sound
 
         # Create a 48kHz WAV file (different from VOICEVOX's 24kHz)
         source_sr = 48000
@@ -112,7 +112,7 @@ class TestLoadSoundMonoConversion:
         """既に正しいサンプルレートの場合はリサンプリングしない"""
         import soundfile as sf
 
-        from src.xml2_pipeline import load_sound
+        from src.xml_pipeline import load_sound
 
         # Create a 24kHz WAV file (same as VOICEVOX)
         sr = 24000
@@ -133,7 +133,7 @@ class TestLoadSoundMonoConversion:
         """音量が正規化される"""
         import soundfile as sf
 
-        from src.xml2_pipeline import load_sound
+        from src.xml_pipeline import load_sound
 
         # Create audio with very low amplitude
         sr = 24000
@@ -155,7 +155,7 @@ class TestLoadSoundMonoConversion:
         """float32 型で返却される"""
         import soundfile as sf
 
-        from src.xml2_pipeline import load_sound
+        from src.xml_pipeline import load_sound
 
         sr = 24000
         duration = 0.5
@@ -181,14 +181,14 @@ class TestProcessContentWithMarkers:
 
     def test_process_content_function_exists(self):
         """process_content 関数が存在する"""
-        from src.xml2_pipeline import process_content
+        from src.xml_pipeline import process_content
 
         assert callable(process_content), "process_content should be a callable function"
 
     def test_process_content_accepts_content_items(self):
         """process_content は ContentItem リストを受け付ける"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(item_type="paragraph", text="Test paragraph", heading_info=None),
@@ -208,8 +208,8 @@ class TestProcessContentWithMarkers:
 
     def test_process_content_with_chapter_marker_includes_chapter_sound(self):
         """CHAPTER_MARKER を含むテキストで chapter_sound が挿入される"""
-        from src.xml2_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(
@@ -238,8 +238,8 @@ class TestProcessContentWithMarkers:
 
     def test_process_content_with_section_marker_includes_section_sound(self):
         """SECTION_MARKER を含むテキストで section_sound が挿入される"""
-        from src.xml2_parser import SECTION_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import SECTION_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(
@@ -264,8 +264,8 @@ class TestProcessContentWithMarkers:
 
     def test_process_content_mixed_markers(self):
         """CHAPTER_MARKER と SECTION_MARKER の両方を正しく処理"""
-        from src.xml2_parser import CHAPTER_MARKER, SECTION_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import CHAPTER_MARKER, SECTION_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(
@@ -296,8 +296,8 @@ class TestProcessContentWithMarkers:
 
     def test_process_content_no_markers(self):
         """マーカーなしのテキストはそのまま処理される"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(item_type="paragraph", text="マーカーなしの段落テキスト", heading_info=None),
@@ -324,8 +324,8 @@ class TestProcessContentAppliesCleanPageText:
 
     def test_process_content_calls_clean_page_text(self):
         """process_content は各コンテンツアイテムのテキストに clean_page_text() を適用する"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(
@@ -374,8 +374,8 @@ class TestProcessContentAppliesCleanPageText:
 
     def test_process_content_applies_clean_page_text_to_each_item(self):
         """process_content は複数のコンテンツアイテム全てに clean_page_text() を適用する"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(item_type="paragraph", text="段落1のテキスト", heading_info=None),
@@ -421,8 +421,8 @@ class TestProcessContentAppliesCleanPageText:
 
     def test_process_content_cleans_text_after_marker_removal(self):
         """process_content はマーカー除去後にクリーニングを行う"""
-        from src.xml2_parser import CHAPTER_MARKER, ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import CHAPTER_MARKER, ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(
@@ -480,14 +480,14 @@ class TestProcessContentRemovesUrl:
 
     US1 Acceptance Scenario 1:
     - Given URL を含む paragraph 要素
-    - When xml2_pipeline で処理する
+    - When xml_pipeline で処理する
     - Then URL は読み上げられない
     """
 
     def test_url_not_passed_to_tts(self):
         """URL を含むテキストが TTS に渡される前に URL が除去される"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         url_text = "詳細は https://example.com/path/to/page を参照してください。"
         content_items = [
@@ -539,8 +539,8 @@ class TestProcessContentRemovesUrl:
 
     def test_http_url_removed(self):
         """http:// で始まる URL も除去される"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(
@@ -597,8 +597,8 @@ class TestProcessContentRemovesParentheticalEnglish:
 
     def test_parenthetical_english_removed(self):
         """括弧内の英語テキストが除去される"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(
@@ -646,8 +646,8 @@ class TestProcessContentRemovesParentheticalEnglish:
 
     def test_multiple_parenthetical_english_removed(self):
         """複数の括弧内英語が全て除去される"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(
@@ -705,8 +705,8 @@ class TestProcessContentConvertsNumbersToKana:
 
     def test_numbers_converted_to_kana(self):
         """数字がカナに変換されて TTS に渡される"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(
@@ -757,8 +757,8 @@ class TestProcessContentConvertsNumbersToKana:
 
     def test_year_number_converted(self):
         """年号の数字もカナに変換される"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_content
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_content
 
         content_items = [
             ContentItem(

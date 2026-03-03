@@ -1,4 +1,4 @@
-"""Tests for xml2_pipeline.py - Argument parsing tests"""
+"""Tests for xml_pipeline.py - Argument parsing tests"""
 
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -21,18 +21,18 @@ def mock_pid_management(monkeypatch):
     mock_write = MagicMock()
     mock_atexit = MagicMock()
 
-    import src.xml2_pipeline
+    import src.xml_pipeline
 
-    monkeypatch.setattr(src.xml2_pipeline, "get_pid_file_path", mock_get_pid)
-    monkeypatch.setattr(src.xml2_pipeline, "kill_existing_process", mock_kill)
-    monkeypatch.setattr(src.xml2_pipeline, "write_pid_file", mock_write)
+    monkeypatch.setattr(src.xml_pipeline, "get_pid_file_path", mock_get_pid)
+    monkeypatch.setattr(src.xml_pipeline, "kill_existing_process", mock_kill)
+    monkeypatch.setattr(src.xml_pipeline, "write_pid_file", mock_write)
     monkeypatch.setattr(atexit, "register", mock_atexit)
 
     yield
 
 
 class TestParseArgsDefaults:
-    """Test parse_args default values for xml2_pipeline.
+    """Test parse_args default values for xml_pipeline.
 
     T041: CLI引数のデフォルト値テスト
     - --input: 必須
@@ -45,7 +45,7 @@ class TestParseArgsDefaults:
 
     def test_parse_args_input_required(self):
         """--input 引数が必須"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         with pytest.raises(SystemExit) as exc_info:
             parse_args([])
@@ -55,7 +55,7 @@ class TestParseArgsDefaults:
 
     def test_parse_args_accepts_input_long(self):
         """--input 引数を受け付ける"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["--input", str(SAMPLE_BOOK2_XML)])
 
@@ -63,7 +63,7 @@ class TestParseArgsDefaults:
 
     def test_parse_args_accepts_input_short(self):
         """-i 短縮形を受け付ける"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML)])
 
@@ -71,7 +71,7 @@ class TestParseArgsDefaults:
 
     def test_output_default(self):
         """--output のデフォルトは ./output"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML)])
 
@@ -79,7 +79,7 @@ class TestParseArgsDefaults:
 
     def test_chapter_sound_default(self):
         """--chapter-sound のデフォルトは assets/sounds/chapter.mp3"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML)])
 
@@ -89,7 +89,7 @@ class TestParseArgsDefaults:
 
     def test_section_sound_default(self):
         """--section-sound のデフォルトは assets/sounds/section.mp3"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML)])
 
@@ -99,7 +99,7 @@ class TestParseArgsDefaults:
 
     def test_style_id_default(self):
         """--style-id のデフォルトは 13"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML)])
 
@@ -107,7 +107,7 @@ class TestParseArgsDefaults:
 
     def test_speed_default(self):
         """--speed のデフォルトは 1.0"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML)])
 
@@ -115,7 +115,7 @@ class TestParseArgsDefaults:
 
     def test_voicevox_dir_default(self):
         """--voicevox-dir のデフォルトは ./voicevox_core"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML)])
 
@@ -125,7 +125,7 @@ class TestParseArgsDefaults:
 
     def test_max_chunk_chars_default(self):
         """--max-chunk-chars のデフォルトは 500"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML)])
 
@@ -142,7 +142,7 @@ class TestParseArgsCustomSounds:
 
     def test_chapter_sound_custom(self):
         """--chapter-sound にカスタム値を設定"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML), "--chapter-sound", "/custom/path/chapter.mp3"])
 
@@ -152,7 +152,7 @@ class TestParseArgsCustomSounds:
 
     def test_section_sound_custom(self):
         """--section-sound にカスタム値を設定"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML), "--section-sound", "/custom/path/section.mp3"])
 
@@ -162,7 +162,7 @@ class TestParseArgsCustomSounds:
 
     def test_both_sounds_custom(self):
         """--chapter-sound と --section-sound を両方カスタム設定"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(
             [
@@ -184,7 +184,7 @@ class TestParseArgsCustomSounds:
 
     def test_output_custom(self):
         """--output にカスタム値を設定"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML), "-o", "/tmp/audio"])
 
@@ -192,7 +192,7 @@ class TestParseArgsCustomSounds:
 
     def test_style_id_custom(self):
         """--style-id にカスタム値を設定"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML), "--style-id", "1"])
 
@@ -200,7 +200,7 @@ class TestParseArgsCustomSounds:
 
     def test_speed_custom(self):
         """--speed にカスタム値を設定"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML), "--speed", "1.5"])
 
@@ -208,11 +208,11 @@ class TestParseArgsCustomSounds:
 
 
 class TestEdgeCases:
-    """Edge cases for xml2_pipeline."""
+    """Edge cases for xml_pipeline."""
 
     def test_parse_args_empty_chapter_sound_path(self):
         """--chapter-sound に空パスを設定した場合"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML), "--chapter-sound", ""])
 
@@ -220,7 +220,7 @@ class TestEdgeCases:
 
     def test_parse_args_relative_paths(self):
         """相対パスを受け付ける"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", "sample/book2.xml", "--chapter-sound", "./sounds/chapter.mp3"])
 
@@ -247,7 +247,7 @@ class TestParseArgsCleanedTextOption:
 
     def test_cleaned_text_option_accepted(self):
         """--cleaned-text オプションが受け付けられる"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML), "--cleaned-text", "/path/to/cleaned_text.txt"])
 
@@ -257,7 +257,7 @@ class TestParseArgsCleanedTextOption:
 
     def test_cleaned_text_option_default_is_none(self):
         """--cleaned-text 未指定時のデフォルトは None"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML)])
 
@@ -267,7 +267,7 @@ class TestParseArgsCleanedTextOption:
 
     def test_cleaned_text_option_with_relative_path(self):
         """--cleaned-text に相対パスを指定できる"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(["-i", str(SAMPLE_BOOK2_XML), "--cleaned-text", "./output/abc123/cleaned_text.txt"])
 
@@ -277,7 +277,7 @@ class TestParseArgsCleanedTextOption:
 
     def test_cleaned_text_option_coexists_with_other_options(self):
         """--cleaned-text は他のオプションと共存できる"""
-        from src.xml2_pipeline import parse_args
+        from src.xml_pipeline import parse_args
 
         args = parse_args(
             [

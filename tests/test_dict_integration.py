@@ -5,7 +5,7 @@ import json
 import pytest
 
 from src.dict_manager import get_content_hash, get_xml_content_hash
-from src.xml2_parser import parse_book2_xml
+from src.xml_parser import parse_book2_xml
 
 
 @pytest.fixture

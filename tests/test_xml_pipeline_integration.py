@@ -1,4 +1,4 @@
-"""Tests for xml2_pipeline.py - Integration tests"""
+"""Tests for xml_pipeline.py - Integration tests"""
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -22,11 +22,11 @@ def mock_pid_management(monkeypatch):
     mock_write = MagicMock()
     mock_atexit = MagicMock()
 
-    import src.xml2_pipeline
+    import src.xml_pipeline
 
-    monkeypatch.setattr(src.xml2_pipeline, "get_pid_file_path", mock_get_pid)
-    monkeypatch.setattr(src.xml2_pipeline, "kill_existing_process", mock_kill)
-    monkeypatch.setattr(src.xml2_pipeline, "write_pid_file", mock_write)
+    monkeypatch.setattr(src.xml_pipeline, "get_pid_file_path", mock_get_pid)
+    monkeypatch.setattr(src.xml_pipeline, "kill_existing_process", mock_kill)
+    monkeypatch.setattr(src.xml_pipeline, "write_pid_file", mock_write)
     monkeypatch.setattr(atexit, "register", mock_atexit)
 
     yield
@@ -37,13 +37,13 @@ class TestMainFunction:
 
     def test_main_function_exists(self):
         """main 関数が存在する"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         assert callable(main), "main should be a callable function"
 
     def test_main_file_not_found_raises_error(self, mock_pid_management):
         """存在しないファイルでエラー"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         non_existent = "/tmp/non_existent_book2.xml"
 
@@ -54,7 +54,7 @@ class TestMainFunction:
 
     def test_main_invalid_xml_raises_error(self, tmp_path, mock_pid_management):
         """不正な XML でエラー"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         invalid_xml = tmp_path / "invalid.xml"
         invalid_xml.write_text("<book><paragraph>unclosed")
@@ -84,7 +84,7 @@ class TestMainWithCleanedTextSkipsCleaning:
 
     def test_main_with_cleaned_text_skips_text_cleaning(self, tmp_path, mock_pid_management):
         """--cleaned-text 指定時はテキストクリーニング（clean_page_text）がスキップされる"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         # テスト用 XML を作成
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
@@ -103,11 +103,11 @@ class TestMainWithCleanedTextSkipsCleaning:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.clean_page_text") as mock_clean,
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.clean_page_text") as mock_clean,
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -137,7 +137,7 @@ class TestMainWithCleanedTextSkipsCleaning:
 
     def test_main_with_cleaned_text_does_not_overwrite_file(self, tmp_path, mock_pid_management):
         """--cleaned-text 指定時は既存の cleaned_text.txt を上書きしない"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <book>
@@ -156,10 +156,10 @@ class TestMainWithCleanedTextSkipsCleaning:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -200,7 +200,7 @@ class TestCleanedTextFileNotFound:
 
     def test_cleaned_text_file_not_found_raises_error(self, mock_pid_management):
         """--cleaned-text で指定したファイルが存在しない場合 FileNotFoundError"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         non_existent_cleaned = "/tmp/nonexistent_cleaned_text.txt"
 
@@ -220,7 +220,7 @@ class TestCleanedTextFileNotFound:
 
     def test_cleaned_text_file_not_found_error_message_is_descriptive(self, mock_pid_management):
         """--cleaned-text ファイル不存在時のエラーメッセージが分かりやすい"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         non_existent_cleaned = "/tmp/does_not_exist_cleaned.txt"
 
@@ -251,7 +251,7 @@ class TestBackwardCompatibilityWithoutCleanedText:
 
     def test_main_without_cleaned_text_runs_cleaning(self, tmp_path, mock_pid_management):
         """--cleaned-text 未指定時は従来通りテキストクリーニングが実行される"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <book>
@@ -265,11 +265,11 @@ class TestBackwardCompatibilityWithoutCleanedText:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
-            patch("src.xml2_pipeline.clean_page_text") as mock_clean,
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.clean_page_text") as mock_clean,
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -297,7 +297,7 @@ class TestBackwardCompatibilityWithoutCleanedText:
 
     def test_main_without_cleaned_text_generates_cleaned_text_file(self, tmp_path, mock_pid_management):
         """--cleaned-text 未指定時は cleaned_text.txt が新規生成される"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <book>
@@ -311,10 +311,10 @@ class TestBackwardCompatibilityWithoutCleanedText:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
