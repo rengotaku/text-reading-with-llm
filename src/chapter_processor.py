@@ -1,4 +1,4 @@
-"""Chapter and audio processing for xml2_pipeline.
+"""Chapter and audio processing for xml_pipeline.
 
 This module provides functions for processing content items,
 generating chapter-based audio files, and handling audio effects.

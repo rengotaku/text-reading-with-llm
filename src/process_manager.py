@@ -1,7 +1,7 @@
-"""PID file management for xml2_pipeline processes.
+"""PID file management for xml_pipeline processes.
 
 This module provides PID file handling functionality to ensure
-only one instance of xml2_pipeline runs per input file.
+only one instance of xml_pipeline runs per input file.
 """
 
 import logging
@@ -27,7 +27,7 @@ def get_pid_file_path(input_file: str) -> Path:
 
     # Use input filename as PID file name
     input_name = Path(input_file).stem
-    return pid_dir / f"xml2_pipeline_{input_name}.pid"
+    return pid_dir / f"xml_pipeline_{input_name}.pid"
 
 
 def kill_existing_process(pid_file: Path) -> bool:

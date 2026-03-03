@@ -4,7 +4,7 @@ This module provides a command-line interface to generate TTS audio
 from book2.xml files using the VOICEVOX synthesizer.
 
 Integration with existing components:
-- xml2_parser: Parse book2.xml and extract content items
+- xml_parser: Parse book2.xml and extract content items
 - text_cleaner: Clean text for TTS consumption
 - pipeline: Generate audio files
 - voicevox_client: VOICEVOX synthesis

@@ -6,7 +6,7 @@ from XML files without running the full TTS pipeline.
 Usage:
     python -m src.text_cleaner_cli -i input.xml -o ./output
 
-Extracted from xml2_pipeline.py main() L133-175 logic.
+Extracted from xml_pipeline.py main() L133-175 logic.
 """
 
 import argparse
