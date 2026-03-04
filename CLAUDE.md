@@ -88,9 +88,9 @@ specs/                       # フィーチャー仕様格納
 - **phase-executor** (sonnet): 実装 → GREEN 確認 → 検証 → `tasks/ph{N}-output.md` 出力
 
 ## Recent Changes
+- 025-rename-test-xml-parser: Added Python 3.10+ + なし（ファイルリネームのみ）
 - 014-mypy-type-checking: Added Python 3.10 + mypy (新規追加)
 - 013-pyproject-ci-setup: Added Python 3.10+ + soundfile, pyyaml, numpy, requests, fugashi, unidic-lite (本番), ruff, pre-commit, pytest, pytest-cov (開発)
-- 012-vvm-load-optimization: Added Python 3.10+ + voicevox_core 0.16.3, numpy, soundfile
 
 ## Active Technologies
-- Python 3.10 + mypy (新規追加) (014-mypy-type-checking)
+- Python 3.10+ + なし（ファイルリネームのみ） (025-rename-test-xml-parser)
