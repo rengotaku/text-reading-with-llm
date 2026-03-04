@@ -1,4 +1,4 @@
-"""Tests for xml2_pipeline.py - Cleaned text file tests"""
+"""Tests for xml_pipeline.py - Cleaned text file tests"""
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -22,11 +22,11 @@ def mock_pid_management(monkeypatch):
     mock_write = MagicMock()
     mock_atexit = MagicMock()
 
-    import src.xml2_pipeline
+    import src.xml_pipeline
 
-    monkeypatch.setattr(src.xml2_pipeline, "get_pid_file_path", mock_get_pid)
-    monkeypatch.setattr(src.xml2_pipeline, "kill_existing_process", mock_kill)
-    monkeypatch.setattr(src.xml2_pipeline, "write_pid_file", mock_write)
+    monkeypatch.setattr(src.xml_pipeline, "get_pid_file_path", mock_get_pid)
+    monkeypatch.setattr(src.xml_pipeline, "kill_existing_process", mock_kill)
+    monkeypatch.setattr(src.xml_pipeline, "write_pid_file", mock_write)
     monkeypatch.setattr(atexit, "register", mock_atexit)
 
     yield
@@ -43,7 +43,7 @@ class TestCleanedTextFileContainsCleanedContent:
 
     def test_cleaned_text_does_not_contain_url(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に URL が含まれていないことを確認する"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         # Create a test XML with URL-containing text
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
@@ -58,10 +58,10 @@ class TestCleanedTextFileContainsCleanedContent:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -93,7 +93,7 @@ class TestCleanedTextFileContainsCleanedContent:
 
     def test_cleaned_text_does_not_contain_parenthetical_english(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に括弧内英語が含まれていないことを確認する"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <book>
@@ -107,10 +107,10 @@ class TestCleanedTextFileContainsCleanedContent:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -140,7 +140,7 @@ class TestCleanedTextFileContainsCleanedContent:
 
     def test_cleaned_text_numbers_converted_to_kana(self, tmp_path, mock_pid_management):
         """cleaned_text.txt の数字がカナに変換されていることを確認する"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <book>
@@ -154,10 +154,10 @@ class TestCleanedTextFileContainsCleanedContent:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -187,7 +187,7 @@ class TestCleanedTextFileContainsCleanedContent:
 
     def test_cleaned_text_isbn_removed(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に ISBN が含まれていないことを確認する"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <book>
@@ -201,10 +201,10 @@ class TestCleanedTextFileContainsCleanedContent:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -243,7 +243,7 @@ class TestCleanedTextFileHasChapterMarkers:
 
     def test_cleaned_text_has_chapter_separator_format(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に === Chapter N: Title === 形式の章区切りが含まれる"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <book>
@@ -260,10 +260,10 @@ class TestCleanedTextFileHasChapterMarkers:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -298,7 +298,7 @@ class TestCleanedTextFileHasChapterMarkers:
 
     def test_cleaned_text_chapter_separator_contains_title(self, tmp_path, mock_pid_management):
         """cleaned_text.txt の章区切り行にタイトルが含まれる（=== 形式）"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <book>
@@ -312,10 +312,10 @@ class TestCleanedTextFileHasChapterMarkers:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -349,7 +349,7 @@ class TestCleanedTextFileHasChapterMarkers:
 
     def test_cleaned_text_paragraph_text_is_cleaned(self, tmp_path, mock_pid_management):
         """cleaned_text.txt の段落テキストに clean_page_text() が適用されている"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         # URL と括弧英語と数字を含むテキスト
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
@@ -364,10 +364,10 @@ class TestCleanedTextFileHasChapterMarkers:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),
@@ -400,7 +400,7 @@ class TestCleanedTextFileHasChapterMarkers:
     def test_cleaned_text_no_item_type_labels(self, tmp_path, mock_pid_management):
         """cleaned_text.txt に '=== paragraph ===' のような
         item_type ラベルが含まれない（クリーニング後の形式を使用）"""
-        from src.xml2_pipeline import main
+        from src.xml_pipeline import main
 
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <book>
@@ -414,10 +414,10 @@ class TestCleanedTextFileHasChapterMarkers:
         output_dir = tmp_path / "output"
 
         with (
-            patch("src.xml2_pipeline.init_for_content"),
-            patch("src.xml2_pipeline.get_content_hash", return_value="testhash"),
-            patch("src.xml2_pipeline.VoicevoxConfig"),
-            patch("src.xml2_pipeline.VoicevoxSynthesizer"),
+            patch("src.xml_pipeline.init_for_content"),
+            patch("src.xml_pipeline.get_content_hash", return_value="testhash"),
+            patch("src.xml_pipeline.VoicevoxConfig"),
+            patch("src.xml_pipeline.VoicevoxSynthesizer"),
             patch("src.chapter_processor.generate_audio") as mock_gen,
             patch("src.chapter_processor.save_audio"),
             patch("src.chapter_processor.concatenate_audio_files"),

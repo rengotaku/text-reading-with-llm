@@ -19,7 +19,7 @@ from src.dict_manager import get_dict_path, load_dict, save_dict
 from src.llm_reading_generator import extract_technical_terms
 from src.logging_config import setup_logging
 from src.text_cleaner import split_into_pages
-from src.xml2_parser import parse_book2_xml
+from src.xml_parser import parse_book2_xml
 
 logger = logging.getLogger(__name__)
 

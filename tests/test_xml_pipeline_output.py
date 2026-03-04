@@ -1,4 +1,4 @@
-"""Tests for xml2_pipeline.py - Output file generation tests"""
+"""Tests for xml_pipeline.py - Output file generation tests"""
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -23,11 +23,11 @@ def mock_pid_management(monkeypatch):
     mock_write = MagicMock()
     mock_atexit = MagicMock()
 
-    import src.xml2_pipeline
+    import src.xml_pipeline
 
-    monkeypatch.setattr(src.xml2_pipeline, "get_pid_file_path", mock_get_pid)
-    monkeypatch.setattr(src.xml2_pipeline, "kill_existing_process", mock_kill)
-    monkeypatch.setattr(src.xml2_pipeline, "write_pid_file", mock_write)
+    monkeypatch.setattr(src.xml_pipeline, "get_pid_file_path", mock_get_pid)
+    monkeypatch.setattr(src.xml_pipeline, "kill_existing_process", mock_kill)
+    monkeypatch.setattr(src.xml_pipeline, "write_pid_file", mock_write)
     monkeypatch.setattr(atexit, "register", mock_atexit)
 
     yield
@@ -46,13 +46,13 @@ class TestSanitizeFilename:
 
     def test_sanitize_filename_function_exists(self):
         """sanitize_filename 関数が存在する"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         assert callable(sanitize_filename), "sanitize_filename は呼び出し可能な関数であるべき"
 
     def test_sanitize_filename_english_title(self):
         """英語タイトルはそのままサニタイズされる"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         result = sanitize_filename(1, "Introduction")
 
@@ -62,7 +62,7 @@ class TestSanitizeFilename:
 
     def test_sanitize_filename_japanese_title(self):
         """日本語タイトルは除去される（半角英数字のみ残る）"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         result = sanitize_filename(2, "はじめに")
 
@@ -73,7 +73,7 @@ class TestSanitizeFilename:
 
     def test_sanitize_filename_mixed_title(self):
         """日本語と英語の混合タイトル"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         result = sanitize_filename(3, "Python入門")
 
@@ -83,7 +83,7 @@ class TestSanitizeFilename:
 
     def test_sanitize_filename_empty_title(self):
         """空タイトルは untitled になる"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         result = sanitize_filename(1, "")
 
@@ -91,7 +91,7 @@ class TestSanitizeFilename:
 
     def test_sanitize_filename_special_characters(self):
         """特殊文字は除去される"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         result = sanitize_filename(1, "Hello/World:Test?")
 
@@ -106,7 +106,7 @@ class TestSanitizeFilename:
 
     def test_sanitize_filename_number_zero_padded(self):
         """章番号はゼロ埋め2桁"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         result = sanitize_filename(5, "Test")
 
@@ -114,7 +114,7 @@ class TestSanitizeFilename:
 
     def test_sanitize_filename_large_chapter_number(self):
         """2桁以上の章番号"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         result = sanitize_filename(12, "Test")
 
@@ -122,7 +122,7 @@ class TestSanitizeFilename:
 
     def test_sanitize_filename_max_length(self):
         """サニタイズ後のタイトル部分が最大20文字"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         long_title = "A" * 50  # 50文字の英語タイトル
         result = sanitize_filename(1, long_title)
@@ -133,7 +133,7 @@ class TestSanitizeFilename:
 
     def test_sanitize_filename_spaces_to_underscores(self):
         """スペースはアンダースコアに変換される"""
-        from src.xml2_pipeline import sanitize_filename
+        from src.xml_pipeline import sanitize_filename
 
         result = sanitize_filename(1, "Hello World")
 
@@ -154,14 +154,14 @@ class TestProcessChaptersCreatesChapterFiles:
 
     def test_process_chapters_function_exists(self):
         """process_chapters 関数が存在する"""
-        from src.xml2_pipeline import process_chapters
+        from src.xml_pipeline import process_chapters
 
         assert callable(process_chapters), "process_chapters は呼び出し可能な関数であるべき"
 
     def test_process_chapters_creates_chapters_directory(self, tmp_path):
         """process_chapters が chapters/ ディレクトリを作成する"""
-        from src.xml2_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_chapters
+        from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_chapters
 
         content_items = [
             ContentItem(
@@ -204,8 +204,8 @@ class TestProcessChaptersCreatesChapterFiles:
 
     def test_process_chapters_creates_chapter_wav_files(self, tmp_path):
         """process_chapters が chapter ごとの WAV ファイルを作成する"""
-        from src.xml2_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_chapters
+        from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_chapters
 
         content_items = [
             ContentItem(
@@ -264,8 +264,8 @@ class TestProcessChaptersCreatesChapterFiles:
 
     def test_process_chapters_filename_format(self, tmp_path):
         """chapter WAV ファイル名が ch{NN}_{title}.wav 形式である"""
-        from src.xml2_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_chapters
+        from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_chapters
 
         content_items = [
             ContentItem(
@@ -312,8 +312,8 @@ class TestProcessChaptersCreatesChapterFiles:
 
     def test_process_chapters_three_chapters(self, tmp_path):
         """3つの chapter を処理した場合に3つの WAV ファイルが生成される"""
-        from src.xml2_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_chapters
+        from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_chapters
 
         content_items = []
         for ch_num in range(1, 4):
@@ -378,8 +378,8 @@ class TestProcessChaptersCreatesBookWav:
 
     def test_process_chapters_creates_book_wav(self, tmp_path):
         """process_chapters が book.wav を生成する"""
-        from src.xml2_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_chapters
+        from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_chapters
 
         content_items = [
             ContentItem(
@@ -434,8 +434,8 @@ class TestProcessChaptersCreatesBookWav:
 
     def test_process_chapters_book_wav_and_chapter_files_coexist(self, tmp_path):
         """book.wav と chapters/ の WAV ファイルが両方存在する"""
-        from src.xml2_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_chapters
+        from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_chapters
 
         content_items = [
             ContentItem(
@@ -499,8 +499,8 @@ class TestProcessContentWithoutChaptersCreatesBookWav:
 
     def test_no_chapters_creates_only_book_wav(self, tmp_path):
         """chapter_number が全て None の場合、book.wav のみ生成される"""
-        from src.xml2_parser import ContentItem
-        from src.xml2_pipeline import process_chapters
+        from src.xml_parser import ContentItem
+        from src.xml_pipeline import process_chapters
 
         # chapter_number が全て None（chapter 要素がない XML から取得した場合）
         content_items = [
@@ -553,8 +553,8 @@ class TestProcessContentWithoutChaptersCreatesBookWav:
 
     def test_mixed_none_and_numbered_chapters(self, tmp_path):
         """chapter_number が混在する場合（None + 数値）は chapter のみ分割される"""
-        from src.xml2_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
-        from src.xml2_pipeline import process_chapters
+        from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
+        from src.xml_pipeline import process_chapters
 
         content_items = [
             # chapter 外のコンテンツ（chapter_number=None）

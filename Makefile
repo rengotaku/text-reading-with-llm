@@ -64,7 +64,7 @@ clean-text: ## Generate cleaned_text.txt from XML (INPUT=file)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.text_cleaner_cli -i "$(INPUT)" -o "$(OUTPUT)"
 
 xml-tts: ## Run XML to TTS pipeline (INPUT=file)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml2_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
 
 run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → TTS (INPUT=file)
 

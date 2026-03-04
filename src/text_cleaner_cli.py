@@ -6,7 +6,7 @@ from XML files without running the full TTS pipeline.
 Usage:
     python -m src.text_cleaner_cli -i input.xml -o ./output
 
-Extracted from xml2_pipeline.py main() L133-175 logic.
+Extracted from xml_pipeline.py main() L133-175 logic.
 """
 
 import argparse
@@ -17,7 +17,7 @@ from pathlib import Path
 from src.dict_manager import get_content_hash
 from src.logging_config import setup_logging
 from src.text_cleaner import clean_page_text, init_for_content
-from src.xml2_parser import CHAPTER_MARKER, SECTION_MARKER, parse_book2_xml
+from src.xml_parser import CHAPTER_MARKER, SECTION_MARKER, parse_book2_xml
 
 logger = logging.getLogger(__name__)
 

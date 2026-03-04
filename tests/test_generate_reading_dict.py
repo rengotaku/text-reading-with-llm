@@ -19,7 +19,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 
-from src.xml2_parser import ContentItem, HeadingInfo
+from src.xml_parser import ContentItem, HeadingInfo
 
 # Fixtures
 FIXTURES_DIR = Path(__file__).parent / "fixtures"

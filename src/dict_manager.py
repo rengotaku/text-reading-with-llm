@@ -43,7 +43,7 @@ def get_xml_content_hash(xml_path: Path) -> str:
     Raises:
         xml.etree.ElementTree.ParseError: If the XML is malformed
     """
-    from src.xml2_parser import parse_book2_xml
+    from src.xml_parser import parse_book2_xml
 
     # Let ParseError propagate - caller should handle it
     items = parse_book2_xml(xml_path)
