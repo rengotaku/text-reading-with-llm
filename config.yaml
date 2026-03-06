@@ -2,7 +2,7 @@
 # Override per-run values via CLI args or Makefile variables
 
 # Input
-input: sample/book.md
+input: sample/book.xml
 
 # Output base directory (actual output will be in data/{content_hash}/)
 output: data
