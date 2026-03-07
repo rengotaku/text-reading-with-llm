@@ -53,7 +53,7 @@ STYLE_ID_TO_VVM: dict[int, str] = {
 }
 
 
-_LEADING_PUNCT_PATTERN = re.compile(r"^[、。，．,.\s…ー－]+")
+_LEADING_PUNCT_PATTERN = re.compile(r"^[、。，．,.\s…ー－▶▼◆●○★☆※・►◀▲△▽▷◁→←↑↓]+")
 
 
 def clean_text_for_voicevox(text: str) -> str:
