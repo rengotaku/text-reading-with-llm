@@ -6,11 +6,16 @@ style_id から対応する VVM ファイルのみをロードする機能のテ
 Phase 3 RED Tests - US2: バージョン警告の解消
 VVM ファイルと VOICEVOX Core のバージョンが一致し、警告が出ないことを確認するテスト。
 
+T003 RED Tests - テキスト前処理
+clean_text_for_voicevox 関数のユニットテスト。
+先頭の句読点・長音記号を除去する前処理関数のテスト。
+
 Target functions:
 - src/voicevox_client.py::STYLE_ID_TO_VVM (dict)
 - src/voicevox_client.py::VoicevoxSynthesizer.get_vvm_path_for_style_id()
 - src/voicevox_client.py::VoicevoxSynthesizer.load_model_for_style_id()
 - src/voicevox_client.py::VoicevoxSynthesizer.load_model() (バージョン警告なし検証)
+- src/voicevox_client.py::clean_text_for_voicevox() (テキスト先頭の句読点・記号除去)
 """
 
 import logging
@@ -429,3 +434,153 @@ class TestNoVersionWarning:
                 result = self.synth.verify_vvm_version(style_id)
                 assert result is True, f"style_id {style_id} ({vvm_file}) のバージョンが不一致"
                 checked_vvms.add(vvm_file)
+
+
+# =============================================================================
+# T003: test_clean_text_for_voicevox
+# clean_text_for_voicevox() のユニットテスト
+# 正規表現パターン: ^[、。，．,.\\s…ー－]+
+# =============================================================================
+
+
+class TestCleanTextForVoicevox:
+    """clean_text_for_voicevox() のテスト.
+
+    OpenJTalk 警告回避のために、テキスト先頭の句読点・長音記号を
+    除去する前処理関数のテスト。
+    """
+
+    def setup_method(self):
+        """テストごとに関数をインポート."""
+        from src.voicevox_client import clean_text_for_voicevox
+
+        self.clean = clean_text_for_voicevox
+
+    # --- ハッピーパス ---
+
+    def test_removes_leading_kuten(self):
+        """先頭の句点（。）を除去する."""
+        assert self.clean("。テスト") == "テスト"
+
+    def test_removes_leading_touten(self):
+        """先頭の読点（、）を除去する."""
+        assert self.clean("、テスト") == "テスト"
+
+    def test_removes_leading_choon(self):
+        """先頭の長音記号（ー）を除去する."""
+        assert self.clean("ーテスト") == "テスト"
+
+    def test_removes_multiple_leading_symbols(self):
+        """先頭の複数の記号を除去する."""
+        assert self.clean("、。ーテスト") == "テスト"
+
+    def test_removes_leading_whitespace(self):
+        """先頭の空白を除去する."""
+        assert self.clean("  テスト") == "テスト"
+
+    def test_no_leading_symbols_unchanged(self):
+        """先頭に記号がない場合は変更しない."""
+        assert self.clean("テスト") == "テスト"
+
+    def test_middle_symbols_preserved(self):
+        """中間の記号は残る."""
+        assert self.clean("テスト。です") == "テスト。です"
+
+    def test_trailing_symbols_preserved(self):
+        """末尾の記号は残る."""
+        assert self.clean("テスト。") == "テスト。"
+
+    def test_removes_leading_fullwidth_comma(self):
+        """先頭の全角カンマ（，）を除去する."""
+        assert self.clean("，テスト") == "テスト"
+
+    def test_removes_leading_fullwidth_period(self):
+        """先頭の全角ピリオド（．）を除去する."""
+        assert self.clean("．テスト") == "テスト"
+
+    def test_removes_leading_halfwidth_comma(self):
+        """先頭の半角カンマ（,）を除去する."""
+        assert self.clean(",テスト") == "テスト"
+
+    def test_removes_leading_halfwidth_period(self):
+        """先頭の半角ピリオド（.）を除去する."""
+        assert self.clean(".テスト") == "テスト"
+
+    def test_removes_leading_ellipsis(self):
+        """先頭の省略記号（…）を除去する."""
+        assert self.clean("…テスト") == "テスト"
+
+    def test_removes_leading_dash(self):
+        """先頭のダッシュ（－）を除去する."""
+        assert self.clean("－テスト") == "テスト"
+
+    def test_removes_mixed_leading_symbols_and_spaces(self):
+        """先頭の記号と空白が混在する場合もすべて除去する."""
+        assert self.clean("。 、ーテスト") == "テスト"
+
+    # --- エッジケース ---
+
+    def test_empty_string_returns_empty(self):
+        """空文字列は空文字列を返す."""
+        assert self.clean("") == ""
+
+    def test_only_symbols_returns_empty(self):
+        """記号のみの文字列は空文字列を返す."""
+        assert self.clean("。、ー") == ""
+
+    def test_only_whitespace_returns_empty(self):
+        """空白のみの文字列は空文字列を返す."""
+        assert self.clean("   ") == ""
+
+    def test_none_raises_type_error(self):
+        """None を渡すと TypeError が発生する."""
+        with pytest.raises(TypeError):
+            self.clean(None)
+
+    def test_non_string_raises_type_error(self):
+        """文字列以外の型を渡すと TypeError が発生する."""
+        with pytest.raises(TypeError):
+            self.clean(123)
+
+    def test_single_character_text_unchanged(self):
+        """1文字テキストは変更しない."""
+        assert self.clean("テ") == "テ"
+
+    def test_single_symbol_removed(self):
+        """記号1文字のみは除去されて空文字列を返す."""
+        assert self.clean("。") == ""
+
+    def test_newline_in_middle_preserved(self):
+        """中間の改行は残る."""
+        result = self.clean("テスト\nです")
+        assert result == "テスト\nです"
+
+    def test_leading_newline_removed(self):
+        """先頭の改行は除去される（\\s にマッチ）."""
+        assert self.clean("\nテスト") == "テスト"
+
+    def test_unicode_text_unchanged(self):
+        """Unicode テキストは変更しない."""
+        assert self.clean("Hello, World!") == "Hello, World!"
+
+    def test_emoji_text_unchanged(self):
+        """絵文字を含むテキストは先頭の記号のみ除去する."""
+        assert self.clean("。テスト😀") == "テスト😀"
+
+    def test_returns_string_type(self):
+        """戻り値は常に文字列型."""
+        result = self.clean("テスト")
+        assert isinstance(result, str)
+
+    def test_long_text_performance(self):
+        """長いテキスト（1000文字以上）を正常に処理する."""
+        long_text = "テスト" * 400  # 1200文字
+        text_with_prefix = "。" + long_text
+        result = self.clean(text_with_prefix)
+        assert result == long_text
+
+    def test_preserves_all_non_leading_content(self):
+        """先頭の記号以外のコンテンツはすべて保持する."""
+        input_text = "。テスト、です。よろしく。"
+        result = self.clean(input_text)
+        assert result == "テスト、です。よろしく。"

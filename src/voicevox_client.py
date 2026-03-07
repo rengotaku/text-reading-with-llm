@@ -17,6 +17,7 @@ VOICEVOX Engine の起動は不要。
 """
 
 import logging
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -50,6 +51,29 @@ STYLE_ID_TO_VVM: dict[int, str] = {
     12: "9.vvm",  # 白上虎太郎 - ふつう
     13: "15.vvm",  # 青山龍星 - ノーマル
 }
+
+
+_LEADING_PUNCT_PATTERN = re.compile(r"^[、。，．,.\s…ー－]+")
+
+
+def clean_text_for_voicevox(text: str) -> str:
+    """テキスト先頭の句読点・長音記号・記号を除去する.
+
+    OpenJTalk が先頭に句読点・長音記号があると警告を発するため、
+    音声合成前にこれらを除去する前処理関数。
+
+    Args:
+        text: 処理するテキスト
+
+    Returns:
+        先頭の句読点・記号を除去した文字列
+
+    Raises:
+        TypeError: text が文字列でない場合
+    """
+    if not isinstance(text, str):
+        raise TypeError(f"text must be str, got {type(text).__name__}")
+    return _LEADING_PUNCT_PATTERN.sub("", text)
 
 
 @dataclass
@@ -255,6 +279,9 @@ class VoicevoxSynthesizer:
         # モデルが未ロードの場合はロード
         if not self._loaded_models:
             self.load_all_models()
+
+        # テキスト先頭の句読点・記号を除去（OpenJTalk 警告回避）
+        text = clean_text_for_voicevox(text)
 
         # AudioQuery を作成
         audio_query = self._synthesizer.create_audio_query(text, style_id)
