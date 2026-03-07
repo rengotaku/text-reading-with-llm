@@ -68,7 +68,7 @@ class TestStyleIdToVvmMapping:
         from src.voicevox_client import STYLE_ID_TO_VVM
 
         assert 13 in STYLE_ID_TO_VVM
-        assert STYLE_ID_TO_VVM[13] == "13.vvm"
+        assert STYLE_ID_TO_VVM[13] == "15.vvm"
 
     def test_style_id_0_maps_to_0_vvm(self):
         """style_id 0 (四国めたん) は 0.vvm にマッピングされる."""
@@ -77,12 +77,12 @@ class TestStyleIdToVvmMapping:
         assert 0 in STYLE_ID_TO_VVM
         assert STYLE_ID_TO_VVM[0] == "0.vvm"
 
-    def test_style_id_2_maps_to_1_vvm(self):
-        """style_id 2 (ずんだもん) は 1.vvm にマッピングされる."""
+    def test_style_id_2_maps_to_0_vvm(self):
+        """style_id 2 (四国めたん - ノーマル) は 0.vvm にマッピングされる."""
         from src.voicevox_client import STYLE_ID_TO_VVM
 
         assert 2 in STYLE_ID_TO_VVM
-        assert STYLE_ID_TO_VVM[2] == "1.vvm"
+        assert STYLE_ID_TO_VVM[2] == "0.vvm"
 
     def test_multiple_style_ids_same_vvm(self):
         """同一 VVM に複数の style_id がマッピングされるケースがある."""
@@ -121,9 +121,9 @@ class TestGetVvmPathForStyleId:
         assert isinstance(result, Path)
 
     def test_default_style_id_returns_correct_path(self):
-        """デフォルト style_id 13 → /tmp/test_vvms/13.vvm."""
+        """デフォルト style_id 13 → /tmp/test_vvms/15.vvm."""
         result = self.synth.get_vvm_path_for_style_id(13)
-        assert result == Path("/tmp/test_vvms/13.vvm")
+        assert result == Path("/tmp/test_vvms/15.vvm")
 
     def test_style_id_0_returns_correct_path(self):
         """style_id 0 → vvm_dir/0.vvm."""
@@ -131,9 +131,9 @@ class TestGetVvmPathForStyleId:
         assert result == Path("/tmp/test_vvms/0.vvm")
 
     def test_style_id_2_returns_correct_path(self):
-        """style_id 2 (ずんだもん) → vvm_dir/1.vvm."""
+        """style_id 2 (四国めたん - ノーマル) → vvm_dir/0.vvm."""
         result = self.synth.get_vvm_path_for_style_id(2)
-        assert result == Path("/tmp/test_vvms/1.vvm")
+        assert result == Path("/tmp/test_vvms/0.vvm")
 
     def test_path_uses_config_vvm_dir(self):
         """パスが config.vvm_dir を基準としている."""
@@ -182,9 +182,9 @@ class TestLoadModelForStyleId:
     @patch.object(VoicevoxSynthesizer, "load_model")
     @patch.object(VoicevoxSynthesizer, "initialize")
     def test_loads_correct_vvm_for_style_id_13(self, mock_init, mock_load):
-        """style_id 13 で 13.vvm のみがロードされる."""
+        """style_id 13 で 15.vvm のみがロードされる."""
         self.synth.load_model_for_style_id(13)
-        mock_load.assert_called_once_with(Path("/tmp/test_vvms/13.vvm"))
+        mock_load.assert_called_once_with(Path("/tmp/test_vvms/15.vvm"))
 
     @patch.object(VoicevoxSynthesizer, "load_model")
     @patch.object(VoicevoxSynthesizer, "initialize")
@@ -224,7 +224,7 @@ class TestLoadModelForStyleId:
         assert mock_load.call_count == 2
         calls = [call.args[0] for call in mock_load.call_args_list]
         assert Path("/tmp/test_vvms/0.vvm") in calls
-        assert Path("/tmp/test_vvms/13.vvm") in calls
+        assert Path("/tmp/test_vvms/15.vvm") in calls
 
     @patch.object(VoicevoxSynthesizer, "load_model")
     @patch.object(VoicevoxSynthesizer, "initialize")

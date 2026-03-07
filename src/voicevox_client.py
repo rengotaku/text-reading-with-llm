@@ -33,22 +33,22 @@ DEFAULT_ONNXRUNTIME_DIR = Path("voicevox_core/onnxruntime/lib")
 DEFAULT_OPEN_JTALK_DICT_DIR = Path("voicevox_core/dict/open_jtalk_dic_utf_8-1.11")
 DEFAULT_VVM_DIR = Path("voicevox_core/models/vvms")
 
-# style_id → VVM ファイル名のマッピング（VOICEVOX 0.16.x）
+# style_id → VVM ファイル名のマッピング（実際のVVMファイルから自動生成）
 STYLE_ID_TO_VVM: dict[int, str] = {
     0: "0.vvm",  # 四国めたん - あまあま
-    1: "0.vvm",  # 四国めたん - ノーマル
-    2: "1.vvm",  # ずんだもん - ノーマル
-    3: "1.vvm",  # ずんだもん - あまあま
-    4: "2.vvm",  # 春日部つむぎ - ノーマル
-    5: "2.vvm",  # 春日部つむぎ - (追加スタイル)
-    6: "3.vvm",  # 雨晴はう - ノーマル
-    7: "3.vvm",  # 雨晴はう - (追加スタイル)
-    8: "4.vvm",  # 波音リツ - ノーマル
-    9: "5.vvm",  # 玄野武宏 - ノーマル
-    10: "5.vvm",  # 玄野武宏 - 喜び
-    11: "6.vvm",  # 白上虎太郎 - ふつう
-    12: "13.vvm",  # 青山龍星 - ノーマル
-    13: "13.vvm",  # 青山龍星 - ノーマル
+    1: "0.vvm",  # ずんだもん - あまあま
+    2: "0.vvm",  # 四国めたん - ノーマル
+    3: "0.vvm",  # ずんだもん - ノーマル
+    4: "0.vvm",  # 四国めたん - セクシー
+    5: "0.vvm",  # ずんだもん - セクシー
+    6: "0.vvm",  # 四国めたん - ツンツン
+    7: "0.vvm",  # ずんだもん - ツンツン
+    8: "0.vvm",  # 春日部つむぎ - ノーマル
+    9: "3.vvm",  # 波音リツ - ノーマル
+    10: "0.vvm",  # 雨晴はう - ノーマル
+    11: "4.vvm",  # 玄野武宏 - ノーマル
+    12: "9.vvm",  # 白上虎太郎 - ふつう
+    13: "15.vvm",  # 青山龍星 - ノーマル
 }
 
 
