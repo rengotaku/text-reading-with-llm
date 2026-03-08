@@ -518,6 +518,34 @@ class TestCleanTextForVoicevox:
         """先頭の記号と空白が混在する場合もすべて除去する."""
         assert self.clean("。 、ーテスト") == "テスト"
 
+    def test_removes_leading_triangle(self):
+        """先頭の三角記号（▶）を除去する."""
+        assert self.clean("▶テスト") == "テスト"
+
+    def test_removes_leading_arrow(self):
+        """先頭の矢印（→）を除去する."""
+        assert self.clean("→テスト") == "テスト"
+
+    def test_removes_leading_bullet(self):
+        """先頭の中黒（・）を除去する."""
+        assert self.clean("・テスト") == "テスト"
+
+    def test_removes_leading_asterisk(self):
+        """先頭の※記号を除去する."""
+        assert self.clean("※テスト") == "テスト"
+
+    def test_removes_leading_diamond(self):
+        """先頭の菱形（◆）を除去する."""
+        assert self.clean("◆テスト") == "テスト"
+
+    def test_removes_leading_circle(self):
+        """先頭の丸（●）を除去する."""
+        assert self.clean("●テスト") == "テスト"
+
+    def test_removes_leading_star(self):
+        """先頭の星（★）を除去する."""
+        assert self.clean("★テスト") == "テスト"
+
     # --- エッジケース ---
 
     def test_empty_string_returns_empty(self):

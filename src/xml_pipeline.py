@@ -83,6 +83,23 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Path to existing cleaned_text.txt (skip text cleaning if provided)",
     )
+    parser.add_argument(
+        "--acceleration-mode",
+        choices=["AUTO", "CPU", "GPU"],
+        default="AUTO",
+        help="VOICEVOX acceleration mode (default: AUTO)",
+    )
+    parser.add_argument(
+        "--gpu-memory-check",
+        action="store_true",
+        help="Check GPU memory before initialization and fallback to CPU if insufficient",
+    )
+    parser.add_argument(
+        "--required-gpu-mb",
+        type=int,
+        default=2000,
+        help="Required GPU memory in MB for GPU mode (default: 2000)",
+    )
 
     return parser.parse_args(args)
 
@@ -207,6 +224,20 @@ def main(args: list[str] | None = None) -> None:
         else:
             logger.warning("Section sound file not found: %s", sound_path)
 
+    # Determine acceleration mode
+    acceleration_mode = parsed.acceleration_mode
+
+    # GPU memory check: fallback to CPU if insufficient memory
+    if parsed.gpu_memory_check and acceleration_mode in ("AUTO", "GPU"):
+        from src.gpu_memory_manager import is_gpu_memory_available
+
+        if not is_gpu_memory_available(parsed.required_gpu_mb):
+            logger.warning(
+                "Insufficient GPU memory (required: %d MB), falling back to CPU mode",
+                parsed.required_gpu_mb,
+            )
+            acceleration_mode = "CPU"
+
     # Initialize VOICEVOX synthesizer
     voicevox_dir = Path(parsed.voicevox_dir)
     config = VoicevoxConfig(
@@ -217,11 +248,12 @@ def main(args: list[str] | None = None) -> None:
         speed_scale=parsed.speed,
         pitch_scale=0.0,
         volume_scale=1.0,
+        acceleration_mode=acceleration_mode,
     )
     synthesizer = VoicevoxSynthesizer(config)
     synthesizer.initialize()
     synthesizer.load_model_for_style_id(parsed.style_id)
-    logger.info("VOICEVOX initialized (style_id=%d)", parsed.style_id)
+    logger.info("VOICEVOX initialized (style_id=%d, acceleration_mode=%s)", parsed.style_id, acceleration_mode)
 
     # Process content and generate audio
     process_chapters(

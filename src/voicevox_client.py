@@ -53,7 +53,7 @@ STYLE_ID_TO_VVM: dict[int, str] = {
 }
 
 
-_LEADING_PUNCT_PATTERN = re.compile(r"^[、。，．,.\s…ー－]+")
+_LEADING_PUNCT_PATTERN = re.compile(r"^[、。，．,.\s…ー－▶▼◆●○★☆※・►◀▲△▽▷◁→←↑↓]+")
 
 
 def clean_text_for_voicevox(text: str) -> str:
@@ -87,6 +87,7 @@ class VoicevoxConfig:
     speed_scale: float = 1.0
     pitch_scale: float = 0.0
     volume_scale: float = 1.0
+    acceleration_mode: str = "AUTO"
 
 
 class VoicevoxSynthesizer:
@@ -134,8 +135,9 @@ class VoicevoxSynthesizer:
         logger.info("Loading Open JTalk dict from: %s", dict_dir)
         ojt = OpenJtalk(dict_dir)
 
-        # Synthesizer を作成
-        self._synthesizer = Synthesizer(ort, ojt)
+        # Synthesizer を作成（acceleration_mode を指定）
+        logger.info("Using acceleration mode: %s", self.config.acceleration_mode)
+        self._synthesizer = Synthesizer(ort, ojt, acceleration_mode=self.config.acceleration_mode)
         logger.info("VOICEVOX Core initialized successfully")
 
     def load_model(self, vvm_path: Path | None = None) -> None:

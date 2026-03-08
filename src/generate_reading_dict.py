@@ -147,6 +147,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=None, help="Output dictionary path (default: auto-hash)")
     parser.add_argument("--batch-size", type=int, default=30, help="Terms per LLM request")
     parser.add_argument("--merge", action="store_true", help="Merge with existing dictionary")
+    parser.add_argument("--keep-model", action="store_true", help="Keep ollama model loaded after processing")
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -240,6 +241,13 @@ def main() -> None:
     final_dict = {**existing, **new_readings}
     save_dict(final_dict, input_path)
     logger.info("Total dictionary entries: %d", len(final_dict))
+
+    # Unload ollama model to free GPU memory for subsequent voicevox processing
+    if not args.keep_model:
+        from src.gpu_memory_manager import unload_ollama_model
+
+        logger.info("Unloading ollama model to free GPU memory...")
+        unload_ollama_model(args.model)
 
 
 if __name__ == "__main__":
