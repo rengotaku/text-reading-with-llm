@@ -130,16 +130,44 @@ def process_chapters(
 
         # Sort chapter numbers (None values go to end)
         sorted_chapters = sorted([k for k in chapters_dict.keys() if k is not None])
+        total_chapters = len(sorted_chapters)
 
         # Process each chapter
         chapter_wav_files = []
-        for chapter_num in sorted_chapters:
+        for chapter_idx, chapter_num in enumerate(sorted_chapters, 1):
             items = chapters_dict[chapter_num]
+
+            # Get chapter title from heading
+            chapter_title = "untitled"
+            for item in items:
+                if item.item_type == "heading" and item.heading_info and item.heading_info.level == 1:
+                    chapter_title = item.heading_info.title
+                    break
+
+            # Log chapter start
+            logger.info(
+                "Processing Chapter %d/%d: %s",
+                chapter_idx,
+                total_chapters,
+                chapter_title,
+            )
 
             # Generate audio for this chapter
             audio_segments = []
             for item in items:
                 text = item.text
+
+                # Log section/subsection headings
+                if item.item_type == "heading" and item.heading_info and item.heading_info.level > 1:
+                    indent = "  " * (item.heading_info.level - 1)
+                    level_name = "Section" if item.heading_info.level == 2 else "Subsection"
+                    logger.info(
+                        "%s%s %s: %s",
+                        indent,
+                        level_name,
+                        item.heading_info.number,
+                        item.heading_info.title,
+                    )
 
                 # Check for markers and insert appropriate sound
                 if text.startswith(CHAPTER_MARKER) and chapter_sound is not None:
@@ -176,13 +204,6 @@ def process_chapters(
             if audio_segments:
                 combined = np.concatenate(audio_segments)
 
-                # Get chapter title from heading
-                chapter_title = "untitled"
-                for item in items:
-                    if item.item_type == "heading" and item.heading_info and item.heading_info.level == 1:
-                        chapter_title = item.heading_info.title
-                        break
-
                 # Generate sanitized filename
                 filename = sanitize_filename(chapter_num, chapter_title) + ".wav"
                 chapter_path = chapters_dir / filename
@@ -199,9 +220,22 @@ def process_chapters(
             logger.info("Combined audio: %s", book_path)
     else:
         # No chapters, process all content as single book.wav
+        logger.info("Processing content (no chapters)")
         audio_segments = []
         for item in content_items:
             text = item.text
+
+            # Log section/subsection headings
+            if item.item_type == "heading" and item.heading_info and item.heading_info.level > 1:
+                indent = "  " * (item.heading_info.level - 1)
+                level_name = "Section" if item.heading_info.level == 2 else "Subsection"
+                logger.info(
+                    "%s%s %s: %s",
+                    indent,
+                    level_name,
+                    item.heading_info.number,
+                    item.heading_info.title,
+                )
 
             # Check for markers and insert appropriate sound
             if text.startswith(CHAPTER_MARKER) and chapter_sound is not None:
