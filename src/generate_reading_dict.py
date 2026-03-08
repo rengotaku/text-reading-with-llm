@@ -34,7 +34,7 @@ def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout:
         "stream": False,
         "options": {
             "temperature": 0.3,  # Low temperature for consistent output
-            "num_predict": 2048,
+            "num_predict": 4096,
         },
     }
 
@@ -107,51 +107,59 @@ def _save_debug_log(
     logger.info("Debug log saved: %s", filename)
 
 
-def _extract_json_from_response(response_text: str) -> dict[str, str] | None:
-    """Extract and parse JSON from LLM response.
+def _extract_markdown_table(response_text: str) -> dict[str, str] | None:
+    """Extract readings from Markdown table response.
 
-    Attempts multiple strategies to extract valid JSON:
-    1. Find JSON object with regex
-    2. Repair common JSON issues (trailing commas, etc.)
+    Expected format:
+    | 用語 | 読み | 技術用語 |
+    |------|------|----------|
+    | API | エーピーアイ | Yes |
+    | username123 | ユーザーネーム | No |
+
+    Only terms marked as "Yes" (技術用語) are returned.
 
     Returns:
-        Parsed dictionary or None if extraction failed.
+        Dictionary mapping terms to their katakana readings, or None if parsing failed.
     """
     import re
 
     if not response_text:
         return None
 
-    # Try to find JSON object in response
-    json_match = re.search(r"\{[\s\S]*\}", response_text)
-    if not json_match:
-        return None
+    readings = {}
 
-    json_str = json_match.group()
+    # Find table rows (skip header and separator)
+    # Match lines starting with |
+    lines = response_text.strip().split("\n")
 
-    # Try direct parsing first
-    try:
-        readings = json.loads(json_str)
-        if isinstance(readings, dict):
-            return {k: v for k, v in readings.items() if isinstance(v, str) and v}
-    except json.JSONDecodeError:
-        pass
+    for line in lines:
+        line = line.strip()
+        if not line.startswith("|"):
+            continue
+        # Skip separator line (|---|---|---|)
+        if re.match(r"^\|[-:\s|]+\|$", line):
+            continue
+        # Skip header line (contains 用語, 読み, etc.)
+        if "用語" in line or "読み" in line:
+            continue
 
-    # Repair common JSON issues
-    repaired = json_str
-    # Remove trailing commas before closing brace
-    repaired = re.sub(r",\s*}", "}", repaired)
-    # Remove trailing commas before closing bracket
-    repaired = re.sub(r",\s*]", "]", repaired)
+        # Parse table row
+        cells = [c.strip() for c in line.split("|")]
+        # Remove empty cells from start/end (due to leading/trailing |)
+        cells = [c for c in cells if c]
 
-    try:
-        readings = json.loads(repaired)
-        if isinstance(readings, dict):
-            return {k: v for k, v in readings.items() if isinstance(v, str) and v}
-    except json.JSONDecodeError:
-        pass
+        if len(cells) >= 3:
+            term = cells[0].strip()
+            reading = cells[1].strip()
+            is_technical = cells[2].strip().lower()
 
-    return None
+            # Only include if marked as technical term
+            if is_technical in ("yes", "はい", "o", "○", "true", "1"):
+                # Validate reading is katakana-ish (contains katakana)
+                if reading and re.search(r"[\u30A0-\u30FF]", reading):
+                    readings[term] = reading
+
+    return readings if readings else None
 
 
 def generate_readings_batch(
@@ -189,33 +197,32 @@ def generate_readings_batch(
         )
 
         terms_list = "\n".join(f"- {term}" for term in batch)
-        prompt = f"""以下の技術用語・略語の日本語での読み方をカタカナで答えてください。
+        prompt = f"""以下の用語リストについて、技術書で使われる用語かどうかを判定し、読み方をカタカナで答えてください。
 
 用語リスト:
 {terms_list}
 
-【重要】必ず以下のJSON形式のみで出力してください。説明文は不要です。
-{{"用語1": "ヨミカタ1", "用語2": "ヨミカタ2"}}
+【出力形式】Markdownテーブルで出力してください:
+| 用語 | 読み | 技術用語 |
+|------|------|----------|
+| API | エーピーアイ | Yes |
+| username123 | - | No |
 
-出力例:
-{{"SRE": "エスアールイー", "API": "エーピーアイ", "Kubernetes": "クバネティス"}}
+【技術用語の判定基準】
+- Yes: プログラミング、インフラ、クラウド、開発手法などの技術用語・略語・製品名
+- No: ユーザー名、ランダムID、ハッシュ値、一般的な英単語（How, Your, New等）、意味不明な文字列
 
-ルール:
-- 出力はJSON形式のみ（説明文や前置きは絶対に書かないでください）
-- 値は必ずカタカナのみ
-- 略語は一文字ずつ読む（SRE→エスアールイー、AWS→エーダブリューエス）
-- 固有名詞は一般的な読み方で（Google→グーグル）
-- 英単語はカタカナ読みで（Service→サービス）
-
-JSON:"""
+【読み方のルール】
+- 技術用語（Yes）のみ読み方を記入、Noの場合は「-」
+- カタカナのみで出力
+- 略語は一文字ずつ読む（SRE→エスアールイー）
+- 固有名詞は一般的な読み方で（Google→グーグル）"""
 
         messages = [
             {
                 "role": "system",
                 "content": (
-                    "あなたはJSON出力専用のアシスタントです。"
-                    "ユーザーの指示に従い、必ずJSON形式のみで回答してください。"
-                    "説明文、前置き、補足は一切出力しないでください。"
+                    "あなたは技術用語の専門家です。ユーザーの指示に従い、Markdownテーブル形式で回答してください。"
                 ),
             },
             {"role": "user", "content": prompt},
@@ -228,7 +235,7 @@ JSON:"""
                 response = ollama_chat(model, messages)
                 response_text = response.get("message", {}).get("content", "")
 
-                batch_readings = _extract_json_from_response(response_text)
+                batch_readings = _extract_markdown_table(response_text)
 
                 if batch_readings:
                     all_readings.update(batch_readings)
@@ -241,13 +248,13 @@ JSON:"""
                 # Log failure and retry
                 if attempt < max_retries - 1:
                     logger.warning(
-                        "No valid JSON in response (attempt %d/%d), retrying...",
+                        "No valid Markdown table in response (attempt %d/%d), retrying...",
                         attempt + 1,
                         max_retries,
                     )
                 else:
                     logger.warning(
-                        "No valid JSON after %d attempts, skipping batch",
+                        "No valid Markdown table after %d attempts, skipping batch",
                         max_retries,
                     )
 
