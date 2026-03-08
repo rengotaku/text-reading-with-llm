@@ -920,3 +920,174 @@ class TestWarmupModel:
         # Should raise exception or handle gracefully
         with pytest.raises(requests.RequestException):
             _warmup_model(test_model)
+
+
+# =============================================================================
+# Issue #47: JSON解析失敗率改善テスト
+# =============================================================================
+
+
+class TestExtractJsonFromResponse:
+    """T100: _extract_json_from_response() のユニットテスト"""
+
+    def test_extract_valid_json(self):
+        """正常なJSONを抽出できる"""
+        from src.generate_reading_dict import _extract_json_from_response
+
+        response = '{"API": "エーピーアイ", "REST": "レスト"}'
+        result = _extract_json_from_response(response)
+
+        assert result == {"API": "エーピーアイ", "REST": "レスト"}
+
+    def test_extract_json_with_surrounding_text(self):
+        """前後にテキストがあるレスポンスからJSONを抽出できる"""
+        from src.generate_reading_dict import _extract_json_from_response
+
+        response = """以下は読み方です:
+{"API": "エーピーアイ", "Docker": "ドッカー"}
+これで完了です。"""
+        result = _extract_json_from_response(response)
+
+        assert result == {"API": "エーピーアイ", "Docker": "ドッカー"}
+
+    def test_extract_json_with_trailing_comma(self):
+        """末尾カンマのある不正なJSONを修復して抽出できる"""
+        from src.generate_reading_dict import _extract_json_from_response
+
+        response = '{"API": "エーピーアイ", "REST": "レスト",}'
+        result = _extract_json_from_response(response)
+
+        assert result == {"API": "エーピーアイ", "REST": "レスト"}
+
+    def test_extract_json_empty_response(self):
+        """空のレスポンスはNoneを返す"""
+        from src.generate_reading_dict import _extract_json_from_response
+
+        assert _extract_json_from_response("") is None
+        assert _extract_json_from_response(None) is None
+
+    def test_extract_json_no_json_in_response(self):
+        """JSONが含まれないレスポンスはNoneを返す"""
+        from src.generate_reading_dict import _extract_json_from_response
+
+        response = "読み方の一覧です: API はエーピーアイ、RESTはレストと読みます。"
+        result = _extract_json_from_response(response)
+
+        assert result is None
+
+    def test_extract_json_filters_invalid_values(self):
+        """文字列以外の値や空の値をフィルタリングする"""
+        from src.generate_reading_dict import _extract_json_from_response
+
+        response = '{"API": "エーピーアイ", "invalid": 123, "empty": "", "null": null}'
+        result = _extract_json_from_response(response)
+
+        assert result == {"API": "エーピーアイ"}
+
+    def test_extract_json_multiline(self):
+        """複数行のJSONを抽出できる"""
+        from src.generate_reading_dict import _extract_json_from_response
+
+        response = """{
+  "API": "エーピーアイ",
+  "REST": "レスト",
+  "Docker": "ドッカー"
+}"""
+        result = _extract_json_from_response(response)
+
+        assert result == {"API": "エーピーアイ", "REST": "レスト", "Docker": "ドッカー"}
+
+
+class TestGenerateReadingsBatchRetry:
+    """T101: generate_readings_batch() のリトライロジックテスト"""
+
+    @patch("src.generate_reading_dict._warmup_model")
+    @patch("src.generate_reading_dict.ollama_chat")
+    def test_success_on_first_attempt(self, mock_ollama_chat, mock_warmup):
+        """最初の試行で成功した場合、リトライしない"""
+        from src.generate_reading_dict import generate_readings_batch
+
+        mock_ollama_chat.return_value = {"message": {"content": '{"API": "エーピーアイ"}'}}
+
+        result = generate_readings_batch(["API"], "test-model", batch_size=10)
+
+        assert result == {"API": "エーピーアイ"}
+        assert mock_ollama_chat.call_count == 1
+
+    @patch("src.generate_reading_dict._warmup_model")
+    @patch("src.generate_reading_dict.ollama_chat")
+    def test_retry_on_no_json(self, mock_ollama_chat, mock_warmup):
+        """JSONがない場合にリトライする"""
+        from src.generate_reading_dict import generate_readings_batch
+
+        # First two calls return no JSON, third succeeds
+        mock_ollama_chat.side_effect = [
+            {"message": {"content": "これは読み方です"}},
+            {"message": {"content": "APIはエーピーアイと読みます"}},
+            {"message": {"content": '{"API": "エーピーアイ"}'}},
+        ]
+
+        result = generate_readings_batch(["API"], "test-model", batch_size=10, max_retries=3)
+
+        assert result == {"API": "エーピーアイ"}
+        assert mock_ollama_chat.call_count == 3
+
+    @patch("src.generate_reading_dict._warmup_model")
+    @patch("src.generate_reading_dict.ollama_chat")
+    def test_skip_batch_after_max_retries(self, mock_ollama_chat, mock_warmup):
+        """最大リトライ回数を超えた場合、バッチをスキップする"""
+        from src.generate_reading_dict import generate_readings_batch
+
+        # All calls return no JSON
+        mock_ollama_chat.return_value = {"message": {"content": "読み方の説明文"}}
+
+        result = generate_readings_batch(["API"], "test-model", batch_size=10, max_retries=3)
+
+        # Should return empty dict and have tried max_retries times
+        assert result == {}
+        assert mock_ollama_chat.call_count == 3
+
+    @patch("src.generate_reading_dict._warmup_model")
+    @patch("src.generate_reading_dict.ollama_chat")
+    def test_multiple_batches_with_retry(self, mock_ollama_chat, mock_warmup):
+        """複数バッチで各バッチがリトライを試みる"""
+        from src.generate_reading_dict import generate_readings_batch
+
+        # Batch 1: success on first try
+        # Batch 2: success on second try
+        mock_ollama_chat.side_effect = [
+            {"message": {"content": '{"API": "エーピーアイ"}'}},
+            {"message": {"content": "no json"}},
+            {"message": {"content": '{"Docker": "ドッカー"}'}},
+        ]
+
+        result = generate_readings_batch(["API", "Docker"], "test-model", batch_size=1, max_retries=3)
+
+        assert result == {"API": "エーピーアイ", "Docker": "ドッカー"}
+        assert mock_ollama_chat.call_count == 3
+
+    @patch("src.generate_reading_dict._warmup_model")
+    @patch("src.generate_reading_dict.ollama_chat")
+    def test_default_batch_size_is_15(self, mock_ollama_chat, mock_warmup):
+        """デフォルトのバッチサイズが15であることを確認"""
+        import inspect
+
+        from src.generate_reading_dict import generate_readings_batch
+
+        sig = inspect.signature(generate_readings_batch)
+        default_batch_size = sig.parameters["batch_size"].default
+
+        assert default_batch_size == 15
+
+    @patch("src.generate_reading_dict._warmup_model")
+    @patch("src.generate_reading_dict.ollama_chat")
+    def test_default_max_retries_is_3(self, mock_ollama_chat, mock_warmup):
+        """デフォルトの最大リトライ回数が3であることを確認"""
+        import inspect
+
+        from src.generate_reading_dict import generate_readings_batch
+
+        sig = inspect.signature(generate_readings_batch)
+        default_max_retries = sig.parameters["max_retries"].default
+
+        assert default_max_retries == 3

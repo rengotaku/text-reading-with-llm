@@ -65,76 +65,154 @@ def _warmup_model(model: str, timeout: int = 300) -> None:
     logger.info("Model ready")
 
 
+def _extract_json_from_response(response_text: str) -> dict[str, str] | None:
+    """Extract and parse JSON from LLM response.
+
+    Attempts multiple strategies to extract valid JSON:
+    1. Find JSON object with regex
+    2. Repair common JSON issues (trailing commas, etc.)
+
+    Returns:
+        Parsed dictionary or None if extraction failed.
+    """
+    import re
+
+    if not response_text:
+        return None
+
+    # Try to find JSON object in response
+    json_match = re.search(r"\{[\s\S]*\}", response_text)
+    if not json_match:
+        return None
+
+    json_str = json_match.group()
+
+    # Try direct parsing first
+    try:
+        readings = json.loads(json_str)
+        if isinstance(readings, dict):
+            return {k: v for k, v in readings.items() if isinstance(v, str) and v}
+    except json.JSONDecodeError:
+        pass
+
+    # Repair common JSON issues
+    repaired = json_str
+    # Remove trailing commas before closing brace
+    repaired = re.sub(r",\s*}", "}", repaired)
+    # Remove trailing commas before closing bracket
+    repaired = re.sub(r",\s*]", "]", repaired)
+
+    try:
+        readings = json.loads(repaired)
+        if isinstance(readings, dict):
+            return {k: v for k, v in readings.items() if isinstance(v, str) and v}
+    except json.JSONDecodeError:
+        pass
+
+    return None
+
+
 def generate_readings_batch(
     terms: list[str],
     model: str,
-    batch_size: int = 30,
+    batch_size: int = 15,
+    max_retries: int = 3,
 ) -> dict[str, str]:
-    """Generate readings for terms in batches."""
+    """Generate readings for terms in batches.
+
+    Args:
+        terms: List of terms to generate readings for.
+        model: Ollama model name.
+        batch_size: Number of terms per LLM request (default: 15).
+        max_retries: Number of retries per batch on JSON parsing failure (default: 3).
+
+    Returns:
+        Dictionary mapping terms to their katakana readings.
+    """
     all_readings = {}
 
     # Warm up model before processing first batch
     _warmup_model(model)
 
+    total_batches = (len(terms) + batch_size - 1) // batch_size
+
     for i in range(0, len(terms), batch_size):
         batch = terms[i : i + batch_size]
+        batch_num = i // batch_size + 1
         logger.info(
             "Processing batch %d/%d (%d terms)",
-            i // batch_size + 1,
-            (len(terms) + batch_size - 1) // batch_size,
+            batch_num,
+            total_batches,
             len(batch),
         )
 
         terms_list = "\n".join(f"- {term}" for term in batch)
         prompt = f"""以下の技術用語・略語の日本語での読み方をカタカナで答えてください。
-TTSで自然に聞こえる読みにしてください。
 
 用語リスト:
 {terms_list}
 
-JSON形式で出力してください。例:
-{{"SRE": "エスアールイー", "API": "エーピーアイ"}}
+【重要】必ず以下のJSON形式のみで出力してください。説明文は不要です。
+{{"用語1": "ヨミカタ1", "用語2": "ヨミカタ2"}}
 
-注意:
-- 必ずカタカナで出力
+出力例:
+{{"SRE": "エスアールイー", "API": "エーピーアイ", "Kubernetes": "クバネティス"}}
+
+ルール:
+- 出力はJSON形式のみ（説明文や前置きは絶対に書かないでください）
+- 値は必ずカタカナのみ
 - 略語は一文字ずつ読む（SRE→エスアールイー、AWS→エーダブリューエス）
 - 固有名詞は一般的な読み方で（Google→グーグル）
-- 英単語はカタカナ読みで（Service→サービス、Error→エラー）
+- 英単語はカタカナ読みで（Service→サービス）
 
-JSON出力:"""
+JSON:"""
 
         messages = [
             {
                 "role": "system",
                 "content": (
-                    "あなたは技術用語の読み方を教える専門家です。正確なカタカナ読みをJSON形式で出力してください。"
+                    "あなたはJSON出力専用のアシスタントです。"
+                    "ユーザーの指示に従い、必ずJSON形式のみで回答してください。"
+                    "説明文、前置き、補足は一切出力しないでください。"
                 ),
             },
             {"role": "user", "content": prompt},
         ]
 
-        try:
-            response = ollama_chat(model, messages)
-            response_text = response.get("message", {}).get("content", "")
+        batch_readings: dict[str, str] | None = None
 
-            # Extract JSON from response
-            import re
+        for attempt in range(max_retries):
+            try:
+                response = ollama_chat(model, messages)
+                response_text = response.get("message", {}).get("content", "")
 
-            # Try to find JSON object in response
-            json_match = re.search(r"\{[\s\S]*\}", response_text)
-            if json_match:
-                try:
-                    readings = json.loads(json_match.group())
-                    valid_readings = {k: v for k, v in readings.items() if isinstance(v, str) and v}
-                    all_readings.update(valid_readings)
-                    logger.info("  Got %d readings", len(valid_readings))
-                except json.JSONDecodeError as e:
-                    logger.warning("  Failed to parse JSON: %s", e)
-            else:
-                logger.warning("  No JSON found in response")
+                batch_readings = _extract_json_from_response(response_text)
 
-        except Exception as e:
-            logger.error("  Batch failed: %s", e)
+                if batch_readings:
+                    all_readings.update(batch_readings)
+                    logger.info("Got %d readings", len(batch_readings))
+                    break
+
+                # Log failure and retry
+                if attempt < max_retries - 1:
+                    logger.warning(
+                        "No valid JSON in response (attempt %d/%d), retrying...",
+                        attempt + 1,
+                        max_retries,
+                    )
+                else:
+                    logger.warning(
+                        "No valid JSON after %d attempts, skipping batch",
+                        max_retries,
+                    )
+                    if response_text:
+                        # Log first 200 chars of failed response for debugging
+                        logger.debug("Response preview: %s", response_text[:200])
+
+            except Exception as e:
+                logger.error("Batch failed: %s", e)
+                if attempt == max_retries - 1:
+                    break
 
     return all_readings
 
@@ -145,7 +223,7 @@ def main() -> None:
     parser.add_argument("input", help="Input markdown file")
     parser.add_argument("--model", default="gpt-oss:20b", help="Ollama model name")
     parser.add_argument("--output", type=Path, default=None, help="Output dictionary path (default: auto-hash)")
-    parser.add_argument("--batch-size", type=int, default=30, help="Terms per LLM request")
+    parser.add_argument("--batch-size", type=int, default=15, help="Terms per LLM request (default: 15)")
     parser.add_argument("--merge", action="store_true", help="Merge with existing dictionary")
     parser.add_argument("--keep-model", action="store_true", help="Keep ollama model loaded after processing")
     args = parser.parse_args()
