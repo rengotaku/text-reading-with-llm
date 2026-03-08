@@ -227,3 +227,5 @@ voicevox_core
 
 tmp/pids/*
 !tmp/pids/.gitkeep
+
+debug_logs/

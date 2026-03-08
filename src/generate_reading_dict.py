@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 OLLAMA_API_URL = "http://localhost:11434/api/chat"
 
 
-def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout: int = 120) -> dict:
+def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout: int = 300) -> dict:
     """Call Ollama chat API."""
     payload = {
         "model": model,
@@ -63,6 +63,48 @@ def _warmup_model(model: str, timeout: int = 300) -> None:
     messages = [{"role": "user", "content": "ping"}]
     ollama_chat(model, messages, timeout=timeout)
     logger.info("Model ready")
+
+
+def _save_debug_log(
+    batch_num: int,
+    attempt: int,
+    messages: list[dict],
+    response_text: str,
+    output_dir: Path | None = None,
+) -> None:
+    """Save request and response to debug file for troubleshooting.
+
+    Args:
+        batch_num: Current batch number.
+        attempt: Current retry attempt number.
+        messages: Messages sent to LLM.
+        response_text: Response received from LLM.
+        output_dir: Directory to save debug files (default: ./debug_logs).
+    """
+    if output_dir is None:
+        output_dir = Path("debug_logs")
+    output_dir.mkdir(exist_ok=True)
+
+    timestamp = __import__("datetime").datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = output_dir / f"llm_debug_batch{batch_num}_attempt{attempt}_{timestamp}.txt"
+
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write("=" * 60 + "\n")
+        f.write(f"Batch: {batch_num}, Attempt: {attempt}\n")
+        f.write(f"Timestamp: {timestamp}\n")
+        f.write("=" * 60 + "\n\n")
+
+        f.write("### REQUEST (messages) ###\n")
+        f.write("-" * 40 + "\n")
+        for msg in messages:
+            f.write(f"[{msg['role']}]\n{msg['content']}\n\n")
+
+        f.write("\n### RESPONSE ###\n")
+        f.write("-" * 40 + "\n")
+        f.write(response_text if response_text else "(empty response)")
+        f.write("\n")
+
+    logger.info("Debug log saved: %s", filename)
 
 
 def _extract_json_from_response(response_text: str) -> dict[str, str] | None:
@@ -193,6 +235,9 @@ JSON:"""
                     logger.info("Got %d readings", len(batch_readings))
                     break
 
+                # Save debug log for failed attempt
+                _save_debug_log(batch_num, attempt + 1, messages, response_text)
+
                 # Log failure and retry
                 if attempt < max_retries - 1:
                     logger.warning(
@@ -205,9 +250,6 @@ JSON:"""
                         "No valid JSON after %d attempts, skipping batch",
                         max_retries,
                     )
-                    if response_text:
-                        # Log first 200 chars of failed response for debugging
-                        logger.debug("Response preview: %s", response_text[:200])
 
             except Exception as e:
                 logger.error("Batch failed: %s", e)

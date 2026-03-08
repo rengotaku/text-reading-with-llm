@@ -48,11 +48,24 @@ def _should_exclude(term: str) -> bool:
         return True
     if term.startswith(("www.", "http")):
         return True
-    # Exclude domain-like patterns (e.g., github.com)
-    domain_suffixes = ("com", "org", "net", "io", "jp", "co", "uk", "us", "dev")
-    if "." in term and term.split(".")[-1] in domain_suffixes:
+    # Exclude URL-like patterns (multiple path segments)
+    if "/" in term and term.count("/") >= 2:
         return True
+    # Exclude domain-like patterns (e.g., github.com, blog.example.jp)
+    domain_suffixes = ("com", "org", "net", "io", "jp", "co", "uk", "us", "dev", "edu", "gov")
+    if "." in term:
+        # Check if last segment is a domain suffix
+        last_segment = term.rstrip("/").split("/")[0].split(".")[-1]
+        if last_segment in domain_suffixes:
+            return True
+        # Check for subdomain patterns (e.g., blog.example.jp)
+        parts = term.split("/")[0].split(".")
+        if len(parts) >= 2 and parts[-1] in domain_suffixes:
+            return True
     if term.startswith("ISBN"):
+        return True
+    # Exclude ISBN-like patterns (e.g., SB97815-29715073-0)
+    if re.match(r"^[A-Z]{1,2}\d{5,}-", term):
         return True
     if re.match(r"^No\.\d", term):
         return True
