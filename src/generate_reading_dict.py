@@ -195,7 +195,7 @@ def _extract_markdown_table(response_text: str) -> tuple[dict[str, str], bool]:
 def generate_readings_batch(
     terms: list[str],
     model: str,
-    batch_size: int = 15,
+    batch_size: int = 30,
     max_retries: int = 3,
 ) -> dict[str, str]:
     """Generate readings for terms in batches.
@@ -302,7 +302,7 @@ def main() -> None:
     parser.add_argument("input", help="Input markdown file")
     parser.add_argument("--model", default="gpt-oss:20b", help="Ollama model name")
     parser.add_argument("--output", type=Path, default=None, help="Output dictionary path (default: auto-hash)")
-    parser.add_argument("--batch-size", type=int, default=15, help="Terms per LLM request (default: 15)")
+    parser.add_argument("--batch-size", type=int, default=30, help="Terms per LLM request (default: 30)")
     parser.add_argument("--merge", action="store_true", help="Merge with existing dictionary")
     parser.add_argument("--keep-model", action="store_true", help="Keep ollama model loaded after processing")
     args = parser.parse_args()

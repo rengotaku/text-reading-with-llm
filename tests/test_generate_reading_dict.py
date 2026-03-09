@@ -1114,8 +1114,8 @@ class TestGenerateReadingsBatchRetry:
 
     @patch("src.generate_reading_dict._warmup_model")
     @patch("src.generate_reading_dict.ollama_chat")
-    def test_default_batch_size_is_15(self, mock_ollama_chat, mock_warmup):
-        """デフォルトのバッチサイズが15であることを確認"""
+    def test_default_batch_size_is_30(self, mock_ollama_chat, mock_warmup):
+        """デフォルトのバッチサイズが30であることを確認"""
         import inspect
 
         from src.generate_reading_dict import generate_readings_batch
@@ -1123,7 +1123,7 @@ class TestGenerateReadingsBatchRetry:
         sig = inspect.signature(generate_readings_batch)
         default_batch_size = sig.parameters["batch_size"].default
 
-        assert default_batch_size == 15
+        assert default_batch_size == 30
 
     @patch("src.generate_reading_dict._warmup_model")
     @patch("src.generate_reading_dict.ollama_chat")
