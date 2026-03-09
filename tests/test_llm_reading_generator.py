@@ -84,6 +84,30 @@ class TestShouldExcludeFilter:
         assert _should_exclude("HTTP/2") is False
         assert _should_exclude("OAuth2.0") is False
 
+    def test_url_path_patterns_are_excluded(self):
+        """URLパスパターン（複数の/を含む）が除外される"""
+        from src.llm_reading_generator import _should_exclude
+
+        assert _should_exclude("blog.studysapuri.jp/entry/2020/01/30/production-readiness") is True
+        assert _should_exclude("example.com/path/to/resource") is True
+        assert _should_exclude("api/v1/users") is True
+
+    def test_domain_patterns_are_excluded(self):
+        """ドメインパターンが除外される"""
+        from src.llm_reading_generator import _should_exclude
+
+        assert _should_exclude("github.com") is True
+        assert _should_exclude("api.example.io") is True
+        assert _should_exclude("blog.example.jp") is True
+        assert _should_exclude("docs.python.org") is True
+
+    def test_isbn_like_patterns_are_excluded(self):
+        """ISBN風のコード（SB97815-...等）が除外される"""
+        from src.llm_reading_generator import _should_exclude
+
+        assert _should_exclude("SB97815-29715073-0") is True
+        assert _should_exclude("AB12345-67890") is True
+
     def test_mixed_case_stopwords_are_excluded(self):
         """大文字・小文字混在のストップワードも除外される"""
         from src.llm_reading_generator import _should_exclude

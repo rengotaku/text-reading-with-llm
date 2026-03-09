@@ -26,23 +26,48 @@ logger = logging.getLogger(__name__)
 OLLAMA_API_URL = "http://localhost:11434/api/chat"
 
 
-def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout: int = 120) -> dict:
+def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout: int = 300) -> dict:
     """Call Ollama chat API."""
+    import time
+
     payload = {
         "model": model,
         "messages": messages,
         "stream": False,
         "options": {
             "temperature": 0.3,  # Low temperature for consistent output
-            "num_predict": 2048,
+            "num_predict": 4096,
         },
     }
 
+    # Calculate request size
+    request_json = json.dumps(payload, ensure_ascii=False)
+    request_size = len(request_json.encode("utf-8"))
+
     for attempt in range(max_retries):
         try:
+            start_time = time.time()
             response = requests.post(OLLAMA_API_URL, json=payload, timeout=timeout)
+            elapsed_time = time.time() - start_time
             response.raise_for_status()
-            return response.json()
+
+            result = response.json()
+
+            # Calculate response size and content length
+            response_content = result.get("message", {}).get("content", "")
+            response_size = len(response.content)
+            content_len = len(response_content)
+
+            # Log statistics
+            logger.info(
+                "LLM stats: req=%d bytes, res=%d bytes, content=%d chars, time=%.1fs",
+                request_size,
+                response_size,
+                content_len,
+                elapsed_time,
+            )
+
+            return result
         except requests.RequestException as e:
             logger.warning("Attempt %d failed: %s", attempt + 1, e)
             if attempt == max_retries - 1:
@@ -65,76 +90,208 @@ def _warmup_model(model: str, timeout: int = 300) -> None:
     logger.info("Model ready")
 
 
+def _save_debug_log(
+    batch_num: int,
+    attempt: int,
+    messages: list[dict],
+    response_text: str,
+    output_dir: Path | None = None,
+) -> None:
+    """Save request and response to debug file for troubleshooting.
+
+    Args:
+        batch_num: Current batch number.
+        attempt: Current retry attempt number.
+        messages: Messages sent to LLM.
+        response_text: Response received from LLM.
+        output_dir: Directory to save debug files (default: ./debug_logs).
+    """
+    if output_dir is None:
+        output_dir = Path("debug_logs")
+    output_dir.mkdir(exist_ok=True)
+
+    timestamp = __import__("datetime").datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = output_dir / f"llm_debug_batch{batch_num}_attempt{attempt}_{timestamp}.txt"
+
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write("=" * 60 + "\n")
+        f.write(f"Batch: {batch_num}, Attempt: {attempt}\n")
+        f.write(f"Timestamp: {timestamp}\n")
+        f.write("=" * 60 + "\n\n")
+
+        f.write("### REQUEST (messages) ###\n")
+        f.write("-" * 40 + "\n")
+        for msg in messages:
+            f.write(f"[{msg['role']}]\n{msg['content']}\n\n")
+
+        f.write("\n### RESPONSE ###\n")
+        f.write("-" * 40 + "\n")
+        f.write(response_text if response_text else "(empty response)")
+        f.write("\n")
+
+    logger.info("Debug log saved: %s", filename)
+
+
+def _extract_markdown_table(response_text: str) -> tuple[dict[str, str], bool]:
+    """Extract readings from Markdown table response.
+
+    Expected format:
+    | 用語 | 読み | 技術用語 |
+    |------|------|----------|
+    | API | エーピーアイ | Yes |
+    | username123 | ユーザーネーム | No |
+
+    Only terms marked as "Yes" (技術用語) are returned.
+
+    Returns:
+        Tuple of (readings dict, table_found bool).
+        - readings: Dictionary mapping terms to their katakana readings
+        - table_found: True if a valid table structure was found
+    """
+    import re
+
+    if not response_text:
+        return {}, False
+
+    readings = {}
+    table_found = False
+
+    # Find table rows (skip header and separator)
+    # Match lines starting with |
+    lines = response_text.strip().split("\n")
+
+    for line in lines:
+        line = line.strip()
+        if not line.startswith("|"):
+            continue
+        # Skip separator line (|---|---|---|)
+        if re.match(r"^\|[-:\s|]+\|$", line):
+            table_found = True  # Separator indicates valid table
+            continue
+        # Skip header line (contains 用語, 読み, etc.)
+        if "用語" in line or "読み" in line:
+            continue
+
+        # Parse table row
+        cells = [c.strip() for c in line.split("|")]
+        # Remove empty cells from start/end (due to leading/trailing |)
+        cells = [c for c in cells if c]
+
+        if len(cells) >= 3:
+            table_found = True
+            term = cells[0].strip()
+            reading = cells[1].strip()
+            is_technical = cells[2].strip().lower()
+
+            # Only include if marked as technical term
+            if is_technical in ("yes", "はい", "o", "○", "true", "1"):
+                # Validate reading is katakana-ish (contains katakana)
+                if reading and re.search(r"[\u30A0-\u30FF]", reading):
+                    readings[term] = reading
+
+    return readings, table_found
+
+
 def generate_readings_batch(
     terms: list[str],
     model: str,
     batch_size: int = 30,
+    max_retries: int = 3,
 ) -> dict[str, str]:
-    """Generate readings for terms in batches."""
+    """Generate readings for terms in batches.
+
+    Args:
+        terms: List of terms to generate readings for.
+        model: Ollama model name.
+        batch_size: Number of terms per LLM request (default: 15).
+        max_retries: Number of retries per batch on JSON parsing failure (default: 3).
+
+    Returns:
+        Dictionary mapping terms to their katakana readings.
+    """
     all_readings = {}
 
     # Warm up model before processing first batch
     _warmup_model(model)
 
+    total_batches = (len(terms) + batch_size - 1) // batch_size
+
     for i in range(0, len(terms), batch_size):
         batch = terms[i : i + batch_size]
+        batch_num = i // batch_size + 1
         logger.info(
             "Processing batch %d/%d (%d terms)",
-            i // batch_size + 1,
-            (len(terms) + batch_size - 1) // batch_size,
+            batch_num,
+            total_batches,
             len(batch),
         )
 
         terms_list = "\n".join(f"- {term}" for term in batch)
-        prompt = f"""以下の技術用語・略語の日本語での読み方をカタカナで答えてください。
-TTSで自然に聞こえる読みにしてください。
+        prompt = f"""以下の用語リストについて、技術書で使われる用語かどうかを判定し、読み方をカタカナで答えてください。
 
 用語リスト:
 {terms_list}
 
-JSON形式で出力してください。例:
-{{"SRE": "エスアールイー", "API": "エーピーアイ"}}
+【出力形式】Markdownテーブルで出力してください:
+| 用語 | 読み | 技術用語 |
+|------|------|----------|
+| API | エーピーアイ | Yes |
+| username123 | - | No |
 
-注意:
-- 必ずカタカナで出力
-- 略語は一文字ずつ読む（SRE→エスアールイー、AWS→エーダブリューエス）
-- 固有名詞は一般的な読み方で（Google→グーグル）
-- 英単語はカタカナ読みで（Service→サービス、Error→エラー）
+【技術用語の判定基準】
+- Yes: プログラミング、インフラ、クラウド、開発手法などの技術用語・略語・製品名
+- No: ユーザー名、ランダムID、ハッシュ値、一般的な英単語（How, Your, New等）、意味不明な文字列
 
-JSON出力:"""
+【読み方のルール】
+- 技術用語（Yes）のみ読み方を記入、Noの場合は「-」
+- カタカナのみで出力
+- 略語は一文字ずつ読む（SRE→エスアールイー）
+- 固有名詞は一般的な読み方で（Google→グーグル）"""
 
         messages = [
             {
                 "role": "system",
                 "content": (
-                    "あなたは技術用語の読み方を教える専門家です。正確なカタカナ読みをJSON形式で出力してください。"
+                    "あなたは技術用語の専門家です。ユーザーの指示に従い、Markdownテーブル形式で回答してください。"
                 ),
             },
             {"role": "user", "content": prompt},
         ]
 
-        try:
-            response = ollama_chat(model, messages)
-            response_text = response.get("message", {}).get("content", "")
+        batch_readings: dict[str, str] | None = None
 
-            # Extract JSON from response
-            import re
+        for attempt in range(max_retries):
+            try:
+                response = ollama_chat(model, messages)
+                response_text = response.get("message", {}).get("content", "")
 
-            # Try to find JSON object in response
-            json_match = re.search(r"\{[\s\S]*\}", response_text)
-            if json_match:
-                try:
-                    readings = json.loads(json_match.group())
-                    valid_readings = {k: v for k, v in readings.items() if isinstance(v, str) and v}
-                    all_readings.update(valid_readings)
-                    logger.info("  Got %d readings", len(valid_readings))
-                except json.JSONDecodeError as e:
-                    logger.warning("  Failed to parse JSON: %s", e)
-            else:
-                logger.warning("  No JSON found in response")
+                batch_readings, table_found = _extract_markdown_table(response_text)
 
-        except Exception as e:
-            logger.error("  Batch failed: %s", e)
+                if table_found:
+                    all_readings.update(batch_readings)
+                    logger.info("Got %d readings", len(batch_readings))
+                    break
+
+                # Save debug log for failed attempt
+                _save_debug_log(batch_num, attempt + 1, messages, response_text)
+
+                # Log failure and retry
+                if attempt < max_retries - 1:
+                    logger.warning(
+                        "No valid Markdown table in response (attempt %d/%d), retrying...",
+                        attempt + 1,
+                        max_retries,
+                    )
+                else:
+                    logger.warning(
+                        "No valid Markdown table after %d attempts, skipping batch",
+                        max_retries,
+                    )
+
+            except Exception as e:
+                logger.error("Batch failed: %s", e)
+                if attempt == max_retries - 1:
+                    break
 
     return all_readings
 
@@ -145,7 +302,7 @@ def main() -> None:
     parser.add_argument("input", help="Input markdown file")
     parser.add_argument("--model", default="gpt-oss:20b", help="Ollama model name")
     parser.add_argument("--output", type=Path, default=None, help="Output dictionary path (default: auto-hash)")
-    parser.add_argument("--batch-size", type=int, default=30, help="Terms per LLM request")
+    parser.add_argument("--batch-size", type=int, default=30, help="Terms per LLM request (default: 30)")
     parser.add_argument("--merge", action="store_true", help="Merge with existing dictionary")
     parser.add_argument("--keep-model", action="store_true", help="Keep ollama model loaded after processing")
     args = parser.parse_args()

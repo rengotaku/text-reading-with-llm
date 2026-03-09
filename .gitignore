@@ -223,6 +223,9 @@ test_output/
 sample/
 
 voicevox_core/
+voicevox_core
 
 tmp/pids/*
 !tmp/pids/.gitkeep
+
+debug_logs/
