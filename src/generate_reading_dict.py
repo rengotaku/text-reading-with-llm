@@ -28,6 +28,8 @@ OLLAMA_API_URL = "http://localhost:11434/api/chat"
 
 def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout: int = 300) -> dict:
     """Call Ollama chat API."""
+    import time
+
     payload = {
         "model": model,
         "messages": messages,
@@ -38,11 +40,34 @@ def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout:
         },
     }
 
+    # Calculate request size
+    request_json = json.dumps(payload, ensure_ascii=False)
+    request_size = len(request_json.encode("utf-8"))
+
     for attempt in range(max_retries):
         try:
+            start_time = time.time()
             response = requests.post(OLLAMA_API_URL, json=payload, timeout=timeout)
+            elapsed_time = time.time() - start_time
             response.raise_for_status()
-            return response.json()
+
+            result = response.json()
+
+            # Calculate response size and content length
+            response_content = result.get("message", {}).get("content", "")
+            response_size = len(response.content)
+            content_len = len(response_content)
+
+            # Log statistics
+            logger.info(
+                "LLM stats: req=%d bytes, res=%d bytes, content=%d chars, time=%.1fs",
+                request_size,
+                response_size,
+                content_len,
+                elapsed_time,
+            )
+
+            return result
         except requests.RequestException as e:
             logger.warning("Attempt %d failed: %s", attempt + 1, e)
             if attempt == max_retries - 1:
