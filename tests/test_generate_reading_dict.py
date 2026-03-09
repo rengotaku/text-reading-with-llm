@@ -938,9 +938,10 @@ class TestExtractMarkdownTable:
 |------|------|----------|
 | API | エーピーアイ | Yes |
 | REST | レスト | Yes |"""
-        result = _extract_markdown_table(response)
+        readings, table_found = _extract_markdown_table(response)
 
-        assert result == {"API": "エーピーアイ", "REST": "レスト"}
+        assert table_found is True
+        assert readings == {"API": "エーピーアイ", "REST": "レスト"}
 
     def test_extract_filters_non_technical_terms(self):
         """技術用語でないものはフィルタリングされる"""
@@ -952,25 +953,32 @@ class TestExtractMarkdownTable:
 | username123 | - | No |
 | Docker | ドッカー | Yes |
 | How | - | No |"""
-        result = _extract_markdown_table(response)
+        readings, table_found = _extract_markdown_table(response)
 
-        assert result == {"API": "エーピーアイ", "Docker": "ドッカー"}
+        assert table_found is True
+        assert readings == {"API": "エーピーアイ", "Docker": "ドッカー"}
 
     def test_extract_empty_response(self):
-        """空のレスポンスはNoneを返す"""
+        """空のレスポンスはtable_found=Falseを返す"""
         from src.generate_reading_dict import _extract_markdown_table
 
-        assert _extract_markdown_table("") is None
-        assert _extract_markdown_table(None) is None
+        readings, table_found = _extract_markdown_table("")
+        assert table_found is False
+        assert readings == {}
+
+        readings, table_found = _extract_markdown_table(None)
+        assert table_found is False
+        assert readings == {}
 
     def test_extract_no_table_in_response(self):
-        """テーブルが含まれないレスポンスはNoneを返す"""
+        """テーブルが含まれないレスポンスはtable_found=Falseを返す"""
         from src.generate_reading_dict import _extract_markdown_table
 
         response = "読み方の一覧です: API はエーピーアイ、RESTはレストと読みます。"
-        result = _extract_markdown_table(response)
+        readings, table_found = _extract_markdown_table(response)
 
-        assert result is None
+        assert table_found is False
+        assert readings == {}
 
     def test_extract_accepts_japanese_yes(self):
         """日本語の「はい」も技術用語として認識する"""
@@ -980,9 +988,10 @@ class TestExtractMarkdownTable:
 |------|------|----------|
 | API | エーピーアイ | はい |
 | Docker | ドッカー | Yes |"""
-        result = _extract_markdown_table(response)
+        readings, table_found = _extract_markdown_table(response)
 
-        assert result == {"API": "エーピーアイ", "Docker": "ドッカー"}
+        assert table_found is True
+        assert readings == {"API": "エーピーアイ", "Docker": "ドッカー"}
 
     def test_extract_filters_non_katakana_readings(self):
         """カタカナを含まない読みはフィルタリングされる"""
@@ -992,9 +1001,23 @@ class TestExtractMarkdownTable:
 |------|------|----------|
 | API | エーピーアイ | Yes |
 | invalid | abc | Yes |"""
-        result = _extract_markdown_table(response)
+        readings, table_found = _extract_markdown_table(response)
 
-        assert result == {"API": "エーピーアイ"}
+        assert table_found is True
+        assert readings == {"API": "エーピーアイ"}
+
+    def test_all_no_returns_empty_dict_with_table_found(self):
+        """すべてNoでも空dictとtable_found=Trueを返す"""
+        from src.generate_reading_dict import _extract_markdown_table
+
+        response = """| 用語 | 読み | 技術用語 |
+|------|------|----------|
+| username123 | - | No |
+| randomID | - | No |"""
+        readings, table_found = _extract_markdown_table(response)
+
+        assert table_found is True
+        assert readings == {}
 
 
 class TestGenerateReadingsBatchRetry:

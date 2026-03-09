@@ -132,7 +132,7 @@ def _save_debug_log(
     logger.info("Debug log saved: %s", filename)
 
 
-def _extract_markdown_table(response_text: str) -> dict[str, str] | None:
+def _extract_markdown_table(response_text: str) -> tuple[dict[str, str], bool]:
     """Extract readings from Markdown table response.
 
     Expected format:
@@ -144,14 +144,17 @@ def _extract_markdown_table(response_text: str) -> dict[str, str] | None:
     Only terms marked as "Yes" (技術用語) are returned.
 
     Returns:
-        Dictionary mapping terms to their katakana readings, or None if parsing failed.
+        Tuple of (readings dict, table_found bool).
+        - readings: Dictionary mapping terms to their katakana readings
+        - table_found: True if a valid table structure was found
     """
     import re
 
     if not response_text:
-        return None
+        return {}, False
 
     readings = {}
+    table_found = False
 
     # Find table rows (skip header and separator)
     # Match lines starting with |
@@ -163,6 +166,7 @@ def _extract_markdown_table(response_text: str) -> dict[str, str] | None:
             continue
         # Skip separator line (|---|---|---|)
         if re.match(r"^\|[-:\s|]+\|$", line):
+            table_found = True  # Separator indicates valid table
             continue
         # Skip header line (contains 用語, 読み, etc.)
         if "用語" in line or "読み" in line:
@@ -174,6 +178,7 @@ def _extract_markdown_table(response_text: str) -> dict[str, str] | None:
         cells = [c for c in cells if c]
 
         if len(cells) >= 3:
+            table_found = True
             term = cells[0].strip()
             reading = cells[1].strip()
             is_technical = cells[2].strip().lower()
@@ -184,7 +189,7 @@ def _extract_markdown_table(response_text: str) -> dict[str, str] | None:
                 if reading and re.search(r"[\u30A0-\u30FF]", reading):
                     readings[term] = reading
 
-    return readings if readings else None
+    return readings, table_found
 
 
 def generate_readings_batch(
@@ -260,9 +265,9 @@ def generate_readings_batch(
                 response = ollama_chat(model, messages)
                 response_text = response.get("message", {}).get("content", "")
 
-                batch_readings = _extract_markdown_table(response_text)
+                batch_readings, table_found = _extract_markdown_table(response_text)
 
-                if batch_readings:
+                if table_found:
                     all_readings.update(batch_readings)
                     logger.info("Got %d readings", len(batch_readings))
                     break
