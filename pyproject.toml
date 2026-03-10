@@ -41,6 +41,7 @@ select = ["E", "F", "I", "W", "PLC0415"]
 "src/xml_pipeline.py" = ["PLC0415"]     # gpu_memory_manager (conditional)
 "src/dict_manager.py" = ["PLC0415"]     # circular import avoidance
 "src/process_manager.py" = ["PLC0415"]  # time (minor, inside conditional)
+"tests/**" = ["PLC0415"]                # テスト内import（pytest fixtures等）
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
