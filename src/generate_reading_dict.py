@@ -8,7 +8,9 @@ Usage:
 import argparse
 import json
 import logging
+import re
 import sys
+import time
 import xml.etree.ElementTree as ET
 from itertools import groupby
 from pathlib import Path
@@ -28,8 +30,6 @@ OLLAMA_API_URL = "http://localhost:11434/api/chat"
 
 def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout: int = 300) -> dict:
     """Call Ollama chat API."""
-    import time
-
     payload = {
         "model": model,
         "messages": messages,
@@ -148,8 +148,6 @@ def _extract_markdown_table(response_text: str) -> tuple[dict[str, str], bool]:
         - readings: Dictionary mapping terms to their katakana readings
         - table_found: True if a valid table structure was found
     """
-    import re
-
     if not response_text:
         return {}, False
 
@@ -401,7 +399,7 @@ def main() -> None:
 
     # Unload ollama model to free GPU memory for subsequent voicevox processing
     if not args.keep_model:
-        from src.gpu_memory_manager import unload_ollama_model
+        from src.gpu_memory_manager import unload_ollama_model  # noqa: PLC0415
 
         logger.info("Unloading ollama model to free GPU memory...")
         unload_ollama_model(args.model)

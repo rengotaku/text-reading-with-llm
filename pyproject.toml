@@ -31,7 +31,17 @@ line-length = 120
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W"]
+select = ["E", "F", "I", "W", "PLC0415"]
+
+[tool.ruff.lint.per-file-ignores]
+# 意図的な遅延import（重いモジュール、オプショナル依存）
+"src/voicevox_client.py" = ["PLC0415"]  # voicevox_core (optional, heavy)
+"src/logging_config.py" = ["PLC0415"]   # yaml, rich (fallback paths)
+"src/chapter_processor.py" = ["PLC0415"]  # scipy (conditional resampling)
+"src/xml_pipeline.py" = ["PLC0415"]     # gpu_memory_manager (conditional)
+"src/dict_manager.py" = ["PLC0415"]     # circular import avoidance
+"src/process_manager.py" = ["PLC0415"]  # time (minor, inside conditional)
+"tests/**" = ["PLC0415"]                # テスト内import（pytest fixtures等）
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
