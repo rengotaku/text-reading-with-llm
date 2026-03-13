@@ -12,9 +12,9 @@ import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Callable, Literal
 
-from src.xml_parser import ContentItem
+from src.xml_parser import ContentItem, parse_book2_xml
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +136,7 @@ def extract_sections(items: list[ContentItem]) -> list[Section]:
 def analyze_structure(
     paragraphs: list[str],
     model: str = DEFAULT_MODEL,
-    ollama_chat_func: Any = None,
+    ollama_chat_func: Callable[..., Any] | None = None,
 ) -> dict[str, list[str]]:
     """LLMを使用して段落をintroduction/dialogue/conclusionに分類する。
 
@@ -178,6 +178,9 @@ JSON出力:"""
         {"role": "user", "content": prompt},
     ]
 
+    if ollama_chat_func is None:
+        return {"introduction": [], "dialogue": list(paragraphs), "conclusion": []}
+
     response = ollama_chat_func(model=model, messages=messages)
 
     try:
@@ -204,7 +207,7 @@ JSON出力:"""
 def generate_dialogue(
     dialogue_paragraphs: list[str],
     model: str = DEFAULT_MODEL,
-    ollama_chat_func: Any = None,
+    ollama_chat_func: Callable[..., Any] | None = None,
     introduction: str = "",
     conclusion: str = "",
 ) -> list[Utterance]:
@@ -256,6 +259,9 @@ JSON出力:"""
         {"role": "system", "content": system_content},
         {"role": "user", "content": prompt},
     ]
+
+    if ollama_chat_func is None:
+        return []
 
     response = ollama_chat_func(model=model, messages=messages)
 
@@ -405,7 +411,7 @@ def split_by_heading(section: Section) -> list[Section]:
 def convert_section(
     section: Section,
     model: str = DEFAULT_MODEL,
-    ollama_chat_func: Any = None,
+    ollama_chat_func: Callable[..., Any] | None = None,
 ) -> ConversionResult:
     """セクションを対話形式に変換する統合関数。
 
@@ -569,8 +575,6 @@ def main() -> int:
           2: LLM接続エラー
           3: 変換エラー
     """
-    from src.xml_parser import parse_book2_xml
-
     args = parse_args()
 
     # 入力ファイルのバリデーション

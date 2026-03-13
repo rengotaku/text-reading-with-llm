@@ -205,22 +205,22 @@
 
 ### Input
 
-- [ ] T082 セットアップ分析を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
-- [ ] T083 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph5-output.md
+- [x] T082 セットアップ分析を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
+- [x] T083 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph5-output.md
 
 ### Implementation
 
-- [ ] T084 [P] Makefile に dialogue-convert, dialogue-tts, dialogue ターゲットを追加: Makefile
-- [ ] T085 [P] pyproject.toml に新規モジュールの除外設定を追加（必要な場合）: pyproject.toml
-- [ ] T086 [P] コードの型アノテーション確認と修正: src/dialogue_converter.py, src/dialogue_pipeline.py
-- [ ] T087 quickstart.md の検証を実行: specs/041-book-dialogue-conversion/quickstart.md
+- [x] T084 [P] Makefile に dialogue-convert, dialogue-tts, dialogue ターゲットを追加: Makefile
+- [x] T085 [P] pyproject.toml に新規モジュールの除外設定を追加（必要な場合）: pyproject.toml
+- [x] T086 [P] コードの型アノテーション確認と修正: src/dialogue_converter.py, src/dialogue_pipeline.py
+- [x] T087 quickstart.md の検証を実行: specs/041-book-dialogue-conversion/quickstart.md
 
 ### Verification
 
-- [ ] T088 `make lint` でリントエラーがないことを確認
-- [ ] T089 `make test` ですべてのテストがパスすることを確認
-- [ ] T090 `make coverage` でカバレッジ70%以上を確認
-- [ ] T091 Edit: specs/041-book-dialogue-conversion/tasks/ph6-output.md
+- [x] T088 `make lint` でリントエラーがないことを確認
+- [x] T089 `make test` ですべてのテストがパスすることを確認
+- [x] T090 `make coverage` でカバレッジ70%以上を確認
+- [x] T091 Edit: specs/041-book-dialogue-conversion/tasks/ph6-output.md
 
 ---
 
