@@ -315,6 +315,90 @@ def to_dialogue_xml(block: DialogueBlock) -> str:
     return ET.tostring(root, encoding="unicode")
 
 
+SPLIT_THRESHOLD = 4000
+
+
+def should_split(section: Section) -> bool:
+    """セクションの全段落文字数の合計が分割閾値を超えるか判定する。
+
+    Args:
+        section: 判定対象のSectionオブジェクト
+
+    Returns:
+        全段落の合計文字数が4,000文字を超える場合はTrue、それ以外はFalse
+    """
+    if section is None:
+        return False
+    total_chars = sum(len(p) for p in section.paragraphs)
+    return total_chars > SPLIT_THRESHOLD
+
+
+def split_by_heading(section: Section) -> list[Section]:
+    """セクションを段落内の見出し（## で始まる行）単位で分割する。
+
+    各段落を走査し、"## " で始まる段落を分割点として新しいサブセクションを作成する。
+    元のセクション番号にサフィックス（-1, -2, ...）を付与して順序を保持する。
+
+    Args:
+        section: 分割対象のSectionオブジェクト
+
+    Returns:
+        分割後のSectionオブジェクトのリスト
+    """
+    if section is None:
+        return []
+
+    if not section.paragraphs:
+        return [section]
+
+    # 見出し行の位置を特定する
+    heading_indices = [i for i, p in enumerate(section.paragraphs) if p.startswith("## ")]
+
+    if not heading_indices:
+        # 見出しがない場合はそのまま返す
+        return [section]
+
+    # 分割点リスト: [0, h1, h2, ...] の開始インデックスをグループ化する
+    split_starts = [0] + heading_indices
+    parts: list[tuple[int, int]] = []
+    for i, start in enumerate(split_starts):
+        end = split_starts[i + 1] if i + 1 < len(split_starts) else len(section.paragraphs)
+        parts.append((start, end))
+
+    # 各パートがSplitThreshold以下になるようにセクションを構築する
+    result: list[Section] = []
+    part_index = 1
+
+    for start, end in parts:
+        paragraphs = section.paragraphs[start:end]
+        # 先頭が見出し行の場合はタイトルとして使用し、段落には含めない
+        if paragraphs and paragraphs[0].startswith("## "):
+            sub_title = paragraphs[0][3:].strip()  # "## " を除去
+            sub_paragraphs = paragraphs[1:]
+        else:
+            sub_title = section.title
+            sub_paragraphs = paragraphs
+
+        # 空のサブセクション（段落なし）はスキップ
+        if not sub_paragraphs:
+            continue
+
+        sub_section = Section(
+            number=f"{section.number}-{part_index}",
+            title=sub_title if sub_title else section.title,
+            paragraphs=sub_paragraphs,
+            chapter_number=section.chapter_number,
+        )
+        result.append(sub_section)
+        part_index += 1
+
+    # 分割結果が空の場合は元のセクションを返す
+    if not result:
+        return [section]
+
+    return result
+
+
 def convert_section(
     section: Section,
     model: str = DEFAULT_MODEL,
@@ -333,10 +417,20 @@ def convert_section(
     start_time = time.time()
     input_char_count = sum(len(p) for p in section.paragraphs)
 
+    # 分割が必要かどうかを判定
+    was_split = should_split(section)
+
+    # 変換対象セクションの決定（分割する場合は最初のサブセクションを使用）
+    if was_split:
+        sub_sections = split_by_heading(section)
+        target_section = sub_sections[0] if sub_sections else section
+    else:
+        target_section = section
+
     try:
         # 構造分析
         structure = analyze_structure(
-            section.paragraphs,
+            target_section.paragraphs,
             model=model,
             ollama_chat_func=ollama_chat_func,
         )
@@ -370,7 +464,7 @@ def convert_section(
             error_message=None,
             processing_time_sec=processing_time,
             input_char_count=input_char_count,
-            was_split=False,
+            was_split=was_split,
         )
 
     except Exception as e:
@@ -383,5 +477,5 @@ def convert_section(
             error_message=str(e),
             processing_time_sec=processing_time,
             input_char_count=input_char_count,
-            was_split=False,
+            was_split=was_split,
         )

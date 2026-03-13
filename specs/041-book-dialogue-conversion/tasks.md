@@ -107,18 +107,18 @@
 
 ### Implementation (GREEN)
 
-- [ ] T038 REDテストを読む: specs/041-book-dialogue-conversion/red-tests/ph3-test.md
-- [ ] T039 [P] [US2] 文字数判定関数 should_split() を実装: src/dialogue_converter.py
-- [ ] T040 [P] [US2] 見出し単位分割関数 split_by_heading() を実装: src/dialogue_converter.py
-- [ ] T041 [US2] 分割コンテキスト維持ロジックを実装: src/dialogue_converter.py
-- [ ] T042 [US2] convert_section() に分割ロジックを統合: src/dialogue_converter.py
-- [ ] T043 `make test` で PASS (GREEN) を確認
+- [x] T038 REDテストを読む: specs/041-book-dialogue-conversion/red-tests/ph3-test.md
+- [x] T039 [P] [US2] 文字数判定関数 should_split() を実装: src/dialogue_converter.py
+- [x] T040 [P] [US2] 見出し単位分割関数 split_by_heading() を実装: src/dialogue_converter.py
+- [x] T041 [US2] 分割コンテキスト維持ロジックを実装: src/dialogue_converter.py
+- [x] T042 [US2] convert_section() に分割ロジックを統合: src/dialogue_converter.py
+- [x] T043 `make test` で PASS (GREEN) を確認
 
 ### Verification
 
-- [ ] T044 `make test` ですべてのテストがパスすることを確認（US1回帰含む）
-- [ ] T045 `make coverage` でカバレッジ70%以上を確認
-- [ ] T046 Edit: specs/041-book-dialogue-conversion/tasks/ph3-output.md
+- [x] T044 `make test` ですべてのテストがパスすることを確認（US1回帰含む）
+- [x] T045 `make coverage` でカバレッジ70%以上を確認
+- [x] T046 Edit: specs/041-book-dialogue-conversion/tasks/ph3-output.md
 
 **チェックポイント**: 長文セクションも分割処理で対話形式に変換可能
 
