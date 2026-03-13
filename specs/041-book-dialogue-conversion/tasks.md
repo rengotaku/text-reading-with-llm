@@ -132,19 +132,19 @@
 
 ### Input
 
-- [ ] T047 セットアップ分析を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
-- [ ] T048 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph3-output.md
+- [x] T047 セットアップ分析を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
+- [x] T048 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph3-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T049 [P] [US3] Speaker データクラスのテストを実装: tests/test_dialogue_pipeline.py
-- [ ] T050 [P] [US3] 対話XMLパース関数のテストを実装: tests/test_dialogue_pipeline.py
-- [ ] T051 [P] [US3] 話者別スタイルID取得のテストを実装: tests/test_dialogue_pipeline.py
-- [ ] T052 [P] [US3] 発話単位音声生成のテストを実装: tests/test_dialogue_pipeline.py
-- [ ] T053 [P] [US3] セクション音声結合のテストを実装: tests/test_dialogue_pipeline.py
-- [ ] T054 [P] [US3] CLI引数パースのテストを実装: tests/test_dialogue_pipeline.py
-- [ ] T055 `make test` で FAIL (RED) を確認
-- [ ] T056 REDテスト出力を生成: specs/041-book-dialogue-conversion/red-tests/ph4-test.md
+- [x] T049 [P] [US3] Speaker データクラスのテストを実装: tests/test_dialogue_pipeline.py
+- [x] T050 [P] [US3] 対話XMLパース関数のテストを実装: tests/test_dialogue_pipeline.py
+- [x] T051 [P] [US3] 話者別スタイルID取得のテストを実装: tests/test_dialogue_pipeline.py
+- [x] T052 [P] [US3] 発話単位音声生成のテストを実装: tests/test_dialogue_pipeline.py
+- [x] T053 [P] [US3] セクション音声結合のテストを実装: tests/test_dialogue_pipeline.py
+- [x] T054 [P] [US3] CLI引数パースのテストを実装: tests/test_dialogue_pipeline.py
+- [x] T055 `make test` で FAIL (RED) を確認
+- [x] T056 REDテスト出力を生成: specs/041-book-dialogue-conversion/red-tests/ph4-test.md
 
 ### Implementation (GREEN)
 
