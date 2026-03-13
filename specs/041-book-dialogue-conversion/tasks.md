@@ -148,22 +148,22 @@
 
 ### Implementation (GREEN)
 
-- [ ] T057 REDテストを読む: specs/041-book-dialogue-conversion/red-tests/ph4-test.md
-- [ ] T058 [P] [US3] Speaker データクラスを実装: src/dialogue_pipeline.py
-- [ ] T059 [P] [US3] 対話XMLパース関数 parse_dialogue_xml() を実装: src/dialogue_pipeline.py
-- [ ] T060 [P] [US3] 話者別スタイルID取得 get_style_id() を実装: src/dialogue_pipeline.py
-- [ ] T061 [US3] 発話単位音声生成 synthesize_utterance() を実装: src/dialogue_pipeline.py
-- [ ] T062 [US3] セクション音声結合 concatenate_section_audio() を実装: src/dialogue_pipeline.py
-- [ ] T063 [US3] process_dialogue_sections() 統合関数を実装: src/dialogue_pipeline.py
-- [ ] T064 [US3] CLI引数パース parse_args() を実装: src/dialogue_pipeline.py
-- [ ] T065 [US3] main() エントリーポイントを実装: src/dialogue_pipeline.py
-- [ ] T066 `make test` で PASS (GREEN) を確認
+- [x] T057 REDテストを読む: specs/041-book-dialogue-conversion/red-tests/ph4-test.md
+- [x] T058 [P] [US3] Speaker データクラスを実装: src/dialogue_pipeline.py
+- [x] T059 [P] [US3] 対話XMLパース関数 parse_dialogue_xml() を実装: src/dialogue_pipeline.py
+- [x] T060 [P] [US3] 話者別スタイルID取得 get_style_id() を実装: src/dialogue_pipeline.py
+- [x] T061 [US3] 発話単位音声生成 synthesize_utterance() を実装: src/dialogue_pipeline.py
+- [x] T062 [US3] セクション音声結合 concatenate_section_audio() を実装: src/dialogue_pipeline.py
+- [x] T063 [US3] process_dialogue_sections() 統合関数を実装: src/dialogue_pipeline.py
+- [x] T064 [US3] CLI引数パース parse_args() を実装: src/dialogue_pipeline.py
+- [x] T065 [US3] main() エントリーポイントを実装: src/dialogue_pipeline.py
+- [x] T066 `make test` で PASS (GREEN) を確認
 
 ### Verification
 
-- [ ] T067 `make test` ですべてのテストがパスすることを確認（US1,US2回帰含む）
-- [ ] T068 `make coverage` でカバレッジ70%以上を確認
-- [ ] T069 Edit: specs/041-book-dialogue-conversion/tasks/ph4-output.md
+- [x] T067 `make test` ですべてのテストがパスすることを確認（US1,US2回帰含む）
+- [x] T068 `make coverage` でカバレッジ70%以上を確認
+- [x] T069 Edit: specs/041-book-dialogue-conversion/tasks/ph4-output.md
 
 **チェックポイント**: 対話形式から3話者音声が生成可能
 
