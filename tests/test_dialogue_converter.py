@@ -1,7 +1,10 @@
-"""Tests for dialogue_converter.py - Phase 2 RED Tests.
+"""Tests for dialogue_converter.py - Phase 2 & Phase 3 RED Tests.
 
 Phase 2 RED Tests - US1: 書籍セクションを対話形式に変換
 LLMを使用してセクション内容を博士と助手の対話形式に変換する機能のテスト。
+
+Phase 3 RED Tests - US2: 長文セクションの分割処理
+4,000文字を超えるセクションを見出し単位で分割し、それぞれを対話形式に変換するテスト。
 
 Target functions:
 - src/dialogue_converter.py::DialogueBlock dataclass
@@ -11,6 +14,8 @@ Target functions:
 - src/dialogue_converter.py::analyze_structure()
 - src/dialogue_converter.py::generate_dialogue()
 - src/dialogue_converter.py::to_dialogue_xml()
+- src/dialogue_converter.py::should_split()
+- src/dialogue_converter.py::split_by_heading()
 
 Test coverage:
 - T011: DialogueBlock, Utterance データクラスのテスト
@@ -19,6 +24,10 @@ Test coverage:
 - T014: LLM対話生成（A/B発話）のテスト
 - T015: 対話XMLシリアライズのテスト
 - T016: エッジケース（短文、空セクション）のテスト
+- T032: 文字数判定関数 should_split() のテスト
+- T033: 見出し単位分割関数 split_by_heading() のテスト
+- T034: 分割後の連続性（コンテキスト維持）テスト
+- T035: 境界ケース（3,500〜4,500文字）のテスト
 """
 
 import xml.etree.ElementTree as ET
@@ -27,12 +36,36 @@ from unittest.mock import MagicMock
 from src.dialogue_converter import (
     ConversionResult,
     DialogueBlock,
+    Section,
     Utterance,
     analyze_structure,
+    convert_section,
     extract_sections,
     generate_dialogue,
     to_dialogue_xml,
 )
+
+# Phase 3 RED: should_split, split_by_heading はまだ未実装
+# ImportErrorが発生した場合はテストをスキップではなくFAILさせる
+try:
+    from src.dialogue_converter import should_split, split_by_heading
+except ImportError:
+    # 未実装のためマーカーとして None を設定、テスト内でImportError を再送出
+    should_split = None
+    split_by_heading = None
+
+
+def _require_should_split():
+    """should_split が未実装の場合にテストをFAILさせる"""
+    if should_split is None:
+        raise ImportError("should_split is not yet implemented in src/dialogue_converter.py")
+
+
+def _require_split_by_heading():
+    """split_by_heading が未実装の場合にテストをFAILさせる"""
+    if split_by_heading is None:
+        raise ImportError("split_by_heading is not yet implemented in src/dialogue_converter.py")
+
 
 # =============================================================================
 # T011: DialogueBlock, Utterance データクラスのテスト
@@ -992,3 +1025,677 @@ class TestEdgeCases:
                     assert u.speaker in ("A", "B")
         except (ValueError, KeyError):
             assert True
+
+
+# =============================================================================
+# Phase 3 RED Tests - US2: 長文セクションの分割処理
+# =============================================================================
+
+# =============================================================================
+# T032: 文字数判定関数 should_split() のテスト
+# =============================================================================
+
+
+class TestShouldSplit:
+    """should_split() のテスト - セクションが4,000文字を超えるか判定"""
+
+    def setup_method(self):
+        """各テスト前にshould_splitが実装済みか確認"""
+        _require_should_split()
+
+    def _make_section(self, total_chars: int, paragraph_count: int = 5) -> Section:
+        """指定文字数のSectionを生成するヘルパー"""
+        chars_per_paragraph = total_chars // paragraph_count
+        remainder = total_chars % paragraph_count
+        paragraphs = []
+        for i in range(paragraph_count):
+            extra = 1 if i < remainder else 0
+            paragraphs.append("あ" * (chars_per_paragraph + extra))
+        return Section(
+            number="1.1",
+            title="テストセクション",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+
+    def test_should_split_returns_bool(self):
+        """should_split()がbool値を返す"""
+        section = self._make_section(100)
+        result = should_split(section)
+        assert isinstance(result, bool)
+
+    def test_should_split_false_for_short_section(self):
+        """3,500文字以下のセクションはFalse"""
+        section = self._make_section(3500)
+        result = should_split(section)
+        assert result is False
+
+    def test_should_split_true_for_long_section(self):
+        """4,001文字以上のセクションはTrue"""
+        section = self._make_section(4001)
+        result = should_split(section)
+        assert result is True
+
+    def test_should_split_false_for_empty_section(self):
+        """空のセクション（段落なし）はFalse"""
+        section = Section(
+            number="1.1",
+            title="空セクション",
+            paragraphs=[],
+            chapter_number=1,
+        )
+        result = should_split(section)
+        assert result is False
+
+    def test_should_split_false_for_single_short_paragraph(self):
+        """短い段落が1つだけのセクションはFalse"""
+        section = Section(
+            number="1.1",
+            title="短セクション",
+            paragraphs=["短いテキスト。"],
+            chapter_number=1,
+        )
+        result = should_split(section)
+        assert result is False
+
+    def test_should_split_true_for_5000_chars(self):
+        """5,000文字のセクションはTrue"""
+        section = self._make_section(5000)
+        result = should_split(section)
+        assert result is True
+
+    def test_should_split_true_for_10000_chars(self):
+        """10,000文字の大規模セクションはTrue"""
+        section = self._make_section(10000, paragraph_count=10)
+        result = should_split(section)
+        assert result is True
+
+    def test_should_split_counts_all_paragraphs(self):
+        """全段落の文字数を合算して判定する"""
+        # 各段落が1,000文字、5段落 = 5,000文字 → True
+        paragraphs = ["あ" * 1000 for _ in range(5)]
+        section = Section(
+            number="1.1",
+            title="複数段落",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = should_split(section)
+        assert result is True
+
+    def test_should_split_with_none_input(self):
+        """Noneを渡した場合のエラーハンドリング"""
+        try:
+            result = should_split(None)
+            assert result is False
+        except (TypeError, AttributeError):
+            assert True
+
+    def test_should_split_exactly_4000_chars(self):
+        """ちょうど4,000文字のセクションの判定（境界値）"""
+        section = self._make_section(4000)
+        result = should_split(section)
+        # 4,000文字は「超える」に含まれないのでFalse
+        assert isinstance(result, bool)
+
+    def test_should_split_with_unicode_content(self):
+        """Unicode文字（絵文字含む）を含むセクションの文字数判定"""
+        paragraphs = ["量子コンピュータの基本原理。" * 200]  # 約2,800文字
+        paragraphs.append("追加の説明テキスト。" * 200)  # 約1,800文字 → 合計4,600
+        section = Section(
+            number="1.1",
+            title="Unicode テスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = should_split(section)
+        assert result is True
+
+    def test_should_split_with_special_characters(self):
+        """特殊文字（HTML、SQL）を含むセクション"""
+        text = '<div>テスト</div> SELECT * FROM t; "引用" & 特殊文字 ' * 200
+        section = Section(
+            number="1.1",
+            title="特殊文字テスト",
+            paragraphs=[text],
+            chapter_number=1,
+        )
+        result = should_split(section)
+        assert isinstance(result, bool)
+
+
+# =============================================================================
+# T033: 見出し単位分割関数 split_by_heading() のテスト
+# =============================================================================
+
+
+class TestSplitByHeading:
+    """split_by_heading() のテスト - セクションを見出し単位で分割"""
+
+    def setup_method(self):
+        """各テスト前にsplit_by_headingが実装済みか確認"""
+        _require_split_by_heading()
+
+    def test_split_by_heading_returns_list(self):
+        """split_by_heading()がSectionのリストを返す"""
+        section = Section(
+            number="1.1",
+            title="テスト",
+            paragraphs=["段落1。", "段落2。"],
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        assert isinstance(result, list)
+
+    def test_split_by_heading_returns_section_objects(self):
+        """返却リストの各要素がSectionインスタンスである"""
+        section = Section(
+            number="1.1",
+            title="テスト",
+            paragraphs=["段落1。", "段落2。"],
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        for item in result:
+            assert isinstance(item, Section)
+
+    def test_split_by_heading_preserves_section_number(self):
+        """分割後も元のセクション番号が保持される（サフィックス付き）"""
+        paragraphs = ["あ" * 2000, "## 小見出し", "い" * 2000, "う" * 500]
+        section = Section(
+            number="1.1",
+            title="長いセクション",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        # 分割結果のセクション番号に元の番号が含まれる
+        for sub_section in result:
+            assert "1.1" in sub_section.number
+
+    def test_split_by_heading_preserves_title(self):
+        """分割後のセクションにタイトル情報が保持される"""
+        paragraphs = ["あ" * 2500, "## 小見出し1", "い" * 2500]
+        section = Section(
+            number="1.1",
+            title="元のタイトル",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        assert len(result) >= 1
+        # 最初の分割セクションに元のタイトルが含まれる
+        assert result[0].title is not None
+        assert len(result[0].title) > 0
+
+    def test_split_by_heading_preserves_chapter_number(self):
+        """分割後もchapter_numberが保持される"""
+        paragraphs = ["あ" * 2500, "## 小見出し", "い" * 2500]
+        section = Section(
+            number="2.3",
+            title="テスト",
+            paragraphs=paragraphs,
+            chapter_number=2,
+        )
+        result = split_by_heading(section)
+        for sub_section in result:
+            assert sub_section.chapter_number == 2
+
+    def test_split_by_heading_splits_at_heading_markers(self):
+        """見出し（## で始まる行）で分割される"""
+        paragraphs = [
+            "導入段落。",
+            "本論段落1。",
+            "## 次の見出し",
+            "本論段落2。",
+            "結論段落。",
+        ]
+        section = Section(
+            number="1.1",
+            title="テスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        assert len(result) >= 2
+
+    def test_split_by_heading_no_heading_returns_single(self):
+        """見出しがない場合は分割せず1つのセクションを返す"""
+        paragraphs = ["段落1。" * 100, "段落2。" * 100]
+        section = Section(
+            number="1.1",
+            title="見出しなし",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        # 見出しがない場合は元のセクションがそのまま返る
+        assert len(result) >= 1
+        total_paragraphs = sum(len(s.paragraphs) for s in result)
+        assert total_paragraphs >= 2
+
+    def test_split_by_heading_empty_section(self):
+        """空のセクション（段落なし）を渡した場合"""
+        section = Section(
+            number="1.1",
+            title="空セクション",
+            paragraphs=[],
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        assert isinstance(result, list)
+
+    def test_split_by_heading_preserves_all_paragraphs(self):
+        """分割後に全段落が保持される（テキストの欠落なし）"""
+        original_paragraphs = [
+            "段落A。",
+            "段落B。",
+            "## 見出し1",
+            "段落C。",
+            "段落D。",
+            "## 見出し2",
+            "段落E。",
+        ]
+        section = Section(
+            number="1.1",
+            title="テスト",
+            paragraphs=original_paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        # 分割後の全段落を合算
+        all_paragraphs = []
+        for sub_section in result:
+            all_paragraphs.extend(sub_section.paragraphs)
+        # 見出し行自体は段落として残るか除外されるかは実装依存だが、
+        # 非見出し段落は全て残っていること
+        non_heading_originals = [p for p in original_paragraphs if not p.startswith("## ")]
+        for paragraph in non_heading_originals:
+            assert paragraph in all_paragraphs
+
+    def test_split_by_heading_with_none_input(self):
+        """Noneを渡した場合のエラーハンドリング"""
+        try:
+            result = split_by_heading(None)
+            assert isinstance(result, list)
+        except (TypeError, AttributeError):
+            assert True
+
+    def test_split_by_heading_each_part_under_4000(self):
+        """分割後の各パートが4,000文字以下である"""
+        paragraphs = [
+            "あ" * 2000,
+            "## 中間見出し",
+            "い" * 2000,
+            "## 後半見出し",
+            "う" * 2000,
+        ]
+        section = Section(
+            number="1.1",
+            title="長文テスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        for sub_section in result:
+            char_count = sum(len(p) for p in sub_section.paragraphs)
+            assert char_count <= 4000, f"分割後のパートが4,000文字を超過: {char_count}"
+
+    def test_split_by_heading_multiple_headings(self):
+        """複数の見出しがある場合に適切に分割される"""
+        paragraphs = [
+            "最初の段落。",
+            "## 見出し1",
+            "見出し1の段落。",
+            "## 見出し2",
+            "見出し2の段落。",
+            "## 見出し3",
+            "見出し3の段落。",
+        ]
+        section = Section(
+            number="1.1",
+            title="複数見出し",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        # 少なくとも2つ以上のセクションに分割される
+        assert len(result) >= 2
+
+    def test_split_by_heading_with_large_data(self):
+        """1,000個以上の段落を含むセクションの分割"""
+        paragraphs = []
+        for i in range(100):
+            paragraphs.append(f"## 見出し{i}")
+            for j in range(10):
+                paragraphs.append(f"段落{i}-{j}のテキスト。" * 5)
+        section = Section(
+            number="1.1",
+            title="大規模データ",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        assert isinstance(result, list)
+        assert len(result) > 1
+
+    def test_split_by_heading_with_empty_string_paragraphs(self):
+        """空文字列の段落を含むセクションの分割"""
+        paragraphs = ["あ" * 2000, "", "## 見出し", "", "い" * 2000]
+        section = Section(
+            number="1.1",
+            title="空段落含む",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        assert isinstance(result, list)
+        assert len(result) >= 1
+
+
+# =============================================================================
+# T034: 分割後の連続性（コンテキスト維持）テスト
+# =============================================================================
+
+
+class TestSplitContextContinuity:
+    """分割後のコンテキスト維持テスト - 分割されたセクション間の一貫性"""
+
+    def setup_method(self):
+        """各テスト前にshould_split/split_by_headingが実装済みか確認"""
+        _require_should_split()
+        _require_split_by_heading()
+
+    def test_split_sections_maintain_order(self):
+        """分割後のセクションが元の順序を維持する"""
+        paragraphs = [
+            "第一部の内容。",
+            "## 第二部",
+            "第二部の内容。",
+            "## 第三部",
+            "第三部の内容。",
+        ]
+        section = Section(
+            number="1.1",
+            title="順序テスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        # セクション番号が順序を反映している
+        if len(result) >= 2:
+            for i in range(len(result) - 1):
+                # 後のセクションの番号が前のセクションより大きいか、
+                # サフィックスが順序通り
+                assert result[i].number <= result[i + 1].number
+
+    def test_split_then_convert_produces_valid_results(self):
+        """分割後のセクションをconvert_section()に渡して有効な結果が得られる"""
+        mock_ollama = MagicMock()
+        # analyze_structureとgenerate_dialogueの両方のモック
+        mock_ollama.return_value = {
+            "message": {"content": '{"introduction": ["導入"], "dialogue": ["本論"], "conclusion": ["結論"]}'}
+        }
+        paragraphs = [
+            "あ" * 2000,
+            "## 小見出し",
+            "い" * 2000,
+        ]
+        section = Section(
+            number="1.1",
+            title="統合テスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        sub_sections = split_by_heading(section)
+        for sub_section in sub_sections:
+            result = convert_section(sub_section, ollama_chat_func=mock_ollama)
+            assert isinstance(result, ConversionResult)
+
+    def test_split_sections_have_non_empty_paragraphs(self):
+        """分割後の各セクションに段落が含まれる（空のセクションが生成されない）"""
+        paragraphs = [
+            "第一部の内容。",
+            "## 第二部",
+            "第二部の内容。",
+        ]
+        section = Section(
+            number="1.1",
+            title="非空テスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = split_by_heading(section)
+        for sub_section in result:
+            # 各分割セクションに少なくとも1つの非見出し段落がある
+            non_heading_paragraphs = [p for p in sub_section.paragraphs if not p.startswith("## ")]
+            assert len(non_heading_paragraphs) >= 1, f"分割セクション {sub_section.number} に段落がない"
+
+    def test_convert_section_with_split_sets_was_split_flag(self):
+        """分割処理を経たconvert_section()の結果でwas_splitがTrueになる"""
+        mock_ollama = MagicMock()
+        mock_ollama.return_value = {"message": {"content": '[{"speaker": "A", "text": "テスト"}]'}}
+        # 4,000文字超のセクション
+        paragraphs = ["あ" * 2500, "## 見出し", "い" * 2500]
+        section = Section(
+            number="1.1",
+            title="was_splitテスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        # should_splitがTrueの場合、convert_sectionでwas_splitフラグがTrue
+        assert should_split(section) is True
+        # convert_sectionが分割ロジックを統合後、was_split=True を返す想定
+        result = convert_section(section, ollama_chat_func=mock_ollama)
+        assert result.was_split is True
+
+    def test_split_preserves_content_no_data_loss(self):
+        """分割処理でテキストが失われないことを確認"""
+        original_texts = [
+            "量子コンピュータの基礎知識について述べます。",
+            "## 量子ビットの概念",
+            "量子ビットは0と1の重ね合わせ状態を取ります。",
+            "## エンタングルメント",
+            "量子もつれは2つの量子ビット間の相関を示します。",
+        ]
+        section = Section(
+            number="3.2",
+            title="量子コンピュータ",
+            paragraphs=original_texts,
+            chapter_number=3,
+        )
+        result = split_by_heading(section)
+        all_texts = []
+        for sub in result:
+            all_texts.extend(sub.paragraphs)
+        # 非見出しテキストが全て含まれる
+        for text in original_texts:
+            if not text.startswith("## "):
+                assert text in all_texts, f"テキスト欠落: {text}"
+
+    def test_split_sections_can_each_generate_dialogue_xml(self):
+        """分割後の各セクションから対話XMLが生成できる"""
+        paragraphs = [
+            "最初の段落の内容。",
+            "## 次の見出し",
+            "次の段落の内容。",
+        ]
+        section = Section(
+            number="1.1",
+            title="XML生成テスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        sub_sections = split_by_heading(section)
+        for sub in sub_sections:
+            # 各分割セクションからDialogueBlockを構築してXML化可能
+            block = DialogueBlock(
+                section_number=sub.number,
+                section_title=sub.title,
+                introduction="テスト導入",
+                dialogue=[Utterance(speaker="A", text="テスト発言")],
+                conclusion="テスト結論",
+            )
+            xml_str = to_dialogue_xml(block)
+            assert isinstance(xml_str, str)
+            assert len(xml_str) > 0
+
+
+# =============================================================================
+# T035: 境界ケース（3,500〜4,500文字）のテスト
+# =============================================================================
+
+
+class TestBoundaryCharacterCount:
+    """境界値テスト - 3,500〜4,500文字の範囲での分割判定"""
+
+    def setup_method(self):
+        """各テスト前にshould_split/split_by_headingが実装済みか確認"""
+        _require_should_split()
+        _require_split_by_heading()
+
+    def _make_section_with_chars(self, total_chars: int) -> Section:
+        """指定文字数のSectionを生成"""
+        text = "あ" * total_chars
+        return Section(
+            number="1.1",
+            title="境界テスト",
+            paragraphs=[text],
+            chapter_number=1,
+        )
+
+    def test_boundary_3500_chars_no_split(self):
+        """3,500文字 → 分割不要"""
+        section = self._make_section_with_chars(3500)
+        assert should_split(section) is False
+
+    def test_boundary_3800_chars_no_split(self):
+        """3,800文字 → 分割不要（閾値未満）"""
+        section = self._make_section_with_chars(3800)
+        assert should_split(section) is False
+
+    def test_boundary_3999_chars_no_split(self):
+        """3,999文字 → 分割不要（閾値-1）"""
+        section = self._make_section_with_chars(3999)
+        assert should_split(section) is False
+
+    def test_boundary_4000_chars(self):
+        """4,000文字 → 境界値（閾値ちょうど）"""
+        section = self._make_section_with_chars(4000)
+        result = should_split(section)
+        # 「超える」の定義: 4,000より大きいならTrue、4,000以下ならFalse
+        assert isinstance(result, bool)
+
+    def test_boundary_4001_chars_split(self):
+        """4,001文字 → 分割必要（閾値+1）"""
+        section = self._make_section_with_chars(4001)
+        assert should_split(section) is True
+
+    def test_boundary_4100_chars_split(self):
+        """4,100文字 → 分割必要"""
+        section = self._make_section_with_chars(4100)
+        assert should_split(section) is True
+
+    def test_boundary_4500_chars_split(self):
+        """4,500文字 → 分割必要"""
+        section = self._make_section_with_chars(4500)
+        assert should_split(section) is True
+
+    def test_boundary_0_chars_no_split(self):
+        """0文字 → 分割不要"""
+        section = Section(
+            number="1.1",
+            title="空",
+            paragraphs=[""],
+            chapter_number=1,
+        )
+        assert should_split(section) is False
+
+    def test_boundary_1_char_no_split(self):
+        """1文字 → 分割不要"""
+        section = self._make_section_with_chars(1)
+        assert should_split(section) is False
+
+    def test_boundary_negative_char_count_handling(self):
+        """文字数が計算上ゼロになるケース（空の段落リスト）"""
+        section = Section(
+            number="1.1",
+            title="境界",
+            paragraphs=[],
+            chapter_number=1,
+        )
+        assert should_split(section) is False
+
+    def test_boundary_exactly_threshold_split_by_heading(self):
+        """閾値付近でsplit_by_heading()が呼ばれた場合の動作"""
+        paragraphs = [
+            "あ" * 2000,
+            "## 中間見出し",
+            "い" * 2100,
+        ]
+        section = Section(
+            number="1.1",
+            title="閾値テスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        # 合計4,100文字超なので分割対象
+        assert should_split(section) is True
+        result = split_by_heading(section)
+        assert len(result) >= 2
+
+    def test_boundary_convert_section_short_no_split(self):
+        """3,500文字のセクションをconvert_section()で処理 → was_split=False"""
+        mock_ollama = MagicMock()
+        mock_ollama.return_value = {
+            "message": {"content": '{"introduction": [], "dialogue": ["テスト"], "conclusion": []}'}
+        }
+        paragraphs = ["あ" * 3500]
+        section = Section(
+            number="1.1",
+            title="短いセクション",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = convert_section(section, ollama_chat_func=mock_ollama)
+        assert result.was_split is False
+
+    def test_boundary_convert_section_long_with_split(self):
+        """4,500文字のセクションをconvert_section()で処理 → was_split=True"""
+        mock_ollama = MagicMock()
+        mock_ollama.return_value = {"message": {"content": '[{"speaker": "A", "text": "テスト"}]'}}
+        paragraphs = ["あ" * 2500, "## 見出し", "い" * 2000]
+        section = Section(
+            number="1.1",
+            title="長いセクション",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        result = convert_section(section, ollama_chat_func=mock_ollama)
+        assert result.was_split is True
+
+    def test_boundary_multiple_small_paragraphs_sum_over_threshold(self):
+        """個々の段落は短いが合計が4,000文字超"""
+        # 100文字 x 50段落 = 5,000文字
+        paragraphs = ["あ" * 100 for _ in range(50)]
+        section = Section(
+            number="1.1",
+            title="多段落テスト",
+            paragraphs=paragraphs,
+            chapter_number=1,
+        )
+        assert should_split(section) is True
+
+    def test_boundary_single_huge_paragraph(self):
+        """1つの段落が8,000文字（見出しなし）"""
+        section = Section(
+            number="1.1",
+            title="巨大段落",
+            paragraphs=["あ" * 8000],
+            chapter_number=1,
+        )
+        assert should_split(section) is True
+        # 見出しがないので分割は最小限
+        result = split_by_heading(section)
+        assert isinstance(result, list)
+        assert len(result) >= 1

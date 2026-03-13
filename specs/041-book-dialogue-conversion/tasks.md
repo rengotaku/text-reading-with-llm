@@ -93,17 +93,17 @@
 
 ### Input
 
-- [ ] T030 セットアップ分析を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
-- [ ] T031 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph2-output.md
+- [x] T030 セットアップ分析を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
+- [x] T031 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph2-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T032 [P] [US2] 文字数判定関数のテストを実装: tests/test_dialogue_converter.py
-- [ ] T033 [P] [US2] 見出し単位分割関数のテストを実装: tests/test_dialogue_converter.py
-- [ ] T034 [P] [US2] 分割後の連続性（コンテキスト維持）テストを実装: tests/test_dialogue_converter.py
-- [ ] T035 [P] [US2] 境界ケース（3,500〜4,500文字）のテストを実装: tests/test_dialogue_converter.py
-- [ ] T036 `make test` で FAIL (RED) を確認
-- [ ] T037 REDテスト出力を生成: specs/041-book-dialogue-conversion/red-tests/ph3-test.md
+- [x] T032 [P] [US2] 文字数判定関数のテストを実装: tests/test_dialogue_converter.py
+- [x] T033 [P] [US2] 見出し単位分割関数のテストを実装: tests/test_dialogue_converter.py
+- [x] T034 [P] [US2] 分割後の連続性（コンテキスト維持）テストを実装: tests/test_dialogue_converter.py
+- [x] T035 [P] [US2] 境界ケース（3,500〜4,500文字）のテストを実装: tests/test_dialogue_converter.py
+- [x] T036 `make test` で FAIL (RED) を確認
+- [x] T037 REDテスト出力を生成: specs/041-book-dialogue-conversion/red-tests/ph3-test.md
 
 ### Implementation (GREEN)
 
