@@ -66,20 +66,20 @@
 
 ### Implementation (GREEN)
 
-- [ ] T019 REDテストを読む: specs/041-book-dialogue-conversion/red-tests/ph2-test.md
-- [ ] T020 [P] [US1] DialogueBlock, Utterance, ConversionResult データクラスを実装: src/dialogue_converter.py
-- [ ] T021 [P] [US1] セクション抽出関数 extract_sections() を実装: src/dialogue_converter.py
-- [ ] T022 [US1] LLM構造分析関数 analyze_structure() を実装: src/dialogue_converter.py
-- [ ] T023 [US1] LLM対話生成関数 generate_dialogue() を実装: src/dialogue_converter.py
-- [ ] T024 [US1] 対話XMLシリアライズ関数 to_dialogue_xml() を実装: src/dialogue_converter.py
-- [ ] T025 [US1] convert_section() 統合関数を実装: src/dialogue_converter.py
-- [ ] T026 `make test` で PASS (GREEN) を確認
+- [x] T019 REDテストを読む: specs/041-book-dialogue-conversion/red-tests/ph2-test.md
+- [x] T020 [P] [US1] DialogueBlock, Utterance, ConversionResult データクラスを実装: src/dialogue_converter.py
+- [x] T021 [P] [US1] セクション抽出関数 extract_sections() を実装: src/dialogue_converter.py
+- [x] T022 [US1] LLM構造分析関数 analyze_structure() を実装: src/dialogue_converter.py
+- [x] T023 [US1] LLM対話生成関数 generate_dialogue() を実装: src/dialogue_converter.py
+- [x] T024 [US1] 対話XMLシリアライズ関数 to_dialogue_xml() を実装: src/dialogue_converter.py
+- [x] T025 [US1] convert_section() 統合関数を実装: src/dialogue_converter.py
+- [x] T026 `make test` で PASS (GREEN) を確認
 
 ### Verification
 
-- [ ] T027 `make test` ですべてのテストがパスすることを確認
-- [ ] T028 `make coverage` でカバレッジ70%以上を確認
-- [ ] T029 Edit: specs/041-book-dialogue-conversion/tasks/ph2-output.md
+- [x] T027 `make test` ですべてのテストがパスすることを確認
+- [x] T028 `make coverage` でカバレッジ70%以上を確認
+- [x] T029 Edit: specs/041-book-dialogue-conversion/tasks/ph2-output.md
 
 **チェックポイント**: 単一セクションの対話変換が動作し、独立してテスト可能
 
