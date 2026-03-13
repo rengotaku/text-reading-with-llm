@@ -31,15 +31,15 @@
 
 **目的**: プロジェクト初期化、既存コード確認、変更準備
 
-- [ ] T001 既存のXMLパーサー実装を確認: src/xml_parser.py
-- [ ] T002 [P] 既存のVOICEVOXクライアント実装を確認: src/voicevox_client.py
-- [ ] T003 [P] 既存のLLM辞書生成実装を確認: src/llm_reading_generator.py
-- [ ] T004 [P] 既存のテキストクリーナー実装を確認: src/text_cleaner.py
-- [ ] T005 [P] 既存のテスト構造を確認: tests/
-- [ ] T006 data-model.md に基づきデータクラス設計を確認: specs/041-book-dialogue-conversion/data-model.md
-- [ ] T007 contracts/cli-spec.md に基づきCLI設計を確認: specs/041-book-dialogue-conversion/contracts/cli-spec.md
-- [ ] T008 `make test` で既存テストがすべてパスすることを確認
-- [ ] T009 Edit: specs/041-book-dialogue-conversion/tasks/ph1-output.md
+- [X] T001 既存のXMLパーサー実装を確認: src/xml_parser.py
+- [X] T002 [P] 既存のVOICEVOXクライアント実装を確認: src/voicevox_client.py
+- [X] T003 [P] 既存のLLM辞書生成実装を確認: src/llm_reading_generator.py
+- [X] T004 [P] 既存のテキストクリーナー実装を確認: src/text_cleaner.py
+- [X] T005 [P] 既存のテスト構造を確認: tests/
+- [X] T006 data-model.md に基づきデータクラス設計を確認: specs/041-book-dialogue-conversion/data-model.md
+- [X] T007 contracts/cli-spec.md に基づきCLI設計を確認: specs/041-book-dialogue-conversion/contracts/cli-spec.md
+- [X] T008 `make test` で既存テストがすべてパスすることを確認
+- [X] T009 Edit: specs/041-book-dialogue-conversion/tasks/ph1-output.md
 
 ---
 
