@@ -175,15 +175,15 @@
 
 ### Input
 
-- [ ] T070 セットアップ分析を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
-- [ ] T071 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph4-output.md
+- [x] T070 セットアップ分析を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
+- [x] T071 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph4-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T072 [P] dialogue_converter.py CLI引数パースのテストを実装: tests/test_dialogue_converter.py
-- [ ] T073 [P] dialogue_converter.py main() 統合テストを実装: tests/test_dialogue_converter.py
-- [ ] T074 `make test` で FAIL (RED) を確認
-- [ ] T075 REDテスト出力を生成: specs/041-book-dialogue-conversion/red-tests/ph5-test.md
+- [x] T072 [P] dialogue_converter.py CLI引数パースのテストを実装: tests/test_dialogue_converter.py
+- [x] T073 [P] dialogue_converter.py main() 統合テストを実装: tests/test_dialogue_converter.py
+- [x] T074 `make test` で FAIL (RED) を確認
+- [x] T075 REDテスト出力を生成: specs/041-book-dialogue-conversion/red-tests/ph5-test.md
 
 ### Implementation (GREEN)
 

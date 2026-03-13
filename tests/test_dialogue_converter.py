@@ -1,10 +1,13 @@
-"""Tests for dialogue_converter.py - Phase 2 & Phase 3 RED Tests.
+"""Tests for dialogue_converter.py - Phase 2, Phase 3 & Phase 5 RED Tests.
 
 Phase 2 RED Tests - US1: 書籍セクションを対話形式に変換
 LLMを使用してセクション内容を博士と助手の対話形式に変換する機能のテスト。
 
 Phase 3 RED Tests - US2: 長文セクションの分割処理
 4,000文字を超えるセクションを見出し単位で分割し、それぞれを対話形式に変換するテスト。
+
+Phase 5 RED Tests - CLI統合 & Makefile
+dialogue_converter.py のCLI引数パース（parse_args）とmain()統合テスト。
 
 Target functions:
 - src/dialogue_converter.py::DialogueBlock dataclass
@@ -16,6 +19,8 @@ Target functions:
 - src/dialogue_converter.py::to_dialogue_xml()
 - src/dialogue_converter.py::should_split()
 - src/dialogue_converter.py::split_by_heading()
+- src/dialogue_converter.py::parse_args()
+- src/dialogue_converter.py::main()
 
 Test coverage:
 - T011: DialogueBlock, Utterance データクラスのテスト
@@ -28,10 +33,15 @@ Test coverage:
 - T033: 見出し単位分割関数 split_by_heading() のテスト
 - T034: 分割後の連続性（コンテキスト維持）テスト
 - T035: 境界ケース（3,500〜4,500文字）のテスト
+- T072: dialogue_converter.py CLI引数パースのテスト
+- T073: dialogue_converter.py main() 統合テスト
 """
 
+import json
 import xml.etree.ElementTree as ET
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from src.dialogue_converter import (
     ConversionResult,
@@ -53,6 +63,26 @@ except ImportError:
     # 未実装のためマーカーとして None を設定、テスト内でImportError を再送出
     should_split = None
     split_by_heading = None
+
+# Phase 5 RED: parse_args, main はまだ未実装
+try:
+    from src.dialogue_converter import main as converter_main
+    from src.dialogue_converter import parse_args as converter_parse_args
+except ImportError:
+    converter_parse_args = None
+    converter_main = None
+
+
+def _require_parse_args():
+    """parse_args が未実装の場合にテストをFAILさせる"""
+    if converter_parse_args is None:
+        raise ImportError("parse_args is not yet implemented in src/dialogue_converter.py")
+
+
+def _require_main():
+    """main が未実装の場合にテストをFAILさせる"""
+    if converter_main is None:
+        raise ImportError("main is not yet implemented in src/dialogue_converter.py")
 
 
 def _require_should_split():
@@ -1699,3 +1729,848 @@ class TestBoundaryCharacterCount:
         result = split_by_heading(section)
         assert isinstance(result, list)
         assert len(result) >= 1
+
+
+# =============================================================================
+# Phase 5 RED Tests
+# T072: dialogue_converter.py CLI引数パースのテスト
+# =============================================================================
+
+
+class TestConverterParseArgsRequired:
+    """parse_args() の必須引数テスト。"""
+
+    def test_no_args_raises_system_exit(self):
+        """引数なしで SystemExit が発生する"""
+        _require_parse_args()
+        with pytest.raises(SystemExit):
+            converter_parse_args([])
+
+    def test_input_is_required(self):
+        """--input を指定しないと SystemExit が発生する"""
+        _require_parse_args()
+        with pytest.raises(SystemExit):
+            converter_parse_args(["--output", "./out"])
+
+
+class TestConverterParseArgsInput:
+    """parse_args() の --input/-i 引数テスト。"""
+
+    def test_input_short_flag(self):
+        """短縮形 -i で入力ファイルを指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml"])
+        assert args.input == "book.xml"
+
+    def test_input_long_flag(self):
+        """長形式 --input で入力ファイルを指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["--input", "book.xml"])
+        assert args.input == "book.xml"
+
+    def test_input_with_path(self):
+        """パス付きの入力ファイルを指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "/data/books/book2.xml"])
+        assert args.input == "/data/books/book2.xml"
+
+    def test_input_with_spaces_in_path(self):
+        """スペースを含むパスの入力ファイルを指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "/data/my books/book.xml"])
+        assert args.input == "/data/my books/book.xml"
+
+
+class TestConverterParseArgsOutput:
+    """parse_args() の --output/-o 引数テスト。"""
+
+    def test_output_default(self):
+        """--output のデフォルトは './output'"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml"])
+        assert args.output == "./output"
+
+    def test_output_short_flag(self):
+        """短縮形 -o で出力ディレクトリを指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "-o", "/tmp/out"])
+        assert args.output == "/tmp/out"
+
+    def test_output_long_flag(self):
+        """長形式 --output で出力ディレクトリを指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "--output", "/tmp/out"])
+        assert args.output == "/tmp/out"
+
+
+class TestConverterParseArgsModel:
+    """parse_args() の --model/-m 引数テスト。"""
+
+    def test_model_default(self):
+        """--model のデフォルトは 'gpt-oss:20b'"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml"])
+        assert args.model == "gpt-oss:20b"
+
+    def test_model_short_flag(self):
+        """短縮形 -m でモデル名を指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "-m", "llama3:8b"])
+        assert args.model == "llama3:8b"
+
+    def test_model_long_flag(self):
+        """長形式 --model でモデル名を指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "--model", "llama3:8b"])
+        assert args.model == "llama3:8b"
+
+
+class TestConverterParseArgsNumeric:
+    """parse_args() の数値オプション（--max-chars, --split-threshold, --num-predict）テスト。"""
+
+    def test_max_chars_default(self):
+        """--max-chars のデフォルトは 3500"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml"])
+        assert args.max_chars == 3500
+
+    def test_max_chars_custom(self):
+        """--max-chars でカスタム値を指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "--max-chars", "5000"])
+        assert args.max_chars == 5000
+
+    def test_max_chars_is_int(self):
+        """--max-chars の値は int 型である"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "--max-chars", "2000"])
+        assert isinstance(args.max_chars, int)
+
+    def test_split_threshold_default(self):
+        """--split-threshold のデフォルトは 4000"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml"])
+        assert args.split_threshold == 4000
+
+    def test_split_threshold_custom(self):
+        """--split-threshold でカスタム値を指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "--split-threshold", "6000"])
+        assert args.split_threshold == 6000
+
+    def test_num_predict_default(self):
+        """--num-predict のデフォルトは 1500"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml"])
+        assert args.num_predict == 1500
+
+    def test_num_predict_custom(self):
+        """--num-predict でカスタム値を指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "--num-predict", "2000"])
+        assert args.num_predict == 2000
+
+
+class TestConverterParseArgsChapterSection:
+    """parse_args() の --chapter/-c と --section/-s 引数テスト。"""
+
+    def test_chapter_default_none(self):
+        """--chapter のデフォルトは None"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml"])
+        assert args.chapter is None
+
+    def test_chapter_short_flag(self):
+        """短縮形 -c でチャプター番号を指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "-c", "3"])
+        assert args.chapter == 3
+
+    def test_chapter_long_flag(self):
+        """長形式 --chapter でチャプター番号を指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "--chapter", "5"])
+        assert args.chapter == 5
+
+    def test_chapter_is_int(self):
+        """--chapter の値は int 型である"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "-c", "2"])
+        assert isinstance(args.chapter, int)
+
+    def test_section_default_none(self):
+        """--section のデフォルトは None"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml"])
+        assert args.section is None
+
+    def test_section_short_flag(self):
+        """短縮形 -s でセクション番号を指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "-s", "2"])
+        assert args.section == 2
+
+    def test_section_long_flag(self):
+        """長形式 --section でセクション番号を指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "--section", "4"])
+        assert args.section == 4
+
+
+class TestConverterParseArgsDryRun:
+    """parse_args() の --dry-run 引数テスト。"""
+
+    def test_dry_run_default_false(self):
+        """--dry-run のデフォルトは False"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml"])
+        assert args.dry_run is False
+
+    def test_dry_run_flag(self):
+        """--dry-run フラグを指定すると True になる"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "book.xml", "--dry-run"])
+        assert args.dry_run is True
+
+
+class TestConverterParseArgsCombined:
+    """parse_args() の全オプション組み合わせテスト。"""
+
+    def test_all_options_combined(self):
+        """全オプションを同時に指定できる"""
+        _require_parse_args()
+        args = converter_parse_args(
+            [
+                "-i",
+                "book.xml",
+                "-o",
+                "/tmp/out",
+                "-m",
+                "llama3:8b",
+                "--max-chars",
+                "5000",
+                "--split-threshold",
+                "6000",
+                "--num-predict",
+                "2000",
+                "-c",
+                "3",
+                "-s",
+                "2",
+                "--dry-run",
+            ]
+        )
+        assert args.input == "book.xml"
+        assert args.output == "/tmp/out"
+        assert args.model == "llama3:8b"
+        assert args.max_chars == 5000
+        assert args.split_threshold == 6000
+        assert args.num_predict == 2000
+        assert args.chapter == 3
+        assert args.section == 2
+        assert args.dry_run is True
+
+    def test_minimal_required_only(self):
+        """必須引数のみで正しいデフォルト値が設定される"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", "input.xml"])
+        assert args.input == "input.xml"
+        assert args.output == "./output"
+        assert args.model == "gpt-oss:20b"
+        assert args.max_chars == 3500
+        assert args.split_threshold == 4000
+        assert args.num_predict == 1500
+        assert args.chapter is None
+        assert args.section is None
+        assert args.dry_run is False
+
+
+class TestConverterParseArgsEdgeCases:
+    """parse_args() のエッジケーステスト。"""
+
+    def test_invalid_max_chars_type(self):
+        """--max-chars に数値以外を渡すと SystemExit"""
+        _require_parse_args()
+        with pytest.raises(SystemExit):
+            converter_parse_args(["-i", "book.xml", "--max-chars", "abc"])
+
+    def test_invalid_chapter_type(self):
+        """--chapter に数値以外を渡すと SystemExit"""
+        _require_parse_args()
+        with pytest.raises(SystemExit):
+            converter_parse_args(["-i", "book.xml", "-c", "abc"])
+
+    def test_unknown_argument(self):
+        """未知の引数を渡すと SystemExit"""
+        _require_parse_args()
+        with pytest.raises(SystemExit):
+            converter_parse_args(["-i", "book.xml", "--unknown-flag"])
+
+    def test_empty_input_string(self):
+        """空文字列の入力ファイルパスを受け付ける（バリデーションはmain側）"""
+        _require_parse_args()
+        args = converter_parse_args(["-i", ""])
+        assert args.input == ""
+
+
+# =============================================================================
+# T073: dialogue_converter.py main() 統合テスト
+# =============================================================================
+
+
+class TestConverterMainInputValidation:
+    """main() の入力ファイルバリデーションテスト。"""
+
+    def test_nonexistent_input_file_returns_exit_code_1(self, tmp_path):
+        """存在しない入力ファイルを指定すると終了コード 1 を返す"""
+        _require_main()
+        nonexistent = str(tmp_path / "nonexistent.xml")
+        with patch(
+            "src.dialogue_converter.parse_args",
+        ) as mock_parse_args:
+            mock_parse_args.return_value = _make_converter_args(
+                input=nonexistent,
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        assert result == 1
+
+    def test_empty_input_path_returns_exit_code_1(self, tmp_path):
+        """空の入力パスを指定すると終了コード 1 を返す"""
+        _require_main()
+        with patch(
+            "src.dialogue_converter.parse_args",
+        ) as mock_parse_args:
+            mock_parse_args.return_value = _make_converter_args(
+                input="",
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        assert result == 1
+
+    def test_directory_as_input_returns_exit_code_1(self, tmp_path):
+        """ディレクトリを入力ファイルとして指定すると終了コード 1 を返す"""
+        _require_main()
+        with patch(
+            "src.dialogue_converter.parse_args",
+        ) as mock_parse_args:
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(tmp_path),
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        assert result == 1
+
+
+class TestConverterMainDryRun:
+    """main() の --dry-run モードテスト。"""
+
+    def test_dry_run_returns_exit_code_0(self, tmp_path):
+        """dry-runモードでは変換を実行せず終了コード 0 を返す"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+        with patch(
+            "src.dialogue_converter.parse_args",
+        ) as mock_parse_args:
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+                dry_run=True,
+            )
+            result = converter_main()
+        assert result == 0
+
+    def test_dry_run_does_not_create_output_files(self, tmp_path):
+        """dry-runモードでは出力ファイルが作成されない"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+        output_dir = tmp_path / "output"
+        with patch(
+            "src.dialogue_converter.parse_args",
+        ) as mock_parse_args:
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(output_dir),
+                dry_run=True,
+            )
+            converter_main()
+        # dry-runでは出力ディレクトリにdialogue_book.xmlが作成されない
+        dialogue_output = output_dir / "dialogue_book.xml"
+        assert not dialogue_output.exists()
+
+    def test_dry_run_does_not_call_llm(self, tmp_path):
+        """dry-runモードではLLM呼び出しが行われない"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+            ) as mock_convert,
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+                dry_run=True,
+            )
+            converter_main()
+        mock_convert.assert_not_called()
+
+
+class TestConverterMainSuccessPath:
+    """main() の正常系テスト。"""
+
+    def test_successful_conversion_returns_exit_code_0(self, tmp_path):
+        """正常な変換で終了コード 0 を返す"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+        output_dir = tmp_path / "output"
+
+        mock_result = ConversionResult(
+            success=True,
+            dialogue_block=DialogueBlock(
+                section_number="1.1",
+                section_title="テスト",
+                introduction="導入です。",
+                dialogue=[
+                    Utterance(speaker="A", text="説明です。"),
+                    Utterance(speaker="B", text="なるほど。"),
+                ],
+                conclusion="まとめです。",
+            ),
+            error_message=None,
+            processing_time_sec=1.0,
+            input_char_count=100,
+            was_split=False,
+        )
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                return_value=mock_result,
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(output_dir),
+            )
+            result = converter_main()
+        assert result == 0
+
+    def test_creates_output_directory(self, tmp_path):
+        """出力ディレクトリが存在しない場合に自動作成する"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+        output_dir = tmp_path / "new_output_dir"
+
+        mock_result = _make_successful_conversion_result()
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                return_value=mock_result,
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(output_dir),
+            )
+            converter_main()
+        assert output_dir.exists()
+
+    def test_creates_dialogue_book_xml(self, tmp_path):
+        """変換結果のdialogue_book.xmlが出力ディレクトリに作成される"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+        output_dir = tmp_path / "output"
+
+        mock_result = _make_successful_conversion_result()
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                return_value=mock_result,
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(output_dir),
+            )
+            converter_main()
+        dialogue_output = output_dir / "dialogue_book.xml"
+        assert dialogue_output.exists()
+
+    def test_creates_conversion_log_json(self, tmp_path):
+        """変換ログのconversion_log.jsonが出力ディレクトリに作成される"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+        output_dir = tmp_path / "output"
+
+        mock_result = _make_successful_conversion_result()
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                return_value=mock_result,
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(output_dir),
+            )
+            converter_main()
+        log_output = output_dir / "conversion_log.json"
+        assert log_output.exists()
+        log_data = json.loads(log_output.read_text(encoding="utf-8"))
+        assert isinstance(log_data, (dict, list))
+
+
+class TestConverterMainErrorHandling:
+    """main() のエラーハンドリングテスト。"""
+
+    def test_llm_connection_error_returns_exit_code_2(self, tmp_path):
+        """LLM接続エラーで終了コード 2 を返す"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                side_effect=ConnectionError("LLM connection failed"),
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        assert result == 2
+
+    def test_conversion_failure_returns_exit_code_3(self, tmp_path):
+        """変換処理エラーで終了コード 3 を返す"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+
+        failed_result = ConversionResult(
+            success=False,
+            dialogue_block=None,
+            error_message="変換に失敗しました",
+            processing_time_sec=1.0,
+            input_char_count=100,
+            was_split=False,
+        )
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                return_value=failed_result,
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        assert result == 3
+
+    def test_xml_parse_error_returns_exit_code_1(self, tmp_path):
+        """無効なXMLファイルで終了コード 1 を返す"""
+        _require_main()
+        input_file = tmp_path / "bad.xml"
+        input_file.write_text("<<<not valid xml>>>", encoding="utf-8")
+
+        with patch(
+            "src.dialogue_converter.parse_args",
+        ) as mock_parse_args:
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        assert result == 1
+
+    def test_unexpected_exception_returns_exit_code_3(self, tmp_path):
+        """予期しない例外で終了コード 3 を返す"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                side_effect=RuntimeError("unexpected error"),
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        assert result == 3
+
+
+class TestConverterMainChapterSectionFilter:
+    """main() の --chapter/-c と --section/-s フィルタテスト。"""
+
+    def test_chapter_filter_processes_only_specified_chapter(self, tmp_path):
+        """--chapter で指定したチャプターのみ処理する"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_multi_chapter_book_xml(), encoding="utf-8")
+
+        mock_result = _make_successful_conversion_result()
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                return_value=mock_result,
+            ) as mock_convert,
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+                chapter=1,
+            )
+            result = converter_main()
+        assert result == 0
+        # convert_sectionが呼ばれた場合、チャプター1のセクションのみ
+        if mock_convert.called:
+            for call_args in mock_convert.call_args_list:
+                section_arg = call_args[0][0] if call_args[0] else call_args[1].get("section")
+                if section_arg is not None:
+                    assert section_arg.chapter_number == 1
+
+    def test_section_filter_processes_only_specified_section(self, tmp_path):
+        """--section で指定したセクションのみ処理する"""
+        _require_main()
+        input_file = tmp_path / "book.xml"
+        input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
+
+        mock_result = _make_successful_conversion_result()
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                return_value=mock_result,
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+                section=1,
+            )
+            result = converter_main()
+        assert result == 0
+
+
+class TestConverterMainEdgeCases:
+    """main() のエッジケーステスト。"""
+
+    def test_empty_xml_no_sections(self, tmp_path):
+        """セクションが存在しないXMLで正常終了する"""
+        _require_main()
+        input_file = tmp_path / "empty.xml"
+        input_file.write_text(
+            '<?xml version="1.0" encoding="utf-8"?><book></book>',
+            encoding="utf-8",
+        )
+
+        with patch(
+            "src.dialogue_converter.parse_args",
+        ) as mock_parse_args:
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        # セクションなしでも正常終了（0）であるべき
+        assert result == 0
+
+    def test_unicode_content_in_xml(self, tmp_path):
+        """Unicode文字（絵文字、特殊文字）を含むXMLを処理できる"""
+        _require_main()
+        input_file = tmp_path / "unicode.xml"
+        xml_content = (
+            '<?xml version="1.0" encoding="utf-8"?>'
+            "<book><chapter><heading>第1章</heading>"
+            '<section number="1.1"><heading level="2">テスト</heading>'
+            "<paragraph>特殊文字テスト：&amp;、&lt;、&gt;</paragraph>"
+            "</section></chapter></book>"
+        )
+        input_file.write_text(xml_content, encoding="utf-8")
+
+        mock_result = _make_successful_conversion_result()
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                return_value=mock_result,
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        assert isinstance(result, int)
+
+    def test_large_xml_with_many_sections(self, tmp_path):
+        """多数のセクション（50+）を含むXMLを処理できる"""
+        _require_main()
+        input_file = tmp_path / "large.xml"
+        sections_xml = ""
+        for i in range(50):
+            sections_xml += (
+                f'<section number="1.{i + 1}">'
+                f'<heading level="2">セクション{i + 1}</heading>'
+                f"<paragraph>段落{i + 1}のテキスト</paragraph>"
+                f"</section>"
+            )
+        xml_content = (
+            '<?xml version="1.0" encoding="utf-8"?>'
+            f"<book><chapter><heading>第1章</heading>{sections_xml}</chapter></book>"
+        )
+        input_file.write_text(xml_content, encoding="utf-8")
+
+        mock_result = _make_successful_conversion_result()
+
+        with (
+            patch(
+                "src.dialogue_converter.parse_args",
+            ) as mock_parse_args,
+            patch(
+                "src.dialogue_converter.convert_section",
+                return_value=mock_result,
+            ),
+        ):
+            mock_parse_args.return_value = _make_converter_args(
+                input=str(input_file),
+                output=str(tmp_path / "output"),
+            )
+            result = converter_main()
+        assert result == 0
+
+
+# =============================================================================
+# Phase 5 ヘルパー関数
+# =============================================================================
+
+
+def _make_converter_args(
+    input: str = "book.xml",
+    output: str = "./output",
+    model: str = "gpt-oss:20b",
+    max_chars: int = 3500,
+    split_threshold: int = 4000,
+    num_predict: int = 1500,
+    chapter: int | None = None,
+    section: int | None = None,
+    dry_run: bool = False,
+) -> MagicMock:
+    """テスト用のparse_args戻り値を作成するヘルパー"""
+    args = MagicMock()
+    args.input = input
+    args.output = output
+    args.model = model
+    args.max_chars = max_chars
+    args.split_threshold = split_threshold
+    args.num_predict = num_predict
+    args.chapter = chapter
+    args.section = section
+    args.dry_run = dry_run
+    return args
+
+
+def _make_minimal_book_xml() -> str:
+    """テスト用の最小限のbook XMLを生成するヘルパー"""
+    return (
+        '<?xml version="1.0" encoding="utf-8"?>'
+        "<book>"
+        "<chapter>"
+        '<heading level="1" number="1">第1章 テスト</heading>'
+        '<heading level="2" number="1.1">セクション1.1</heading>'
+        "<paragraph>テスト段落の内容です。</paragraph>"
+        "</chapter>"
+        "</book>"
+    )
+
+
+def _make_multi_chapter_book_xml() -> str:
+    """テスト用の複数チャプターを含むbook XMLを生成するヘルパー"""
+    return (
+        '<?xml version="1.0" encoding="utf-8"?>'
+        "<book>"
+        "<chapter>"
+        '<heading level="1" number="1">第1章</heading>'
+        '<heading level="2" number="1.1">セクション1.1</heading>'
+        "<paragraph>チャプター1の内容。</paragraph>"
+        "</chapter>"
+        "<chapter>"
+        '<heading level="1" number="2">第2章</heading>'
+        '<heading level="2" number="2.1">セクション2.1</heading>'
+        "<paragraph>チャプター2の内容。</paragraph>"
+        "</chapter>"
+        "</book>"
+    )
+
+
+def _make_successful_conversion_result() -> ConversionResult:
+    """テスト用の成功ConversionResultを生成するヘルパー"""
+    return ConversionResult(
+        success=True,
+        dialogue_block=DialogueBlock(
+            section_number="1.1",
+            section_title="テスト",
+            introduction="導入です。",
+            dialogue=[
+                Utterance(speaker="A", text="説明です。"),
+                Utterance(speaker="B", text="なるほど。"),
+            ],
+            conclusion="まとめです。",
+        ),
+        error_message=None,
+        processing_time_sec=1.0,
+        input_char_count=100,
+        was_split=False,
+    )
