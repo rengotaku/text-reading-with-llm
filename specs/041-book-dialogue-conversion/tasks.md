@@ -187,15 +187,15 @@
 
 ### Implementation (GREEN)
 
-- [ ] T076 REDテストを読む: specs/041-book-dialogue-conversion/red-tests/ph5-test.md
-- [ ] T077 [P] dialogue_converter.py の parse_args() を実装: src/dialogue_converter.py
-- [ ] T078 dialogue_converter.py の main() を実装: src/dialogue_converter.py
-- [ ] T079 `make test` で PASS (GREEN) を確認
+- [x] T076 REDテストを読む: specs/041-book-dialogue-conversion/red-tests/ph5-test.md
+- [x] T077 [P] dialogue_converter.py の parse_args() を実装: src/dialogue_converter.py
+- [x] T078 dialogue_converter.py の main() を実装: src/dialogue_converter.py
+- [x] T079 `make test` で PASS (GREEN) を確認
 
 ### Verification
 
-- [ ] T080 `make test` ですべてのテストがパスすることを確認
-- [ ] T081 Edit: specs/041-book-dialogue-conversion/tasks/ph5-output.md
+- [x] T080 `make test` ですべてのテストがパスすることを確認
+- [x] T081 Edit: specs/041-book-dialogue-conversion/tasks/ph5-output.md
 
 ---
 
