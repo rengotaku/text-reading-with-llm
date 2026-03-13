@@ -51,18 +51,18 @@
 
 ### Input
 
-- [ ] T010 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
+- [x] T010 前フェーズ出力を読む: specs/041-book-dialogue-conversion/tasks/ph1-output.md
 
 ### Test Implementation (RED)
 
-- [ ] T011 [P] [US1] DialogueBlock, Utterance データクラスのテストを実装: tests/test_dialogue_converter.py
-- [ ] T012 [P] [US1] セクション抽出関数のテストを実装: tests/test_dialogue_converter.py
-- [ ] T013 [P] [US1] LLM構造分析（intro/dialogue/conclusion分類）のテストを実装: tests/test_dialogue_converter.py
-- [ ] T014 [P] [US1] LLM対話生成（A/B発話）のテストを実装: tests/test_dialogue_converter.py
-- [ ] T015 [P] [US1] 対話XMLシリアライズのテストを実装: tests/test_dialogue_converter.py
-- [ ] T016 [P] [US1] エッジケース（短文、空セクション）のテストを実装: tests/test_dialogue_converter.py
-- [ ] T017 `make test` で FAIL (RED) を確認
-- [ ] T018 REDテスト出力を生成: specs/041-book-dialogue-conversion/red-tests/ph2-test.md
+- [x] T011 [P] [US1] DialogueBlock, Utterance データクラスのテストを実装: tests/test_dialogue_converter.py
+- [x] T012 [P] [US1] セクション抽出関数のテストを実装: tests/test_dialogue_converter.py
+- [x] T013 [P] [US1] LLM構造分析（intro/dialogue/conclusion分類）のテストを実装: tests/test_dialogue_converter.py
+- [x] T014 [P] [US1] LLM対話生成（A/B発話）のテストを実装: tests/test_dialogue_converter.py
+- [x] T015 [P] [US1] 対話XMLシリアライズのテストを実装: tests/test_dialogue_converter.py
+- [x] T016 [P] [US1] エッジケース（短文、空セクション）のテストを実装: tests/test_dialogue_converter.py
+- [x] T017 `make test` で FAIL (RED) を確認
+- [x] T018 REDテスト出力を生成: specs/041-book-dialogue-conversion/red-tests/ph2-test.md
 
 ### Implementation (GREEN)
 

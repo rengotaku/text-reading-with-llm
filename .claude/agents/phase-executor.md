@@ -120,6 +120,13 @@ Mark completed tasks as `[x]`.
 - **Do NOT over-implement** (don't do more than what tests require)
 - Do not break existing tests
 
+## Output Constraints
+
+- **ONLY** write to `{FEATURE_DIR}/tasks/ph{N}-output.md`
+- **DO NOT** create files in `/tmp/`, `~`, or any unspecified location
+- **DO NOT** create additional summary, report, or log files
+- Return results to parent agent via tool response only
+
 # Output Format
 
 ## Phase Output File Format
