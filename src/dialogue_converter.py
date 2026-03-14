@@ -636,11 +636,22 @@ def main() -> int:
     dialogue_blocks: list[DialogueBlock] = []
     conversion_log: list[dict[str, Any]] = []
 
+    # Ollama をインポート
+    try:
+        import ollama
+
+        ollama_chat_func = ollama.chat
+    except ImportError:
+        logger.error("ollama パッケージがインストールされていません")
+        return 2
+
     try:
         for section in sections:
+            logger.info("変換中: セクション %s - %s", section.number, section.title)
             result = convert_section(
                 section=section,
                 model=args.model,
+                ollama_chat_func=ollama_chat_func,
             )
             log_entry: dict[str, Any] = {
                 "section_number": section.number,

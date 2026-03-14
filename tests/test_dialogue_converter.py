@@ -38,6 +38,7 @@ Test coverage:
 """
 
 import json
+import sys
 import xml.etree.ElementTree as ET
 from unittest.mock import MagicMock, patch
 
@@ -71,6 +72,16 @@ try:
 except ImportError:
     converter_parse_args = None
     converter_main = None
+
+
+# ollama モックを sys.modules に追加（main() 内の動的インポート用）
+@pytest.fixture(autouse=False)
+def mock_ollama():
+    """ollama モジュールをモックするフィクスチャ。main() テストで使用。"""
+    mock_module = MagicMock()
+    mock_module.chat = MagicMock(return_value={"message": {"content": "{}"}})
+    with patch.dict(sys.modules, {"ollama": mock_module}):
+        yield mock_module
 
 
 def _require_parse_args():
@@ -2122,6 +2133,7 @@ class TestConverterMainDryRun:
         mock_convert.assert_not_called()
 
 
+@pytest.mark.usefixtures("mock_ollama")
 class TestConverterMainSuccessPath:
     """main() の正常系テスト。"""
 
@@ -2246,6 +2258,7 @@ class TestConverterMainSuccessPath:
         assert isinstance(log_data, (dict, list))
 
 
+@pytest.mark.usefixtures("mock_ollama")
 class TestConverterMainErrorHandling:
     """main() のエラーハンドリングテスト。"""
 
@@ -2341,6 +2354,7 @@ class TestConverterMainErrorHandling:
         assert result == 3
 
 
+@pytest.mark.usefixtures("mock_ollama")
 class TestConverterMainChapterSectionFilter:
     """main() の --chapter/-c と --section/-s フィルタテスト。"""
 
@@ -2401,6 +2415,7 @@ class TestConverterMainChapterSectionFilter:
         assert result == 0
 
 
+@pytest.mark.usefixtures("mock_ollama")
 class TestConverterMainEdgeCases:
     """main() のエッジケーステスト。"""
 
