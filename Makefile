@@ -19,7 +19,7 @@ SPEED ?= 1.0
 
 LLM_MODEL ?= gpt-oss:20b
 
-.PHONY: help setup setup-dev setup-voicevox reset-vvm gen-dict clean-text xml-tts run test coverage lint format clean clean-all
+.PHONY: help setup setup-dev setup-voicevox reset-vvm gen-dict clean-text xml-tts run dialogue-convert dialogue-tts dialogue test coverage lint format clean clean-all
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -67,6 +67,14 @@ xml-tts: ## Run XML to TTS pipeline (INPUT=file)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
 
 run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → TTS (INPUT=file)
+
+dialogue-convert: ## Convert book XML to dialogue form with LLM (INPUT=file)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_converter -i "$(INPUT)" -o "$(OUTPUT)" --model "$(LLM_MODEL)"
+
+dialogue-tts: ## Generate multi-speaker TTS from dialogue XML
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(OUTPUT)/dialogue_book.xml" -o "$(OUTPUT)"
+
+dialogue: dialogue-convert gen-dict clean-text dialogue-tts ## Run full dialogue pipeline: convert → dict → clean-text → TTS (INPUT=file)
 
 # --- Quality ---
 
