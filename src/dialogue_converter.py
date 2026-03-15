@@ -181,25 +181,45 @@ JSON出力:"""
     if ollama_chat_func is None:
         return {"introduction": [], "dialogue": list(paragraphs), "conclusion": []}
 
+    logger.debug("[analyze_structure] LLM呼び出し開始 (model=%s)", model)
     response = ollama_chat_func(model=model, messages=messages)
 
     try:
         response_text = response.get("message", {}).get("content", "")
+        logger.debug(
+            "[analyze_structure] LLM応答 (len=%d): %s",
+            len(response_text),
+            response_text[:500] + "..." if len(response_text) > 500 else response_text,
+        )
+
         if not response_text:
+            logger.warning("[analyze_structure] LLM応答が空です")
             return {"introduction": [], "dialogue": list(paragraphs), "conclusion": []}
 
         # JSONを検索して抽出
         json_match = re.search(r"\{[^{}]*\}", response_text, re.DOTALL)
         if json_match:
-            parsed = json.loads(json_match.group())
+            json_str = json_match.group()
+            logger.debug("[analyze_structure] 抽出されたJSON: %s", json_str[:300])
+            parsed = json.loads(json_str)
             result: dict[str, list[str]] = {
                 "introduction": parsed.get("introduction", []),
                 "dialogue": parsed.get("dialogue", []),
                 "conclusion": parsed.get("conclusion", []),
             }
+            logger.info(
+                "[analyze_structure] パース成功: intro=%d, dialogue=%d, conclusion=%d",
+                len(result["introduction"]),
+                len(result["dialogue"]),
+                len(result["conclusion"]),
+            )
             return result
+        else:
+            logger.warning("[analyze_structure] JSONが見つかりませんでした")
+            logger.warning("[analyze_structure] LLM応答: %s", response_text[:1000])
     except (json.JSONDecodeError, KeyError) as e:
-        logger.warning("LLM応答のJSONパースに失敗しました: %s", e)
+        logger.warning("[analyze_structure] JSONパース失敗: %s", e)
+        logger.warning("[analyze_structure] 失敗した応答: %s", response_text[:1000])
 
     return {"introduction": [], "dialogue": list(paragraphs), "conclusion": []}
 
@@ -263,26 +283,41 @@ JSON出力:"""
     if ollama_chat_func is None:
         return []
 
+    logger.debug("[generate_dialogue] LLM呼び出し開始 (model=%s)", model)
     response = ollama_chat_func(model=model, messages=messages)
 
     try:
         response_text = response.get("message", {}).get("content", "")
+        logger.debug(
+            "[generate_dialogue] LLM応答 (len=%d): %s",
+            len(response_text),
+            response_text[:500] + "..." if len(response_text) > 500 else response_text,
+        )
+
         if not response_text:
+            logger.warning("[generate_dialogue] LLM応答が空です")
             return []
 
         # JSON配列を検索して抽出
         json_match = re.search(r"\[.*\]", response_text, re.DOTALL)
         if json_match:
-            parsed = json.loads(json_match.group())
+            json_str = json_match.group()
+            logger.debug("[generate_dialogue] 抽出されたJSON: %s", json_str[:500])
+            parsed = json.loads(json_str)
             utterances: list[Utterance] = []
             for item in parsed:
                 speaker = item.get("speaker", "")
                 text = item.get("text", "")
                 if speaker in ("A", "B") and text:
                     utterances.append(Utterance(speaker=speaker, text=text))
+            logger.info("[generate_dialogue] パース成功: %d 発話生成", len(utterances))
             return utterances
+        else:
+            logger.warning("[generate_dialogue] JSON配列が見つかりませんでした")
+            logger.warning("[generate_dialogue] LLM応答: %s", response_text[:1000])
     except (json.JSONDecodeError, KeyError) as e:
-        logger.warning("LLM応答のJSONパースに失敗しました: %s", e)
+        logger.warning("[generate_dialogue] JSONパース失敗: %s", e)
+        logger.warning("[generate_dialogue] 失敗した応答: %s", response_text[:1000])
 
     return []
 
@@ -562,6 +597,13 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         dest="dry_run",
         help="プレビューモード（変換を実行しない）",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="詳細ログを出力（DEBUGレベル）",
+    )
     return parser.parse_args(args)
 
 
@@ -576,6 +618,13 @@ def main() -> int:
           3: 変換エラー
     """
     args = parse_args()
+
+    # ログレベル設定
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format="%(levelname)s: %(message)s",
+    )
 
     # 入力ファイルのバリデーション
     input_path = args.input
