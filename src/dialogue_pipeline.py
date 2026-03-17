@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # デフォルト話者スタイルIDマッピング
 DEFAULT_STYLE_MAPPING: dict[str, int] = {
     "narrator": 13,  # 青山龍星
-    "A": 67,  # 麒ヶ島宗麟（博士）
+    "A": 11,  # 玄野武宏（博士）- 67は未対応のため変更
     "B": 2,  # 四国めたん（助手）
 }
 
@@ -351,8 +351,8 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--speaker-a-style",
         type=int,
-        default=67,
-        help="博士（A）のスタイルID（デフォルト: 67）",
+        default=11,
+        help="博士（A）のスタイルID（デフォルト: 11）",
     )
     parser.add_argument(
         "--speaker-b-style",

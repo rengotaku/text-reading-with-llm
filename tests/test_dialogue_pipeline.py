@@ -144,11 +144,11 @@ class TestSpeaker:
         speaker = Speaker(
             id="A",
             role="博士（説明役）",
-            voicevox_style_id=67,
-            character_name="麒ヶ島宗麟",
+            voicevox_style_id=11,
+            character_name="玄野武宏",
         )
         assert speaker.id == "A"
-        assert speaker.voicevox_style_id == 67
+        assert speaker.voicevox_style_id == 11
 
     def test_speaker_b_creation(self) -> None:
         """助手（B）のSpeakerを正しく生成できる。"""
@@ -166,14 +166,14 @@ class TestSpeaker:
     def test_speaker_equality(self) -> None:
         """同じ値のSpeakerは等価である。"""
         _require_module()
-        s1 = Speaker(id="A", role="博士", voicevox_style_id=67, character_name="麒ヶ島宗麟")
-        s2 = Speaker(id="A", role="博士", voicevox_style_id=67, character_name="麒ヶ島宗麟")
+        s1 = Speaker(id="A", role="博士", voicevox_style_id=11, character_name="玄野武宏")
+        s2 = Speaker(id="A", role="博士", voicevox_style_id=11, character_name="玄野武宏")
         assert s1 == s2
 
     def test_speaker_inequality(self) -> None:
         """異なる値のSpeakerは不等である。"""
         _require_module()
-        s1 = Speaker(id="A", role="博士", voicevox_style_id=67, character_name="麒ヶ島宗麟")
+        s1 = Speaker(id="A", role="博士", voicevox_style_id=11, character_name="玄野武宏")
         s2 = Speaker(id="B", role="助手", voicevox_style_id=2, character_name="四国めたん")
         assert s1 != s2
 
@@ -348,7 +348,7 @@ class TestGetStyleId:
     def test_speaker_a_default_style_id(self) -> None:
         """博士（A）のデフォルトスタイルIDは67。"""
         _require_module()
-        assert get_style_id("A") == 67
+        assert get_style_id("A") == 11
 
     def test_speaker_b_default_style_id(self) -> None:
         """助手（B）のデフォルトスタイルIDは2。"""
@@ -427,7 +427,7 @@ class TestSynthesizeUtterance:
         call_args = mock.synthesize.call_args
         # style_id が 67 で呼ばれることを確認
         style_id_used = call_args.kwargs.get("style_id", call_args.args[1] if len(call_args.args) > 1 else None)
-        assert style_id_used == 67
+        assert style_id_used == 11
 
     def test_synthesize_uses_correct_style_id_for_b(self) -> None:
         """助手（B）のスタイルID=2でVOICEVOXが呼ばれる。"""
@@ -662,7 +662,7 @@ class TestParseArgs:
         """--speaker-a-style のデフォルトは 67。"""
         _require_module()
         args = parse_args(["-i", "dialogue.xml"])
-        assert args.speaker_a_style == 67
+        assert args.speaker_a_style == 11
 
     def test_speaker_a_style_custom(self) -> None:
         """--speaker-a-style でカスタム値を指定できる。"""
