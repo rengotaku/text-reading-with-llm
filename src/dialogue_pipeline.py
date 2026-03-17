@@ -419,6 +419,11 @@ def main() -> int:
         )
         synthesizer = VoicevoxSynthesizer(config)
         synthesizer.initialize()
+
+        # 必要な話者モデルのみロード（全モデルロードを回避してGPUメモリ節約）
+        for style_id in DEFAULT_STYLE_MAPPING.values():
+            logger.info("Loading voice model for style_id=%d", style_id)
+            synthesizer.load_model_for_style_id(style_id)
     except Exception as e:
         logger.error("Failed to initialize VOICEVOX: %s", e)
         return 2
