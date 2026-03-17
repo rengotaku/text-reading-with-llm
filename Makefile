@@ -16,6 +16,7 @@ INPUT ?= $(shell $(call CFG,input))
 OUTPUT ?= $(shell $(call CFG,output))
 STYLE_ID ?= 13
 SPEED ?= 1.0
+ACCELERATION_MODE ?= AUTO
 
 LLM_MODEL ?= gpt-oss:20b
 
@@ -71,8 +72,8 @@ run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → T
 dialogue-convert: ## Convert book XML to dialogue form with LLM (INPUT=file)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_converter -i "$(INPUT)" -o "$(OUTPUT)" --model "$(LLM_MODEL)"
 
-dialogue-tts: ## Generate multi-speaker TTS from dialogue XML
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(OUTPUT)/dialogue_book.xml" -o "$(OUTPUT)"
+dialogue-tts: ## Generate multi-speaker TTS from dialogue XML (ACCELERATION_MODE=AUTO|CPU|GPU)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(OUTPUT)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)"
 
 dialogue: dialogue-convert gen-dict clean-text dialogue-tts ## Run full dialogue pipeline: convert → dict → clean-text → TTS (INPUT=file)
 
