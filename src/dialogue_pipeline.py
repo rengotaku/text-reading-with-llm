@@ -272,13 +272,26 @@ def process_dialogue_sections(
 
     for section in sections:
         section_number = section["section_number"]
+        section_title = section.get("section_title", "")
+        logger.info(
+            "Processing section %s: %s",
+            section_number or "(no number)",
+            section_title[:50] + "..." if len(section_title) > 50 else section_title,
+        )
         segments: list[tuple[np.ndarray, int]] = []
 
         # introduction
         intro = section.get("introduction")
         if intro and intro.get("text"):
+            intro_text = intro["text"]
+            logger.info(
+                "  [intro] speaker=%s, len=%d: %s",
+                intro["speaker"],
+                len(intro_text),
+                intro_text[:80] + "..." if len(intro_text) > 80 else intro_text,
+            )
             audio = synthesize_utterance(
-                text=intro["text"],
+                text=intro_text,
                 speaker_id=intro["speaker"],
                 synthesizer=synthesizer,
                 speed_scale=speed_scale,
@@ -286,10 +299,18 @@ def process_dialogue_sections(
             segments.append(audio)
 
         # utterances
-        for utterance in section.get("utterances", []):
+        for i, utterance in enumerate(section.get("utterances", [])):
             if utterance.get("text"):
+                utt_text = utterance["text"]
+                logger.info(
+                    "  [utterance %d] speaker=%s, len=%d: %s",
+                    i + 1,
+                    utterance["speaker"],
+                    len(utt_text),
+                    utt_text[:80] + "..." if len(utt_text) > 80 else utt_text,
+                )
                 audio = synthesize_utterance(
-                    text=utterance["text"],
+                    text=utt_text,
                     speaker_id=utterance["speaker"],
                     synthesizer=synthesizer,
                     speed_scale=speed_scale,
@@ -299,8 +320,15 @@ def process_dialogue_sections(
         # conclusion
         conclusion = section.get("conclusion")
         if conclusion and conclusion.get("text"):
+            concl_text = conclusion["text"]
+            logger.info(
+                "  [conclusion] speaker=%s, len=%d: %s",
+                conclusion["speaker"],
+                len(concl_text),
+                concl_text[:80] + "..." if len(concl_text) > 80 else concl_text,
+            )
             audio = synthesize_utterance(
-                text=conclusion["text"],
+                text=concl_text,
                 speaker_id=conclusion["speaker"],
                 synthesizer=synthesizer,
                 speed_scale=speed_scale,
