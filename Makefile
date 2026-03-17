@@ -17,6 +17,7 @@ OUTPUT ?= $(shell $(call CFG,output))
 STYLE_ID ?= 13
 SPEED ?= 1.0
 ACCELERATION_MODE ?= AUTO
+MAX_LENGTH ?= 300
 
 LLM_MODEL ?= gpt-oss:20b
 
@@ -72,10 +73,13 @@ run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → T
 dialogue-convert: ## Convert book XML to dialogue form with LLM (INPUT=file)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_converter -i "$(INPUT)" -o "$(OUTPUT)" --model "$(LLM_MODEL)"
 
+dialogue-split: ## Split long texts in dialogue XML for TTS (MAX_LENGTH=300)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_text_splitter -i "$(OUTPUT)/dialogue_book.xml" --max-length $(MAX_LENGTH)
+
 dialogue-tts: ## Generate multi-speaker TTS from dialogue XML (ACCELERATION_MODE=AUTO|CPU|GPU)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(OUTPUT)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)"
 
-dialogue: dialogue-convert gen-dict clean-text dialogue-tts ## Run full dialogue pipeline: convert → dict → clean-text → TTS (INPUT=file)
+dialogue: dialogue-convert dialogue-split gen-dict clean-text dialogue-tts ## Run full dialogue pipeline
 
 # --- Quality ---
 
