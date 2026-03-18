@@ -205,15 +205,18 @@ def synthesize_utterance(
 
 
 def concatenate_section_audio(
-    segments: list[tuple[np.ndarray, int]],
+    segments: list[tuple[np.ndarray, int, str]],
     silence_duration: float = 0.5,
     output_path: Path | str | None = None,
 ) -> tuple[np.ndarray, int]:
     """複数の音声セグメントを結合する.
 
+    同一話者の連続セグメントは無音なしで結合し、
+    話者が変わる場合のみ無音を挿入する。
+
     Args:
-        segments: 音声セグメントのリスト。各要素は (waveform, sample_rate) のタプル。
-        silence_duration: セグメント間の無音時間（秒）
+        segments: 音声セグメントのリスト。各要素は (waveform, sample_rate, speaker_id) のタプル。
+        silence_duration: 話者交代時の無音時間（秒）
         output_path: 結合結果の保存先パス。Noneの場合は保存しない。
 
     Returns:
@@ -228,12 +231,14 @@ def concatenate_section_audio(
     sample_rate = segments[0][1]
     parts: list[np.ndarray] = []
 
-    for i, (waveform, sr) in enumerate(segments):
+    for i, (waveform, sr, speaker) in enumerate(segments):
         parts.append(np.asarray(waveform, dtype=np.float32))
-        # 最後のセグメント以外は無音を挿入
+        # 最後のセグメント以外で、次の話者が異なる場合のみ無音を挿入
         if i < len(segments) - 1:
-            silence_samples = int(sr * silence_duration)
-            parts.append(np.zeros(silence_samples, dtype=np.float32))
+            next_speaker = segments[i + 1][2]
+            if speaker != next_speaker:
+                silence_samples = int(sr * silence_duration)
+                parts.append(np.zeros(silence_samples, dtype=np.float32))
 
     combined = np.concatenate(parts)
 
@@ -278,62 +283,66 @@ def process_dialogue_sections(
             section_number or "(no number)",
             section_title[:50] + "..." if len(section_title) > 50 else section_title,
         )
-        segments: list[tuple[np.ndarray, int]] = []
+        # segments: (waveform, sample_rate, speaker_id)
+        segments: list[tuple[np.ndarray, int, str]] = []
 
         # introduction
         intro = section.get("introduction")
         if intro and intro.get("text"):
             intro_text = intro["text"]
+            intro_speaker = intro["speaker"]
             logger.info(
                 "  [intro] speaker=%s, len=%d: %s",
-                intro["speaker"],
+                intro_speaker,
                 len(intro_text),
                 intro_text[:80] + "..." if len(intro_text) > 80 else intro_text,
             )
-            audio = synthesize_utterance(
+            waveform, sr = synthesize_utterance(
                 text=intro_text,
-                speaker_id=intro["speaker"],
+                speaker_id=intro_speaker,
                 synthesizer=synthesizer,
                 speed_scale=speed_scale,
             )
-            segments.append(audio)
+            segments.append((waveform, sr, intro_speaker))
 
         # utterances
         for i, utterance in enumerate(section.get("utterances", [])):
             if utterance.get("text"):
                 utt_text = utterance["text"]
+                utt_speaker = utterance["speaker"]
                 logger.info(
                     "  [utterance %d] speaker=%s, len=%d: %s",
                     i + 1,
-                    utterance["speaker"],
+                    utt_speaker,
                     len(utt_text),
                     utt_text[:80] + "..." if len(utt_text) > 80 else utt_text,
                 )
-                audio = synthesize_utterance(
+                waveform, sr = synthesize_utterance(
                     text=utt_text,
-                    speaker_id=utterance["speaker"],
+                    speaker_id=utt_speaker,
                     synthesizer=synthesizer,
                     speed_scale=speed_scale,
                 )
-                segments.append(audio)
+                segments.append((waveform, sr, utt_speaker))
 
         # conclusion
         conclusion = section.get("conclusion")
         if conclusion and conclusion.get("text"):
             concl_text = conclusion["text"]
+            concl_speaker = conclusion["speaker"]
             logger.info(
                 "  [conclusion] speaker=%s, len=%d: %s",
-                conclusion["speaker"],
+                concl_speaker,
                 len(concl_text),
                 concl_text[:80] + "..." if len(concl_text) > 80 else concl_text,
             )
-            audio = synthesize_utterance(
+            waveform, sr = synthesize_utterance(
                 text=concl_text,
-                speaker_id=conclusion["speaker"],
+                speaker_id=concl_speaker,
                 synthesizer=synthesizer,
                 speed_scale=speed_scale,
             )
-            segments.append(audio)
+            segments.append((waveform, sr, concl_speaker))
 
         if segments:
             output_path = output_dir / f"section_{section_number}.wav"

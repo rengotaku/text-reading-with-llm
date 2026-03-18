@@ -523,22 +523,38 @@ class TestConcatenateSectionAudio:
     """concatenate_section_audio()の動作テスト。"""
 
     def _make_segment(
-        self, duration_samples: int = 24000, sample_rate: int = 24000, amplitude: float = 0.5
-    ) -> tuple[np.ndarray, int]:
+        self,
+        duration_samples: int = 24000,
+        sample_rate: int = 24000,
+        amplitude: float = 0.5,
+        speaker: str = "A",
+    ) -> tuple[np.ndarray, int, str]:
         """テスト用音声セグメントを生成する。"""
-        return (np.ones(duration_samples, dtype=np.float32) * amplitude, sample_rate)
+        return (np.ones(duration_samples, dtype=np.float32) * amplitude, sample_rate, speaker)
 
-    def test_concatenate_two_segments(self) -> None:
-        """2つの音声セグメントを結合できる。"""
+    def test_concatenate_two_segments_different_speakers(self) -> None:
+        """異なる話者の2つのセグメントは無音を挟んで結合される。"""
         _require_module()
         sr = 24000
-        seg1 = self._make_segment(sr, sr, 0.5)
-        seg2 = self._make_segment(sr, sr, 0.3)
+        seg1 = self._make_segment(sr, sr, 0.5, "A")
+        seg2 = self._make_segment(sr, sr, 0.3, "B")
 
         result_waveform, result_sr = concatenate_section_audio([seg1, seg2])
         assert result_sr == sr
         # 結合後は2つのセグメント + 間の無音を含む
         assert len(result_waveform) > sr * 2
+
+    def test_concatenate_two_segments_same_speaker(self) -> None:
+        """同一話者の2つのセグメントは無音なしで結合される。"""
+        _require_module()
+        sr = 24000
+        seg1 = self._make_segment(sr, sr, 0.5, "A")
+        seg2 = self._make_segment(sr, sr, 0.3, "A")
+
+        result_waveform, result_sr = concatenate_section_audio([seg1, seg2])
+        assert result_sr == sr
+        # 同一話者なので無音なし = ちょうど2つのセグメント分
+        assert len(result_waveform) == sr * 2
 
     def test_concatenate_single_segment(self) -> None:
         """単一セグメントでもそのまま返される。"""
@@ -560,28 +576,29 @@ class TestConcatenateSectionAudio:
         """サンプルレートが保持される。"""
         _require_module()
         sr = 44100
-        seg1 = self._make_segment(1000, sr)
-        seg2 = self._make_segment(1000, sr)
+        seg1 = self._make_segment(1000, sr, speaker="A")
+        seg2 = self._make_segment(1000, sr, speaker="B")
 
         _, result_sr = concatenate_section_audio([seg1, seg2])
         assert result_sr == sr
 
     def test_concatenate_with_silence_duration(self) -> None:
-        """無音間隔の長さを指定できる。"""
+        """無音間隔の長さを指定できる（話者が異なる場合）。"""
         _require_module()
         sr = 24000
-        seg1 = self._make_segment(1000, sr)
-        seg2 = self._make_segment(1000, sr)
+        seg1 = self._make_segment(1000, sr, speaker="A")
+        seg2 = self._make_segment(1000, sr, speaker="B")
 
         result_default, _ = concatenate_section_audio([seg1, seg2])
         result_long, _ = concatenate_section_audio([seg1, seg2], silence_duration=1.0)
         assert len(result_long) > len(result_default)
 
-    def test_concatenate_many_segments(self) -> None:
-        """多数のセグメント（15個）を結合できる。"""
+    def test_concatenate_many_segments_alternating_speakers(self) -> None:
+        """多数のセグメント（交互話者）を結合できる。"""
         _require_module()
         sr = 24000
-        segments = [self._make_segment(100, sr, i * 0.05) for i in range(15)]
+        speakers = ["A", "B"] * 8  # 16個の交互セグメント
+        segments = [self._make_segment(100, sr, i * 0.05, speakers[i]) for i in range(15)]
 
         result_waveform, result_sr = concatenate_section_audio(segments)
         assert result_sr == sr
@@ -599,8 +616,8 @@ class TestConcatenateSectionAudio:
         """結合結果をファイルに保存できる。"""
         _require_module()
         sr = 24000
-        seg1 = self._make_segment(sr, sr, 0.5)
-        seg2 = self._make_segment(sr, sr, 0.3)
+        seg1 = self._make_segment(sr, sr, 0.5, "A")
+        seg2 = self._make_segment(sr, sr, 0.3, "B")
         output_file = tmp_path / "output.wav"
 
         concatenate_section_audio([seg1, seg2], output_path=output_file)
