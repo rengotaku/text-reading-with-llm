@@ -26,7 +26,9 @@ try:
     from src.dialogue_pipeline import (
         Speaker,
         concatenate_section_audio,
+        get_chapter_number,
         get_style_id,
+        is_speakable_text,
         parse_args,
         parse_dialogue_xml,
         synthesize_utterance,
@@ -37,7 +39,9 @@ except ImportError:
     _MODULE_AVAILABLE = False
     Speaker = None  # type: ignore[assignment,misc]
     concatenate_section_audio = None  # type: ignore[assignment]
+    get_chapter_number = None  # type: ignore[assignment]
     get_style_id = None  # type: ignore[assignment]
+    is_speakable_text = None  # type: ignore[assignment]
     parse_args = None  # type: ignore[assignment]
     parse_dialogue_xml = None  # type: ignore[assignment]
     synthesize_utterance = None  # type: ignore[assignment]
@@ -386,6 +390,88 @@ class TestGetStyleId:
         _require_module()
         with pytest.raises((ValueError, KeyError)):
             get_style_id("a")
+
+
+# ===========================================================================
+# T051b: チャプター番号抽出 get_chapter_number() のテスト
+# ===========================================================================
+
+
+class TestGetChapterNumber:
+    """get_chapter_number()の動作テスト。"""
+
+    def test_extract_from_section_number(self) -> None:
+        """セクション番号 '2.1' からチャプター番号 '2' を抽出する。"""
+        _require_module()
+        assert get_chapter_number("2.1") == "2"
+
+    def test_extract_from_multi_digit_section(self) -> None:
+        """セクション番号 '12.3' からチャプター番号 '12' を抽出する。"""
+        _require_module()
+        assert get_chapter_number("12.3") == "12"
+
+    def test_no_dot_returns_whole_number(self) -> None:
+        """ドットがない場合はそのまま返す。"""
+        _require_module()
+        assert get_chapter_number("3") == "3"
+
+    def test_empty_string_returns_zero(self) -> None:
+        """空文字列の場合は '0' を返す。"""
+        _require_module()
+        assert get_chapter_number("") == "0"
+
+    def test_multiple_dots(self) -> None:
+        """複数のドットがある場合は最初の部分のみ返す。"""
+        _require_module()
+        assert get_chapter_number("1.2.3") == "1"
+
+
+# ===========================================================================
+# T051c: TTS可能テキスト判定 is_speakable_text() のテスト
+# ===========================================================================
+
+
+class TestIsSpeakableText:
+    """is_speakable_text()の動作テスト。"""
+
+    def test_japanese_hiragana(self) -> None:
+        """ひらがなを含むテキストはTrue。"""
+        _require_module()
+        assert is_speakable_text("これはテストです") is True
+
+    def test_japanese_katakana(self) -> None:
+        """カタカナを含むテキストはTrue。"""
+        _require_module()
+        assert is_speakable_text("テスト") is True
+
+    def test_japanese_kanji(self) -> None:
+        """漢字を含むテキストはTrue。"""
+        _require_module()
+        assert is_speakable_text("日本語") is True
+
+    def test_only_symbols(self) -> None:
+        """記号のみのテキストはFalse。"""
+        _require_module()
+        assert is_speakable_text("=") is False
+        assert is_speakable_text("===") is False
+        assert is_speakable_text("...") is False
+
+    def test_only_ascii(self) -> None:
+        """ASCII文字のみのテキストはFalse。"""
+        _require_module()
+        assert is_speakable_text("ABC") is False
+        assert is_speakable_text("123") is False
+
+    def test_empty_string(self) -> None:
+        """空文字列はFalse。"""
+        _require_module()
+        assert is_speakable_text("") is False
+
+    def test_mixed_with_japanese(self) -> None:
+        """日本語を含む混合テキストはTrue。"""
+        _require_module()
+        assert is_speakable_text("Test テスト") is True
+        assert is_speakable_text("=== 見出し ===") is True
 
 
 # ===========================================================================

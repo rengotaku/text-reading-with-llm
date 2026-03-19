@@ -9,6 +9,8 @@ from __future__ import annotations
 import argparse
 import io
 import logging
+import re
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -17,7 +19,29 @@ from xml.etree import ElementTree
 import numpy as np
 import soundfile as sf
 
+from src.dict_manager import get_content_hash
+
 logger = logging.getLogger(__name__)
+
+# 日本語文字のUnicode範囲（ひらがな、カタカナ、漢字）
+_JAPANESE_PATTERN = re.compile(r"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]")
+
+
+def is_speakable_text(text: str) -> bool:
+    """テキストがTTS合成可能かどうかを判定する.
+
+    日本語文字（ひらがな、カタカナ、漢字）を1文字以上含む場合にTrueを返す。
+
+    Args:
+        text: 判定するテキスト
+
+    Returns:
+        TTS合成可能な場合True
+    """
+    if not text:
+        return False
+    return bool(_JAPANESE_PATTERN.search(text))
+
 
 # デフォルト話者スタイルIDマッピング
 DEFAULT_STYLE_MAPPING: dict[str, int] = {
@@ -204,6 +228,22 @@ def synthesize_utterance(
     return np.asarray(waveform, dtype=np.float32), int(sample_rate)
 
 
+def get_chapter_number(section_number: str) -> str:
+    """セクション番号からチャプター番号を抽出する.
+
+    Args:
+        section_number: セクション番号 (例: "2.1", "2.2", "3")
+
+    Returns:
+        チャプター番号 (例: "2", "3")。ドットがない場合はそのまま返す。
+        空文字列の場合は "0" を返す。
+    """
+    if not section_number:
+        return "0"
+    # "2.1" -> "2", "3" -> "3"
+    return section_number.split(".")[0]
+
+
 def concatenate_section_audio(
     segments: list[tuple[np.ndarray, int, str]],
     silence_duration: float = 0.5,
@@ -251,46 +291,37 @@ def concatenate_section_audio(
     return combined, sample_rate
 
 
-def process_dialogue_sections(
-    sections: list[dict[str, Any]],
+def _synthesize_section(
+    section: dict[str, Any],
     synthesizer: Any,
-    output_dir: Path,
-    speed_scale: float = 1.0,
-) -> list[Path]:
-    """対話セクションリストから音声ファイルを生成する統合関数.
-
-    各セクションの introduction, utterances, conclusion を合成し、
-    セクション単位でWAVファイルとして保存する。
+    speed_scale: float,
+) -> list[tuple[np.ndarray, int, str]]:
+    """1セクションの音声セグメントを生成する.
 
     Args:
-        sections: parse_dialogue_xml() が返すセクションリスト
+        section: セクション情報 (parse_dialogue_xml の出力要素)
         synthesizer: VoicevoxSynthesizerインスタンス
-        output_dir: 音声ファイルの出力ディレクトリ
         speed_scale: 読み上げ速度スケール
 
     Returns:
-        生成したWAVファイルのパスリスト
+        音声セグメントのリスト。各要素は (waveform, sample_rate, speaker_id) のタプル。
     """
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    generated: list[Path] = []
+    section_number = section["section_number"]
+    section_title = section.get("section_title", "")
+    logger.info(
+        "Processing section %s: %s",
+        section_number or "(no number)",
+        section_title[:50] + "..." if len(section_title) > 50 else section_title,
+    )
 
-    for section in sections:
-        section_number = section["section_number"]
-        section_title = section.get("section_title", "")
-        logger.info(
-            "Processing section %s: %s",
-            section_number or "(no number)",
-            section_title[:50] + "..." if len(section_title) > 50 else section_title,
-        )
-        # segments: (waveform, sample_rate, speaker_id)
-        segments: list[tuple[np.ndarray, int, str]] = []
+    segments: list[tuple[np.ndarray, int, str]] = []
 
-        # introduction
-        intro = section.get("introduction")
-        if intro and intro.get("text"):
-            intro_text = intro["text"]
-            intro_speaker = intro["speaker"]
+    # introduction
+    intro = section.get("introduction")
+    if intro and intro.get("text"):
+        intro_text = intro["text"]
+        intro_speaker = intro["speaker"]
+        if is_speakable_text(intro_text):
             logger.info(
                 "  [intro] speaker=%s, len=%d: %s",
                 intro_speaker,
@@ -304,12 +335,15 @@ def process_dialogue_sections(
                 speed_scale=speed_scale,
             )
             segments.append((waveform, sr, intro_speaker))
+        else:
+            logger.warning("  [intro] skipped (no speakable text): %r", intro_text)
 
-        # utterances
-        for i, utterance in enumerate(section.get("utterances", [])):
-            if utterance.get("text"):
-                utt_text = utterance["text"]
-                utt_speaker = utterance["speaker"]
+    # utterances
+    for i, utterance in enumerate(section.get("utterances", [])):
+        if utterance.get("text"):
+            utt_text = utterance["text"]
+            utt_speaker = utterance["speaker"]
+            if is_speakable_text(utt_text):
                 logger.info(
                     "  [utterance %d] speaker=%s, len=%d: %s",
                     i + 1,
@@ -324,12 +358,15 @@ def process_dialogue_sections(
                     speed_scale=speed_scale,
                 )
                 segments.append((waveform, sr, utt_speaker))
+            else:
+                logger.warning("  [utterance %d] skipped (no speakable text): %r", i + 1, utt_text)
 
-        # conclusion
-        conclusion = section.get("conclusion")
-        if conclusion and conclusion.get("text"):
-            concl_text = conclusion["text"]
-            concl_speaker = conclusion["speaker"]
+    # conclusion
+    conclusion = section.get("conclusion")
+    if conclusion and conclusion.get("text"):
+        concl_text = conclusion["text"]
+        concl_speaker = conclusion["speaker"]
+        if is_speakable_text(concl_text):
             logger.info(
                 "  [conclusion] speaker=%s, len=%d: %s",
                 concl_speaker,
@@ -343,12 +380,65 @@ def process_dialogue_sections(
                 speed_scale=speed_scale,
             )
             segments.append((waveform, sr, concl_speaker))
+        else:
+            logger.warning("  [conclusion] skipped (no speakable text): %r", concl_text)
 
-        if segments:
-            output_path = output_dir / f"section_{section_number}.wav"
-            concatenate_section_audio(segments, output_path=output_path)
+    return segments
+
+
+def process_dialogue_sections(
+    sections: list[dict[str, Any]],
+    synthesizer: Any,
+    output_dir: Path,
+    speed_scale: float = 1.0,
+) -> list[Path]:
+    """対話セクションリストから音声ファイルを生成する統合関数.
+
+    各セクションの introduction, utterances, conclusion を合成し、
+    チャプター単位でWAVファイルとして保存する。
+
+    Args:
+        sections: parse_dialogue_xml() が返すセクションリスト
+        synthesizer: VoicevoxSynthesizerインスタンス
+        output_dir: 音声ファイルの出力ディレクトリ
+        speed_scale: 読み上げ速度スケール
+
+    Returns:
+        生成したWAVファイルのパスリスト
+    """
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # セクションをチャプター番号でグループ化
+    chapters: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for section in sections:
+        chapter_num = get_chapter_number(section["section_number"])
+        chapters[chapter_num].append(section)
+
+    logger.info("Grouped %d sections into %d chapters", len(sections), len(chapters))
+
+    generated: list[Path] = []
+
+    # チャプター番号順にソートして処理
+    for chapter_num in sorted(chapters.keys(), key=lambda x: (int(x) if x.isdigit() else 0, x)):
+        chapter_sections = chapters[chapter_num]
+        logger.info(
+            "Processing chapter %s (%d sections)",
+            chapter_num,
+            len(chapter_sections),
+        )
+
+        # チャプター内の全セクションの音声セグメントを収集
+        all_segments: list[tuple[np.ndarray, int, str]] = []
+        for section in chapter_sections:
+            section_segments = _synthesize_section(section, synthesizer, speed_scale)
+            all_segments.extend(section_segments)
+
+        if all_segments:
+            output_path = output_dir / f"chapter_{chapter_num.zfill(3)}.wav"
+            concatenate_section_audio(all_segments, output_path=output_path)
             generated.append(output_path)
-            logger.info("Generated section audio: %s", output_path)
+            logger.info("Generated chapter audio: %s", output_path)
 
     return generated
 
@@ -440,11 +530,19 @@ def main() -> int:
 
     try:
         # XMLパース
+        xml_content = input_path.read_text(encoding="utf-8")
         sections = parse_dialogue_xml(str(input_path))
         logger.info("Parsed %d sections", len(sections))
     except Exception as e:
         logger.error("Failed to parse dialogue XML: %s", e)
         return 1
+
+    # ハッシュベースの出力ディレクトリを生成
+    content_hash = get_content_hash(xml_content)
+    output_base = Path(args.output)
+    output_dir = output_base / content_hash
+    output_dir.mkdir(parents=True, exist_ok=True)
+    logger.info("Output directory: %s", output_dir)
 
     try:
         # VOICEVOX初期化
@@ -467,14 +565,13 @@ def main() -> int:
 
     try:
         # 音声生成
-        output_dir = Path(args.output)
         generated = process_dialogue_sections(
             sections=sections,
             synthesizer=synthesizer,
             output_dir=output_dir,
             speed_scale=args.speed,
         )
-        logger.info("Generated %d audio files", len(generated))
+        logger.info("Generated %d audio files in %s", len(generated), output_dir)
     except Exception as e:
         logger.error("Failed to generate audio: %s", e)
         return 3
