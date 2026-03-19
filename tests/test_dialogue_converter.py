@@ -81,7 +81,10 @@ def mock_ollama():
     mock_module = MagicMock()
     mock_module.chat = MagicMock(return_value={"message": {"content": "{}"}})
     with patch.dict(sys.modules, {"ollama": mock_module}):
-        yield mock_module
+        # CI環境でも _OLLAMA_AVAILABLE を True にしてテスト実行
+        with patch("src.dialogue_converter._OLLAMA_AVAILABLE", True):
+            with patch("src.dialogue_converter.ollama", mock_module):
+                yield mock_module
 
 
 def _require_parse_args():
