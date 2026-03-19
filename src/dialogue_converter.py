@@ -14,7 +14,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Literal
 
-import ollama
+try:
+    import ollama
+
+    _OLLAMA_AVAILABLE = True
+except ImportError:
+    ollama = None  # type: ignore[assignment]
+    _OLLAMA_AVAILABLE = False
 
 from src.xml_parser import ContentItem, parse_book2_xml
 
@@ -686,6 +692,10 @@ def main() -> int:
     # 各セクションを変換
     dialogue_blocks: list[DialogueBlock] = []
     conversion_log: list[dict[str, Any]] = []
+
+    if not _OLLAMA_AVAILABLE:
+        logger.error("ollama パッケージがインストールされていません")
+        return 2
 
     ollama_chat_func = ollama.chat
 

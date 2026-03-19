@@ -38,6 +38,7 @@ select = ["E", "F", "I", "W", "PLC0415"]
 "src/voicevox_client.py" = ["PLC0415"]  # voicevox_core (optional, heavy)
 "src/logging_config.py" = ["PLC0415"]   # yaml, rich (fallback paths)
 "src/chapter_processor.py" = ["PLC0415"]  # scipy (conditional resampling)
+"src/dialogue_converter.py" = ["PLC0415"]  # ollama (optional dependency)
 "src/xml_pipeline.py" = ["PLC0415"]     # gpu_memory_manager (conditional)
 "src/dict_manager.py" = ["PLC0415"]     # circular import avoidance
 "src/process_manager.py" = ["PLC0415"]  # time (minor, inside conditional)
