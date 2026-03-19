@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Literal
 
+import ollama
+
 from src.xml_parser import ContentItem, parse_book2_xml
 
 logger = logging.getLogger(__name__)
@@ -685,14 +687,7 @@ def main() -> int:
     dialogue_blocks: list[DialogueBlock] = []
     conversion_log: list[dict[str, Any]] = []
 
-    # Ollama をインポート
-    try:
-        import ollama
-
-        ollama_chat_func = ollama.chat
-    except ImportError:
-        logger.error("ollama パッケージがインストールされていません")
-        return 2
+    ollama_chat_func = ollama.chat
 
     try:
         for section in sections:
