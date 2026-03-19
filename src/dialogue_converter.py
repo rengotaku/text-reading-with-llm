@@ -18,19 +18,17 @@ from src.xml_parser import ContentItem, parse_book2_xml
 
 # CI環境判定（ollamaのインポート前に判定）
 _IS_CI = os.environ.get("CI", "").lower() in ("true", "1", "yes")
+_OLLAMA_AVAILABLE = False
+ollama: Any = None
 
-if _IS_CI:
-    # CI環境ではollamaをモック化（実際のLLM実行は行わない）
-    ollama = None  # type: ignore[assignment]
-    _OLLAMA_AVAILABLE = False
-else:
+if not _IS_CI:
     try:
-        import ollama  # noqa: E402
+        import ollama as _ollama  # noqa: E402
 
+        ollama = _ollama
         _OLLAMA_AVAILABLE = True
     except ImportError:
-        ollama = None  # type: ignore[assignment]
-        _OLLAMA_AVAILABLE = False
+        pass
 
 logger = logging.getLogger(__name__)
 
