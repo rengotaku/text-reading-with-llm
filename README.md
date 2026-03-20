@@ -2,25 +2,28 @@
 
 [Full report](https://htmlpreview.github.io/?https://github.com/rengotaku/text-reading-with-llm/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
-| Name                           |    Stmts |     Miss |   Cover |   Missing |
-|------------------------------- | -------: | -------: | ------: | --------: |
-| src/chapter\_processor.py      |      163 |       23 |     86% |108, 162-164, 174-175, 177-178, 183, 192, 230-232, 242-243, 245-246, 251, 260, 325-327, 332, 341 |
-| src/dict\_manager.py           |       78 |       41 |     47% |68, 84-85, 105, 107, 122-134, 148-151, 167-181, 190-202 |
-| src/generate\_reading\_dict.py |      191 |       30 |     84% |33-76, 289-292, 310-311, 315, 329-330, 387 |
-| src/gpu\_memory\_manager.py    |       54 |        0 |    100% |           |
-| src/llm\_reading\_generator.py |       78 |       32 |     59% |64, 110-157, 162-165, 170-173, 179-187 |
-| src/logging\_config.py         |       29 |        4 |     86% |53, 78-80, 106 |
-| src/mecab\_reader.py           |       44 |       11 |     75% |    84-100 |
-| src/number\_normalizer.py      |      118 |       38 |     68% |209, 247, 250, 257-258, 263-264, 269-270, 289, 318, 325, 347, 350-354, 357-361, 368-387, 400-404 |
-| src/process\_manager.py        |       40 |       31 |     22% |25-30, 42-71, 80-81, 90-91 |
-| src/punctuation\_normalizer.py |       86 |       28 |     67% |95-97, 228-259, 264-268 |
-| src/reading\_dict.py           |        9 |        0 |    100% |           |
-| src/text\_cleaner.py           |      149 |       36 |     76% |127, 150-154, 293, 324-331, 359, 366, 379-395, 400-409 |
-| src/text\_cleaner\_cli.py      |       59 |        0 |    100% |           |
-| src/voicevox\_client.py        |      157 |       75 |     52% |108-117, 121-141, 149-167, 171-173, 208, 242-254, 276-308, 320, 340-352, 367, 397-398, 408, 432 |
-| src/xml\_parser.py             |       92 |        4 |     96% |79, 140-141, 190 |
-| src/xml\_pipeline.py           |      112 |       19 |     83% |139-140, 183, 210-216, 219-225, 232-239 |
-| **TOTAL**                      | **1459** |  **372** | **75%** |           |
+| Name                            |    Stmts |     Miss |   Cover |   Missing |
+|-------------------------------- | -------: | -------: | ------: | --------: |
+| src/chapter\_processor.py       |      163 |       23 |     86% |108, 162-164, 174-175, 177-178, 183, 192, 230-232, 242-243, 245-246, 251, 260, 325-327, 332, 341 |
+| src/dialogue\_converter.py      |      289 |       22 |     92% |25-31, 196, 234-236, 298, 312-313, 455, 528-532, 676-677, 703-704 |
+| src/dialogue\_pipeline.py       |      201 |       91 |     55% |142, 309-386, 409-443, 517-579 |
+| src/dialogue\_text\_splitter.py |      139 |      139 |      0% |     7-271 |
+| src/dict\_manager.py            |       78 |       41 |     47% |68, 84-85, 105, 107, 122-134, 148-151, 167-181, 190-202 |
+| src/generate\_reading\_dict.py  |      191 |       30 |     84% |33-76, 289-292, 310-311, 315, 329-330, 387 |
+| src/gpu\_memory\_manager.py     |       54 |        0 |    100% |           |
+| src/llm\_reading\_generator.py  |       78 |       32 |     59% |64, 110-157, 162-165, 170-173, 179-187 |
+| src/logging\_config.py          |       29 |        4 |     86% |53, 78-80, 106 |
+| src/mecab\_reader.py            |       44 |       11 |     75% |    84-100 |
+| src/number\_normalizer.py       |      118 |       38 |     68% |209, 247, 250, 257-258, 263-264, 269-270, 289, 318, 325, 347, 350-354, 357-361, 368-387, 400-404 |
+| src/process\_manager.py         |       40 |       31 |     22% |25-30, 42-71, 80-81, 90-91 |
+| src/punctuation\_normalizer.py  |       86 |       28 |     67% |95-97, 228-259, 264-268 |
+| src/reading\_dict.py            |        9 |        0 |    100% |           |
+| src/text\_cleaner.py            |      149 |       36 |     76% |127, 150-154, 293, 324-331, 359, 366, 379-395, 400-409 |
+| src/text\_cleaner\_cli.py       |       59 |        0 |    100% |           |
+| src/voicevox\_client.py         |      157 |       75 |     52% |108-117, 121-141, 149-167, 171-173, 208, 242-254, 276-308, 320, 340-352, 367, 397-398, 408, 432 |
+| src/xml\_parser.py              |       92 |        3 |     97% |79, 140-141 |
+| src/xml\_pipeline.py            |      112 |       19 |     83% |139-140, 183, 210-216, 219-225, 232-239 |
+| **TOTAL**                       | **2088** |  **623** | **70%** |           |
 
 
 ## Setup coverage badge
