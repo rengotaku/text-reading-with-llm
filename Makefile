@@ -77,7 +77,7 @@ dialogue-split: ## Split long texts in dialogue XML for TTS (MAX_LENGTH=300)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_text_splitter -i "$(OUTPUT)/dialogue_book.xml" --max-length $(MAX_LENGTH)
 
 dialogue-tts: ## Generate multi-speaker TTS from dialogue XML (ACCELERATION_MODE=AUTO|CPU|GPU)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(OUTPUT)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)"
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(OUTPUT)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)" --dict-source "$(INPUT)"
 
 dialogue: dialogue-convert dialogue-split gen-dict clean-text dialogue-tts ## Run full dialogue pipeline
 

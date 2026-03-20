@@ -25,9 +25,11 @@ import pytest
 try:
     from src.dialogue_pipeline import (
         Speaker,
+        apply_readings_to_text,
         concatenate_section_audio,
         get_chapter_number,
         get_style_id,
+        init_readings,
         is_speakable_text,
         parse_args,
         parse_dialogue_xml,
@@ -38,9 +40,11 @@ try:
 except ImportError:
     _MODULE_AVAILABLE = False
     Speaker = None  # type: ignore[assignment,misc]
+    apply_readings_to_text = None  # type: ignore[assignment]
     concatenate_section_audio = None  # type: ignore[assignment]
     get_chapter_number = None  # type: ignore[assignment]
     get_style_id = None  # type: ignore[assignment]
+    init_readings = None  # type: ignore[assignment]
     is_speakable_text = None  # type: ignore[assignment]
     parse_args = None  # type: ignore[assignment]
     parse_dialogue_xml = None  # type: ignore[assignment]
@@ -852,3 +856,77 @@ class TestParseArgs:
         assert args.speed == 0.8
         assert args.voicevox_dir == "/vv"
         assert args.acceleration_mode == "GPU"
+
+    def test_dict_source_default(self) -> None:
+        """--dict-source のデフォルトは None。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml"])
+        assert args.dict_source is None
+
+    def test_dict_source_custom(self) -> None:
+        """--dict-source でカスタムパスを指定できる。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml", "--dict-source", "book.xml"])
+        assert args.dict_source == "book.xml"
+
+
+# ===========================================================================
+# T055: 読み辞書初期化 init_readings() のテスト
+# ===========================================================================
+
+
+class TestInitReadings:
+    """init_readings()の辞書初期化テスト。"""
+
+    def test_init_with_none_path(self) -> None:
+        """Noneパス指定時は空辞書で初期化される。"""
+        _require_module()
+        # Should not raise
+        init_readings(None)
+
+    def test_init_with_nonexistent_path(self) -> None:
+        """存在しないパス指定時は空辞書で初期化される。"""
+        _require_module()
+        # Should not raise
+        init_readings(Path("/nonexistent/file.xml"))
+
+
+# ===========================================================================
+# T056: テキストへの読み適用 apply_readings_to_text() のテスト
+# ===========================================================================
+
+
+class TestApplyReadingsToText:
+    """apply_readings_to_text()のテスト。"""
+
+    def test_number_normalization(self) -> None:
+        """数字が読み仮名に変換される。"""
+        _require_module()
+        # Reset readings to empty
+        init_readings(None)
+        result = apply_readings_to_text("第3章")
+        # Number normalization should convert 3 to reading
+        assert "3" not in result or "さん" in result or "だいさん" in result
+
+    def test_static_reading_rules(self) -> None:
+        """静的な読み辞書のルールが適用される。"""
+        _require_module()
+        init_readings(None)
+        result = apply_readings_to_text("SREの基本")
+        # SRE should be converted (check that original is transformed)
+        assert "SRE" not in result or "エス" in result
+
+    def test_empty_text(self) -> None:
+        """空文字列は空文字列を返す。"""
+        _require_module()
+        init_readings(None)
+        result = apply_readings_to_text("")
+        assert result == ""
+
+    def test_plain_japanese(self) -> None:
+        """平文の日本語はそのまま返される。"""
+        _require_module()
+        init_readings(None)
+        result = apply_readings_to_text("これはテストです")
+        # Plain Japanese should pass through (possibly with punctuation changes)
+        assert "テスト" in result

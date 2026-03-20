@@ -19,12 +19,65 @@ from xml.etree import ElementTree
 import numpy as np
 import soundfile as sf
 
-from src.dict_manager import get_content_hash
+from src.dict_manager import get_content_hash, load_dict
+from src.llm_reading_generator import apply_llm_readings
+from src.number_normalizer import normalize_numbers
+from src.reading_dict import apply_reading_rules
 
 logger = logging.getLogger(__name__)
 
+# Module-level reading dictionary (set via init_readings)
+_READINGS: dict[str, str] = {}
+
 # 日本語文字のUnicode範囲（ひらがな、カタカナ、漢字）
 _JAPANESE_PATTERN = re.compile(r"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]")
+
+
+def init_readings(dict_source_path: Path | None) -> None:
+    """Initialize reading dictionary from source file.
+
+    Args:
+        dict_source_path: Path to the original XML/MD file for dictionary lookup.
+                         If None, readings dictionary will be empty.
+    """
+    global _READINGS
+    if dict_source_path is not None and dict_source_path.exists():
+        _READINGS = load_dict(dict_source_path)
+        if _READINGS:
+            logger.info("Loaded %d readings from dict for: %s", len(_READINGS), dict_source_path.name)
+        else:
+            logger.warning("No dictionary found for: %s", dict_source_path.name)
+    else:
+        _READINGS = {}
+        if dict_source_path is not None:
+            logger.warning("Dict source file not found: %s", dict_source_path)
+
+
+def apply_readings_to_text(text: str) -> str:
+    """Apply reading rules and dictionary to text for TTS.
+
+    Applies in order:
+    1. Number normalization (123 → ひゃくにじゅうさん)
+    2. Static reading rules (common technical terms)
+    3. LLM-generated readings (per-book dictionary)
+
+    Args:
+        text: Input text to process
+
+    Returns:
+        Text with readings applied
+    """
+    # 1. Normalize numbers (must be first - before reading rules)
+    text = normalize_numbers(text)
+
+    # 2. Apply static reading rules (critical terms like SRE, API, AWS)
+    text = apply_reading_rules(text)
+
+    # 3. Apply LLM-generated readings if available
+    if _READINGS:
+        text = apply_llm_readings(text, _READINGS)
+
+    return text
 
 
 def is_speakable_text(text: str) -> bool:
@@ -211,6 +264,9 @@ def synthesize_utterance(
     if not text:
         raise ValueError("text must not be empty")
 
+    # Apply reading rules and dictionary before TTS
+    processed_text = apply_readings_to_text(text)
+
     # 話者IDからスタイルIDを取得（未知IDはエラー）
     style_id = get_style_id(speaker_id)
 
@@ -219,7 +275,7 @@ def synthesize_utterance(
     if speed_scale is not None:
         kwargs["speed_scale"] = speed_scale
 
-    wav_bytes: bytes = synthesizer.synthesize(text, **kwargs)
+    wav_bytes: bytes = synthesizer.synthesize(processed_text, **kwargs)
 
     # バイト列をnumpy配列に変換
     with io.BytesIO(wav_bytes) as buf:
@@ -503,6 +559,12 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         default="AUTO",
         help="VOICEVOX加速モード（デフォルト: AUTO）",
     )
+    parser.add_argument(
+        "--dict-source",
+        type=str,
+        default=None,
+        help="元のXML/MDファイルパス（読み辞書参照用）",
+    )
 
     return parser.parse_args(args)
 
@@ -523,6 +585,10 @@ def main() -> int:
     if not input_path.exists():
         logger.error("Input file not found: %s", input_path)
         return 1
+
+    # Initialize reading dictionary from source file
+    dict_source_path = Path(args.dict_source) if args.dict_source else None
+    init_readings(dict_source_path)
 
     # Note: カスタムスタイル設定は将来のバージョンで実装予定
     # 現在は DEFAULT_SPEAKERS を使用
