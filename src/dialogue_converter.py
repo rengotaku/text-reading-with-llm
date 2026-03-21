@@ -178,11 +178,13 @@ conclusion（結論）の3つに分類してください。
 - dialogue: 主要な内容・説明（博士と助手の対話に変換する部分）
 - conclusion: まとめ・結論（通常は最後の1〜2段落）
 
-JSON形式で出力してください。各段落のテキストをそのままリストに入れてください:
-{{"introduction": ["段落テキスト..."], "dialogue": ["段落テキスト..."],
-"conclusion": ["段落テキスト..."]}}
+Markdownテーブル形式で出力してください:
+| 段落番号 | 分類 |
+|----------|------|
+| 1 | introduction |
+| 2 | dialogue |
 
-JSON出力:"""
+出力:"""
 
     system_content = (
         "あなたは書籍コンテンツの構造分析の専門家です。段落をintroduction/dialogue/conclusionに分類してください。"
@@ -224,17 +226,45 @@ JSON出力:"""
             logger.warning("[analyze_structure] LLM応答が空です")
             return {"introduction": [], "dialogue": list(paragraphs), "conclusion": []}
 
-        # JSONを検索して抽出
-        json_match = re.search(r"\{[^{}]*\}", response_text, re.DOTALL)
-        if json_match:
-            json_str = json_match.group()
-            logger.debug("[analyze_structure] 抽出されたJSON: %s", json_str[:300])
-            parsed = json.loads(json_str)
-            result: dict[str, list[str]] = {
-                "introduction": parsed.get("introduction", []),
-                "dialogue": parsed.get("dialogue", []),
-                "conclusion": parsed.get("conclusion", []),
-            }
+        # Markdownテーブルをパース
+        result: dict[str, list[str]] = {
+            "introduction": [],
+            "dialogue": [],
+            "conclusion": [],
+        }
+        table_found = False
+
+        for line in response_text.strip().split("\n"):
+            line = line.strip()
+            if not line.startswith("|"):
+                continue
+            # セパレータ行をスキップ
+            if re.match(r"^\|[-:\s|]+\|$", line):
+                table_found = True
+                continue
+            # ヘッダー行をスキップ
+            if "段落番号" in line or "分類" in line:
+                continue
+
+            cells = [c.strip() for c in line.split("|")]
+            cells = [c for c in cells if c]
+
+            if len(cells) >= 2:
+                table_found = True
+                try:
+                    para_num = int(cells[0]) - 1  # 0-indexed
+                    category = cells[1].lower()
+                    if 0 <= para_num < len(paragraphs):
+                        if category in ("introduction", "intro"):
+                            result["introduction"].append(paragraphs[para_num])
+                        elif category in ("dialogue", "dialog"):
+                            result["dialogue"].append(paragraphs[para_num])
+                        elif category in ("conclusion", "concl"):
+                            result["conclusion"].append(paragraphs[para_num])
+                except (ValueError, IndexError):
+                    continue
+
+        if table_found:
             logger.info(
                 "[analyze_structure] パース成功: intro=%d, dialogue=%d, conclusion=%d",
                 len(result["introduction"]),
@@ -243,10 +273,10 @@ JSON出力:"""
             )
             return result
         else:
-            logger.warning("[analyze_structure] JSONが見つかりませんでした")
+            logger.warning("[analyze_structure] Markdownテーブルが見つかりませんでした")
             logger.warning("[analyze_structure] LLM応答: %s", response_text[:1000])
-    except (json.JSONDecodeError, KeyError) as e:
-        logger.warning("[analyze_structure] JSONパース失敗: %s", e)
+    except Exception as e:
+        logger.warning("[analyze_structure] パース失敗: %s", e)
         logger.warning("[analyze_structure] 失敗した応答: %s", response_text[:1000])
 
     return {"introduction": [], "dialogue": list(paragraphs), "conclusion": []}
@@ -299,10 +329,12 @@ def generate_dialogue(
 - Bの発話には感嘆符（！）を積極的に使う
 - A→B→A→B...の順番で交互に発話
 
-JSON配列形式で出力してください:
-[{{"speaker": "A", "text": "発話テキスト"}}, {{"speaker": "B", "text": "発話テキスト"}}, ...]
+以下の形式で出力してください（各行は「A:」または「B:」で始める）:
+A: 発話テキスト
+B: 発話テキスト
+A: 発話テキスト
 
-JSON出力:"""
+出力:"""
 
     system_content = (
         "あなたは技術書をポッドキャスト風の対話に変換する専門家です。"
@@ -345,25 +377,40 @@ JSON出力:"""
             logger.warning("[generate_dialogue] LLM応答が空です")
             return []
 
-        # JSON配列を検索して抽出
-        json_match = re.search(r"\[.*\]", response_text, re.DOTALL)
-        if json_match:
-            json_str = json_match.group()
-            logger.debug("[generate_dialogue] 抽出されたJSON: %s", json_str[:500])
-            parsed = json.loads(json_str)
-            utterances: list[Utterance] = []
-            for item in parsed:
-                speaker = item.get("speaker", "")
-                text = item.get("text", "")
-                if speaker in ("A", "B") and text:
-                    utterances.append(Utterance(speaker=speaker, text=text))
+        utterances: list[Utterance] = []
+
+        # 方式1: 「A:」または「B:」で始まる行をパース（Markdown形式）
+        pattern = re.compile(r"^([AB]):\s*(.+)$", re.MULTILINE)
+        for match in pattern.finditer(response_text):
+            speaker_str = match.group(1)
+            text = match.group(2).strip()
+            if text and speaker_str in ("A", "B"):
+                speaker: Literal["A", "B"] = "A" if speaker_str == "A" else "B"
+                utterances.append(Utterance(speaker=speaker, text=text))
+
+        # 方式2: JSON形式にフォールバック（後方互換性）
+        if not utterances:
+            json_match = re.search(r"\[.*\]", response_text, re.DOTALL)
+            if json_match:
+                try:
+                    parsed = json.loads(json_match.group())
+                    for item in parsed:
+                        sp = item.get("speaker", "")
+                        tx = item.get("text", "")
+                        if sp in ("A", "B") and tx:
+                            speaker = "A" if sp == "A" else "B"
+                            utterances.append(Utterance(speaker=speaker, text=tx))
+                except json.JSONDecodeError:
+                    pass
+
+        if utterances:
             logger.info("[generate_dialogue] パース成功: %d 発話生成", len(utterances))
             return utterances
         else:
-            logger.warning("[generate_dialogue] JSON配列が見つかりませんでした")
+            logger.warning("[generate_dialogue] 対話形式が見つかりませんでした")
             logger.warning("[generate_dialogue] LLM応答: %s", response_text[:1000])
-    except (json.JSONDecodeError, KeyError) as e:
-        logger.warning("[generate_dialogue] JSONパース失敗: %s", e)
+    except Exception as e:
+        logger.warning("[generate_dialogue] パース失敗: %s", e)
         logger.warning("[generate_dialogue] 失敗した応答: %s", response_text[:1000])
 
     return []
