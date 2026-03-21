@@ -165,12 +165,13 @@ def analyze_structure(
     Raises:
         TimeoutError: LLM呼び出しがタイムアウトした場合（再送出）
     """
-    # 空の段落リストは早期リターン
-    if not paragraphs:
+    # 空の段落リストは早期リターン（空文字列のみのリストも含む）
+    non_empty_paragraphs = [p for p in paragraphs if p.strip()]
+    if not non_empty_paragraphs:
         logger.warning("[analyze_structure] 段落リストが空です、スキップします")
         return {"introduction": [], "dialogue": [], "conclusion": []}
 
-    paragraphs_text = "\n".join(f"{i + 1}. {p}" for i, p in enumerate(paragraphs))
+    paragraphs_text = "\n".join(f"{i + 1}. {p}" for i, p in enumerate(non_empty_paragraphs))
 
     prompt = f"""以下のセクションの段落を、introduction（導入）、dialogue（本論）、
 conclusion（結論）の3つに分類してください。
@@ -259,13 +260,13 @@ Markdownテーブル形式で出力してください:
                 try:
                     para_num = int(cells[0]) - 1  # 0-indexed
                     category = cells[1].lower()
-                    if 0 <= para_num < len(paragraphs):
+                    if 0 <= para_num < len(non_empty_paragraphs):
                         if category in ("introduction", "intro"):
-                            result["introduction"].append(paragraphs[para_num])
+                            result["introduction"].append(non_empty_paragraphs[para_num])
                         elif category in ("dialogue", "dialog"):
-                            result["dialogue"].append(paragraphs[para_num])
+                            result["dialogue"].append(non_empty_paragraphs[para_num])
                         elif category in ("conclusion", "concl"):
-                            result["conclusion"].append(paragraphs[para_num])
+                            result["conclusion"].append(non_empty_paragraphs[para_num])
                 except (ValueError, IndexError):
                     continue
 
@@ -309,12 +310,13 @@ def generate_dialogue(
     Raises:
         ConnectionError: ネットワークエラー時（再送出）
     """
-    # 空の段落リストは早期リターン
-    if not dialogue_paragraphs:
+    # 空の段落リストは早期リターン（空文字列のみのリストも含む）
+    non_empty_paragraphs = [p for p in dialogue_paragraphs if p.strip()]
+    if not non_empty_paragraphs:
         logger.warning("[generate_dialogue] 対話に変換する段落が空です、スキップします")
         return []
 
-    content_text = "\n".join(dialogue_paragraphs)
+    content_text = "\n".join(non_empty_paragraphs)
 
     context_parts = []
     if introduction:
