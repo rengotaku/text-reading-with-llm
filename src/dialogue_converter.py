@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Literal
 
+from src.dict_manager import get_xml_content_hash
 from src.xml_parser import ContentItem, parse_book2_xml
 
 # CI環境判定（ollamaのインポート前に判定）
@@ -753,6 +754,12 @@ def main() -> int:
         logger.error("XMLパースエラー: %s", e)
         return 1
 
+    # ハッシュベースの出力ディレクトリを決定
+    content_hash = get_xml_content_hash(Path(input_path))
+    output_dir = Path(args.output) / content_hash
+    output_dir.mkdir(parents=True, exist_ok=True)
+    logger.info("出力ディレクトリ: %s", output_dir)
+
     # セクション抽出
     sections = extract_sections(content_items)
 
@@ -782,10 +789,6 @@ def main() -> int:
     if not sections:
         logger.info("変換対象セクションが見つかりませんでした")
         return 0
-
-    # 出力ディレクトリを作成
-    output_dir = Path(args.output)
-    output_dir.mkdir(parents=True, exist_ok=True)
 
     # 各セクションを変換
     dialogue_blocks: list[DialogueBlock] = []
