@@ -198,13 +198,18 @@ JSON出力:"""
     logger.debug("[analyze_structure] LLM呼び出し開始 (model=%s)", model)
     response = ollama_chat_func(model=model, messages=messages)
 
-    # トークン数をログ出力
+    # LLM統計情報をログ出力
     prompt_tokens = response.get("prompt_eval_count", 0)
     eval_tokens = response.get("eval_count", 0)
+    done_reason = response.get("done_reason", "unknown")
+    total_ms = response.get("total_duration", 0) // 1_000_000
     logger.info(
-        "[analyze_structure] tokens: prompt=%d, eval=%d",
+        "[analyze_structure] input=%d chars, prompt=%d tokens, eval=%d tokens, done=%s, time=%dms",
+        len(paragraphs_text),
         prompt_tokens,
         eval_tokens,
+        done_reason,
+        total_ms,
     )
 
     try:
@@ -314,13 +319,18 @@ JSON出力:"""
     logger.debug("[generate_dialogue] LLM呼び出し開始 (model=%s)", model)
     response = ollama_chat_func(model=model, messages=messages)
 
-    # トークン数をログ出力
+    # LLM統計情報をログ出力
     prompt_tokens = response.get("prompt_eval_count", 0)
     eval_tokens = response.get("eval_count", 0)
+    done_reason = response.get("done_reason", "unknown")
+    total_ms = response.get("total_duration", 0) // 1_000_000
     logger.info(
-        "[generate_dialogue] tokens: prompt=%d, eval=%d",
+        "[generate_dialogue] input=%d chars, prompt=%d tokens, eval=%d tokens, done=%s, time=%dms",
+        len(content_text),
         prompt_tokens,
         eval_tokens,
+        done_reason,
+        total_ms,
     )
 
     try:
