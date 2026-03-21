@@ -165,6 +165,11 @@ def analyze_structure(
     Raises:
         TimeoutError: LLM呼び出しがタイムアウトした場合（再送出）
     """
+    # 空の段落リストは早期リターン
+    if not paragraphs:
+        logger.warning("[analyze_structure] 段落リストが空です、スキップします")
+        return {"introduction": [], "dialogue": [], "conclusion": []}
+
     paragraphs_text = "\n".join(f"{i + 1}. {p}" for i, p in enumerate(paragraphs))
 
     prompt = f"""以下のセクションの段落を、introduction（導入）、dialogue（本論）、
@@ -304,6 +309,11 @@ def generate_dialogue(
     Raises:
         ConnectionError: ネットワークエラー時（再送出）
     """
+    # 空の段落リストは早期リターン
+    if not dialogue_paragraphs:
+        logger.warning("[generate_dialogue] 対話に変換する段落が空です、スキップします")
+        return []
+
     content_text = "\n".join(dialogue_paragraphs)
 
     context_parts = []
