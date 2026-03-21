@@ -198,6 +198,15 @@ JSON出力:"""
     logger.debug("[analyze_structure] LLM呼び出し開始 (model=%s)", model)
     response = ollama_chat_func(model=model, messages=messages)
 
+    # トークン数をログ出力
+    prompt_tokens = response.get("prompt_eval_count", 0)
+    eval_tokens = response.get("eval_count", 0)
+    logger.info(
+        "[analyze_structure] tokens: prompt=%d, eval=%d",
+        prompt_tokens,
+        eval_tokens,
+    )
+
     try:
         response_text = response.get("message", {}).get("content", "")
         logger.debug(
@@ -304,6 +313,15 @@ JSON出力:"""
 
     logger.debug("[generate_dialogue] LLM呼び出し開始 (model=%s)", model)
     response = ollama_chat_func(model=model, messages=messages)
+
+    # トークン数をログ出力
+    prompt_tokens = response.get("prompt_eval_count", 0)
+    eval_tokens = response.get("eval_count", 0)
+    logger.info(
+        "[generate_dialogue] tokens: prompt=%d, eval=%d",
+        prompt_tokens,
+        eval_tokens,
+    )
 
     try:
         response_text = response.get("message", {}).get("content", "")
