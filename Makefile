@@ -70,14 +70,18 @@ xml-tts: ## Run XML to TTS pipeline (INPUT=file)
 
 run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → TTS (INPUT=file)
 
+# Helper to get content hash from INPUT file
+CONTENT_HASH = $(shell PYTHONPATH=$(CURDIR) $(PYTHON) -c "from src.dict_manager import get_xml_content_hash; from pathlib import Path; print(get_xml_content_hash(Path('$(INPUT)')))" 2>/dev/null)
+HASH_DIR = $(OUTPUT)/$(CONTENT_HASH)
+
 dialogue-convert: ## Convert book XML to dialogue form with LLM (INPUT=file)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_converter -i "$(INPUT)" -o "$(OUTPUT)" --model "$(LLM_MODEL)"
 
 dialogue-split: ## Split long texts in dialogue XML for TTS (MAX_LENGTH=300)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_text_splitter -i "$(OUTPUT)/dialogue_book.xml" --max-length $(MAX_LENGTH)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_text_splitter -i "$(HASH_DIR)/dialogue_book.xml" --max-length $(MAX_LENGTH)
 
 dialogue-tts: ## Generate multi-speaker TTS from dialogue XML (ACCELERATION_MODE=AUTO|CPU|GPU)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(OUTPUT)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)" --dict-source "$(INPUT)"
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(HASH_DIR)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)" --dict-source "$(INPUT)"
 
 dialogue: dialogue-convert dialogue-split gen-dict clean-text dialogue-tts ## Run full dialogue pipeline
 

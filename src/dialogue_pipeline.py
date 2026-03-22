@@ -19,7 +19,7 @@ from xml.etree import ElementTree
 import numpy as np
 import soundfile as sf
 
-from src.dict_manager import get_content_hash, load_dict
+from src.dict_manager import get_xml_content_hash, load_dict
 from src.llm_reading_generator import apply_llm_readings
 from src.number_normalizer import normalize_numbers
 from src.reading_dict import apply_reading_rules
@@ -596,15 +596,18 @@ def main() -> int:
 
     try:
         # XMLパース
-        xml_content = input_path.read_text(encoding="utf-8")
         sections = parse_dialogue_xml(str(input_path))
         logger.info("Parsed %d sections", len(sections))
     except Exception as e:
         logger.error("Failed to parse dialogue XML: %s", e)
         return 1
 
-    # ハッシュベースの出力ディレクトリを生成
-    content_hash = get_content_hash(xml_content)
+    # ハッシュベースの出力ディレクトリを生成（元のXMLファイルから計算）
+    if dict_source_path and dict_source_path.exists():
+        content_hash = get_xml_content_hash(dict_source_path)
+    else:
+        logger.error("--dict-source is required for hash-based output directory")
+        return 1
     output_base = Path(args.output)
     output_dir = output_base / content_hash
     output_dir.mkdir(parents=True, exist_ok=True)

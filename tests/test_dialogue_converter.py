@@ -2207,7 +2207,7 @@ class TestConverterMainSuccessPath:
         assert output_dir.exists()
 
     def test_creates_dialogue_book_xml(self, tmp_path):
-        """変換結果のdialogue_book.xmlが出力ディレクトリに作成される"""
+        """変換結果のdialogue_book.xmlがハッシュベースディレクトリに作成される"""
         _require_main()
         input_file = tmp_path / "book.xml"
         input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
@@ -2229,11 +2229,14 @@ class TestConverterMainSuccessPath:
                 output=str(output_dir),
             )
             converter_main()
-        dialogue_output = output_dir / "dialogue_book.xml"
+        # ハッシュベースのサブディレクトリを探す
+        hash_dirs = [d for d in output_dir.iterdir() if d.is_dir()]
+        assert len(hash_dirs) == 1, "Expected exactly one hash-based subdirectory"
+        dialogue_output = hash_dirs[0] / "dialogue_book.xml"
         assert dialogue_output.exists()
 
     def test_creates_conversion_log_json(self, tmp_path):
-        """変換ログのconversion_log.jsonが出力ディレクトリに作成される"""
+        """変換ログのconversion_log.jsonがハッシュベースディレクトリに作成される"""
         _require_main()
         input_file = tmp_path / "book.xml"
         input_file.write_text(_make_minimal_book_xml(), encoding="utf-8")
@@ -2255,7 +2258,10 @@ class TestConverterMainSuccessPath:
                 output=str(output_dir),
             )
             converter_main()
-        log_output = output_dir / "conversion_log.json"
+        # ハッシュベースのサブディレクトリを探す
+        hash_dirs = [d for d in output_dir.iterdir() if d.is_dir()]
+        assert len(hash_dirs) == 1, "Expected exactly one hash-based subdirectory"
+        log_output = hash_dirs[0] / "conversion_log.json"
         assert log_output.exists()
         log_data = json.loads(log_output.read_text(encoding="utf-8"))
         assert isinstance(log_data, (dict, list))

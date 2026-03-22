@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Literal
 
+from src.dict_manager import get_xml_content_hash
 from src.xml_parser import ContentItem, parse_book2_xml
 
 # CI環境判定（ollamaのインポート前に判定）
@@ -106,6 +107,47 @@ class Section:
     chapter_number: int | None = None
 
 
+# =============================================================================
+# 対話スタイルガイドライン
+# =============================================================================
+# このセクションは対話生成プロンプトと連動しています。
+# 変更時は DIALOGUE_STYLE_GUIDE と generate_dialogue() 内のプロンプトを
+# 両方更新してください。
+# =============================================================================
+
+DIALOGUE_STYLE_GUIDE = """
+【良い例：自然な会話】
+A: SREって聞いたことある？
+B: うーん、なんか最近よく聞くけど...Site Reliability Engineeringの略だっけ？
+A: そうそう。じゃあ、何をする人だと思う？
+B: えっと、サーバーの監視とか？障害対応とか？
+B: ...あ、でもそれって普通の運用と何が違うんだろ。
+A: いい質問だね。実は従来の運用との大きな違いがあって——
+B: あ、待って待って。その前にさ、「信頼性」って言葉が気になってて。100%動くことを目指すってこと？
+A: 実はそこがポイントで、100%は目指さないんだ。
+B: え、目指さないの!?
+A: うん。過剰な信頼性はコストがかかりすぎる。
+A: だから「制御する」という考え方が重要なんだ。
+B: あー、なるほど...ちょうどいい塩梅を探すってことか。それってすごく難しそう。
+
+【悪い例：機械的な1問1答】
+A: SREとはSite Reliability Engineeringの略で、信頼性を制御する手法です。
+B: へー！信頼性って具体的に何ですか？
+A: 稼働率や応答時間などの指標で測定されます。
+B: なるほど！どうやって制御するんですか？
+A: SLIやSLOを設定して監視します。
+
+【自然な会話のポイント】
+- Aも質問を投げかける（「〇〇って知ってる？」「どう思う？」）
+- Bが話を遮ったり、先回りしたりする
+- 「うーん」「えっと」「あー」など考える間がある
+- 一つの話題で複数ターン自然にやりとりする
+- 相槌だけの短いターンもある
+- 話が少し脱線して戻ることもある
+- 同じ人が連続で話す（思いついて付け足す、自分で補足する場合など）
+"""
+
+
 def extract_sections(items: list[ContentItem]) -> list[Section]:
     """ContentItemリストからセクション単位に抽出する。
 
@@ -165,7 +207,13 @@ def analyze_structure(
     Raises:
         TimeoutError: LLM呼び出しがタイムアウトした場合（再送出）
     """
-    paragraphs_text = "\n".join(f"{i + 1}. {p}" for i, p in enumerate(paragraphs))
+    # 空の段落リストは早期リターン（空文字列のみのリストも含む）
+    non_empty_paragraphs = [p for p in paragraphs if p.strip()]
+    if not non_empty_paragraphs:
+        logger.warning("[analyze_structure] 段落リストが空です、スキップします")
+        return {"introduction": [], "dialogue": [], "conclusion": []}
+
+    paragraphs_text = "\n".join(f"{i + 1}. {p}" for i, p in enumerate(non_empty_paragraphs))
 
     prompt = f"""以下のセクションの段落を、introduction（導入）、dialogue（本論）、
 conclusion（結論）の3つに分類してください。
@@ -178,11 +226,13 @@ conclusion（結論）の3つに分類してください。
 - dialogue: 主要な内容・説明（博士と助手の対話に変換する部分）
 - conclusion: まとめ・結論（通常は最後の1〜2段落）
 
-JSON形式で出力してください。各段落のテキストをそのままリストに入れてください:
-{{"introduction": ["段落テキスト..."], "dialogue": ["段落テキスト..."],
-"conclusion": ["段落テキスト..."]}}
+Markdownテーブル形式で出力してください:
+| 段落番号 | 分類 |
+|----------|------|
+| 1 | introduction |
+| 2 | dialogue |
 
-JSON出力:"""
+出力:"""
 
     system_content = (
         "あなたは書籍コンテンツの構造分析の専門家です。段落をintroduction/dialogue/conclusionに分類してください。"
@@ -198,6 +248,20 @@ JSON出力:"""
     logger.debug("[analyze_structure] LLM呼び出し開始 (model=%s)", model)
     response = ollama_chat_func(model=model, messages=messages)
 
+    # LLM統計情報をログ出力
+    prompt_tokens = response.get("prompt_eval_count", 0)
+    eval_tokens = response.get("eval_count", 0)
+    done_reason = response.get("done_reason", "unknown")
+    total_ms = response.get("total_duration", 0) // 1_000_000
+    logger.info(
+        "[analyze_structure] input=%d chars, prompt=%d tokens, eval=%d tokens, done=%s, time=%dms",
+        len(paragraphs_text),
+        prompt_tokens,
+        eval_tokens,
+        done_reason,
+        total_ms,
+    )
+
     try:
         response_text = response.get("message", {}).get("content", "")
         logger.debug(
@@ -210,17 +274,45 @@ JSON出力:"""
             logger.warning("[analyze_structure] LLM応答が空です")
             return {"introduction": [], "dialogue": list(paragraphs), "conclusion": []}
 
-        # JSONを検索して抽出
-        json_match = re.search(r"\{[^{}]*\}", response_text, re.DOTALL)
-        if json_match:
-            json_str = json_match.group()
-            logger.debug("[analyze_structure] 抽出されたJSON: %s", json_str[:300])
-            parsed = json.loads(json_str)
-            result: dict[str, list[str]] = {
-                "introduction": parsed.get("introduction", []),
-                "dialogue": parsed.get("dialogue", []),
-                "conclusion": parsed.get("conclusion", []),
-            }
+        # Markdownテーブルをパース
+        result: dict[str, list[str]] = {
+            "introduction": [],
+            "dialogue": [],
+            "conclusion": [],
+        }
+        table_found = False
+
+        for line in response_text.strip().split("\n"):
+            line = line.strip()
+            if not line.startswith("|"):
+                continue
+            # セパレータ行をスキップ
+            if re.match(r"^\|[-:\s|]+\|$", line):
+                table_found = True
+                continue
+            # ヘッダー行をスキップ
+            if "段落番号" in line or "分類" in line:
+                continue
+
+            cells = [c.strip() for c in line.split("|")]
+            cells = [c for c in cells if c]
+
+            if len(cells) >= 2:
+                table_found = True
+                try:
+                    para_num = int(cells[0]) - 1  # 0-indexed
+                    category = cells[1].lower()
+                    if 0 <= para_num < len(non_empty_paragraphs):
+                        if category in ("introduction", "intro"):
+                            result["introduction"].append(non_empty_paragraphs[para_num])
+                        elif category in ("dialogue", "dialog"):
+                            result["dialogue"].append(non_empty_paragraphs[para_num])
+                        elif category in ("conclusion", "concl"):
+                            result["conclusion"].append(non_empty_paragraphs[para_num])
+                except (ValueError, IndexError):
+                    continue
+
+        if table_found:
             logger.info(
                 "[analyze_structure] パース成功: intro=%d, dialogue=%d, conclusion=%d",
                 len(result["introduction"]),
@@ -229,10 +321,10 @@ JSON出力:"""
             )
             return result
         else:
-            logger.warning("[analyze_structure] JSONが見つかりませんでした")
+            logger.warning("[analyze_structure] Markdownテーブルが見つかりませんでした")
             logger.warning("[analyze_structure] LLM応答: %s", response_text[:1000])
-    except (json.JSONDecodeError, KeyError) as e:
-        logger.warning("[analyze_structure] JSONパース失敗: %s", e)
+    except Exception as e:
+        logger.warning("[analyze_structure] パース失敗: %s", e)
         logger.warning("[analyze_structure] 失敗した応答: %s", response_text[:1000])
 
     return {"introduction": [], "dialogue": list(paragraphs), "conclusion": []}
@@ -260,7 +352,13 @@ def generate_dialogue(
     Raises:
         ConnectionError: ネットワークエラー時（再送出）
     """
-    content_text = "\n".join(dialogue_paragraphs)
+    # 空の段落リストは早期リターン（空文字列のみのリストも含む）
+    non_empty_paragraphs = [p for p in dialogue_paragraphs if p.strip()]
+    if not non_empty_paragraphs:
+        logger.warning("[generate_dialogue] 対話に変換する段落が空です、スキップします")
+        return []
+
+    content_text = "\n".join(non_empty_paragraphs)
 
     context_parts = []
     if introduction:
@@ -271,23 +369,36 @@ def generate_dialogue(
 
     full_context = "\n\n".join(context_parts)
 
+    # NOTE: プロンプト変更時は DIALOGUE_STYLE_GUIDE も確認・更新すること
     prompt = f"""以下のテキストを、博士（A）と助手（B）の自然な対話形式に変換してください。
 
 {full_context}
 
-変換ルール:
-- A（博士）: 説明役。概念や仕組みを詳しく説明する
-- B（助手）: 質問役。疑問点を聞いたり、理解を確認したりする
-- 自然な会話の流れで、内容をわかりやすく伝える
-- A→B→A→B...の順番で交互に発話する
+【キャラクター設定】
+- A（博士）: ベテランエンジニア。知識豊富だが、一方的に説明せず相手に質問も投げかける。
+- B（助手）: 若手エンジニア。好奇心旺盛。遠慮なく割り込んだり、先回りして考えを述べる。
 
-JSON配列形式で出力してください:
-[{{"speaker": "A", "text": "発話テキスト"}}, {{"speaker": "B", "text": "発話テキスト"}}, ...]
+【自然な会話のルール】※重要
+- 機械的な1問1答にしない。実際の会話のように自然な流れを作る
+- Aも「〇〇って知ってる？」「どう思う？」と質問を投げかける
+- Bは話を遮る（「あ、待って」「その前にさ」）、先回りする、言い淀む（「うーん」「えっと」）
+- 一つの話題で複数回やりとりしてから次へ進む
+- 相槌だけの短いターン（「なるほど」「そうなんだ」）も自然に入れる
+- Bの発話には感嘆符（！）や感情表現を入れてポップに
+- 同じ人が連続で話すのも自然ならOK（例: 思いついて付け足す、自分で補足する）
 
-JSON出力:"""
+以下の形式で出力してください（各行は「A:」または「B:」で始める）:
+A: 発話テキスト
+B: 発話テキスト
+B: 続けて話す（自然な場合のみ）
+A: 発話テキスト
+
+出力:"""
 
     system_content = (
-        "あなたは書籍コンテンツを対話形式に変換する専門家です。博士と助手の自然な会話として変換してください。"
+        "あなたは技術書をポッドキャスト風の自然な対話に変換する専門家です。"
+        "友人同士が雑談しているような、聞いていて楽しい会話を作ってください。"
+        "機械的な1問1答ではなく、話が自然に流れる対話にしてください。"
     )
     messages = [
         {"role": "system", "content": system_content},
@@ -299,6 +410,20 @@ JSON出力:"""
 
     logger.debug("[generate_dialogue] LLM呼び出し開始 (model=%s)", model)
     response = ollama_chat_func(model=model, messages=messages)
+
+    # LLM統計情報をログ出力
+    prompt_tokens = response.get("prompt_eval_count", 0)
+    eval_tokens = response.get("eval_count", 0)
+    done_reason = response.get("done_reason", "unknown")
+    total_ms = response.get("total_duration", 0) // 1_000_000
+    logger.info(
+        "[generate_dialogue] input=%d chars, prompt=%d tokens, eval=%d tokens, done=%s, time=%dms",
+        len(content_text),
+        prompt_tokens,
+        eval_tokens,
+        done_reason,
+        total_ms,
+    )
 
     try:
         response_text = response.get("message", {}).get("content", "")
@@ -312,25 +437,40 @@ JSON出力:"""
             logger.warning("[generate_dialogue] LLM応答が空です")
             return []
 
-        # JSON配列を検索して抽出
-        json_match = re.search(r"\[.*\]", response_text, re.DOTALL)
-        if json_match:
-            json_str = json_match.group()
-            logger.debug("[generate_dialogue] 抽出されたJSON: %s", json_str[:500])
-            parsed = json.loads(json_str)
-            utterances: list[Utterance] = []
-            for item in parsed:
-                speaker = item.get("speaker", "")
-                text = item.get("text", "")
-                if speaker in ("A", "B") and text:
-                    utterances.append(Utterance(speaker=speaker, text=text))
+        utterances: list[Utterance] = []
+
+        # 方式1: 「A:」または「B:」で始まる行をパース（Markdown形式）
+        pattern = re.compile(r"^([AB]):\s*(.+)$", re.MULTILINE)
+        for match in pattern.finditer(response_text):
+            speaker_str = match.group(1)
+            text = match.group(2).strip()
+            if text and speaker_str in ("A", "B"):
+                speaker: Literal["A", "B"] = "A" if speaker_str == "A" else "B"
+                utterances.append(Utterance(speaker=speaker, text=text))
+
+        # 方式2: JSON形式にフォールバック（後方互換性）
+        if not utterances:
+            json_match = re.search(r"\[.*\]", response_text, re.DOTALL)
+            if json_match:
+                try:
+                    parsed = json.loads(json_match.group())
+                    for item in parsed:
+                        sp = item.get("speaker", "")
+                        tx = item.get("text", "")
+                        if sp in ("A", "B") and tx:
+                            speaker = "A" if sp == "A" else "B"
+                            utterances.append(Utterance(speaker=speaker, text=tx))
+                except json.JSONDecodeError:
+                    pass
+
+        if utterances:
             logger.info("[generate_dialogue] パース成功: %d 発話生成", len(utterances))
             return utterances
         else:
-            logger.warning("[generate_dialogue] JSON配列が見つかりませんでした")
+            logger.warning("[generate_dialogue] 対話形式が見つかりませんでした")
             logger.warning("[generate_dialogue] LLM応答: %s", response_text[:1000])
-    except (json.JSONDecodeError, KeyError) as e:
-        logger.warning("[generate_dialogue] JSONパース失敗: %s", e)
+    except Exception as e:
+        logger.warning("[generate_dialogue] パース失敗: %s", e)
         logger.warning("[generate_dialogue] 失敗した応答: %s", response_text[:1000])
 
     return []
@@ -661,6 +801,12 @@ def main() -> int:
         logger.error("XMLパースエラー: %s", e)
         return 1
 
+    # ハッシュベースの出力ディレクトリを決定
+    content_hash = get_xml_content_hash(Path(input_path))
+    output_dir = Path(args.output) / content_hash
+    output_dir.mkdir(parents=True, exist_ok=True)
+    logger.info("出力ディレクトリ: %s", output_dir)
+
     # セクション抽出
     sections = extract_sections(content_items)
 
@@ -690,10 +836,6 @@ def main() -> int:
     if not sections:
         logger.info("変換対象セクションが見つかりませんでした")
         return 0
-
-    # 出力ディレクトリを作成
-    output_dir = Path(args.output)
-    output_dir.mkdir(parents=True, exist_ok=True)
 
     # 各セクションを変換
     dialogue_blocks: list[DialogueBlock] = []
