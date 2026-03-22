@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Literal
 
+import yaml
+
 from src.dict_manager import get_xml_content_hash
 from src.xml_parser import ContentItem, parse_book2_xml
 
@@ -35,6 +37,58 @@ logger = logging.getLogger(__name__)
 
 # デフォルトモデル
 DEFAULT_MODEL = "gpt-oss:20b"
+
+# デフォルト設定ファイルパス
+DEFAULT_CONFIG_PATH = Path("config.yaml")
+
+
+def load_speakers_config(config_path: Path | None = None) -> dict[str, dict[str, str]]:
+    """設定ファイルからspeakers設定を読み込む。
+
+    Args:
+        config_path: 設定ファイルパス（Noneの場合はデフォルト）
+
+    Returns:
+        speakers設定の辞書。例: {"A": {"name": "教授", "role": "..."}, ...}
+    """
+    path = config_path or DEFAULT_CONFIG_PATH
+    if not path.exists():
+        return {}
+
+    try:
+        with open(path, encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+        return config.get("speakers", {})
+    except Exception as e:
+        logger.warning("speakers設定の読み込みに失敗: %s", e)
+        return {}
+
+
+def replace_speaker_names(
+    text: str,
+    speakers: dict[str, dict[str, str]],
+) -> str:
+    """テキスト内の話者ID（A, B）を呼称に置換する。
+
+    Args:
+        text: 置換対象のテキスト
+        speakers: speakers設定の辞書
+
+    Returns:
+        話者IDが呼称に置換されたテキスト
+    """
+    if not speakers:
+        return text
+
+    result = text
+    for speaker_id, speaker_info in speakers.items():
+        name = speaker_info.get("name", speaker_id)
+        # 単独の話者ID（前後が単語境界）を置換
+        # 例: "Bは" → "助手は", "Bが" → "助手が"
+        pattern = rf"(?<![A-Za-z]){re.escape(speaker_id)}(?![A-Za-z])"
+        result = re.sub(pattern, name, result)
+
+    return result
 
 
 @dataclass
@@ -476,17 +530,24 @@ A: 発話テキスト
     return []
 
 
-def to_dialogue_xml(block: DialogueBlock) -> str:
+def to_dialogue_xml(
+    block: DialogueBlock,
+    speakers: dict[str, dict[str, str]] | None = None,
+) -> str:
     """DialogueBlockをXML文字列にシリアライズする。
 
     data-model.mdで定義された対話XMLスキーマに従う。
+    speakers設定が渡された場合、発言テキスト内の話者ID（A, B）を呼称に置換する。
 
     Args:
         block: シリアライズするDialogueBlockオブジェクト
+        speakers: speakers設定の辞書（オプション）
 
     Returns:
         XML文字列
     """
+    speakers = speakers or {}
+
     # dialogue-section ルート要素
     root = ET.Element("dialogue-section")
     root.set("number", block.section_number)
@@ -502,7 +563,8 @@ def to_dialogue_xml(block: DialogueBlock) -> str:
     for utterance in block.dialogue:
         utt_elem = ET.SubElement(dialogue_elem, "utterance")
         utt_elem.set("speaker", utterance.speaker)
-        utt_elem.text = utterance.text
+        # 話者IDを呼称に置換
+        utt_elem.text = replace_speaker_names(utterance.text, speakers)
 
     # conclusion要素
     conclusion_elem = ET.SubElement(root, "conclusion")
@@ -780,6 +842,11 @@ def main() -> int:
         format="%(levelname)s: %(message)s",
     )
 
+    # speakers設定を読み込み
+    speakers = load_speakers_config()
+    if speakers:
+        logger.info("speakers設定を読み込みました: %s", list(speakers.keys()))
+
     # 入力ファイルのバリデーション
     input_path = args.input
     if not input_path:
@@ -889,7 +956,7 @@ def main() -> int:
     dialogue_book_path = output_dir / "dialogue_book.xml"
     root_elem = ET.Element("dialogue-book")
     for block in dialogue_blocks:
-        block_xml_str = to_dialogue_xml(block)
+        block_xml_str = to_dialogue_xml(block, speakers=speakers)
         block_elem = ET.fromstring(block_xml_str)
         root_elem.append(block_elem)
     tree = ET.ElementTree(root_elem)
