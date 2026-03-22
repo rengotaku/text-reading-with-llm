@@ -2,6 +2,21 @@
 
 Asks questions to determine the user's workflow and outputs
 the recommended make commands to execute.
+
+Usage::
+
+    $ make guide
+    ============================================================
+      text-reading-with-llm セットアップガイド
+    ============================================================
+
+    Q1. 入力 XML ファイルのパスは？ []: input/book.xml
+    Q2. 出力ディレクトリは？ [output]:
+    Q3. 対話モードを使いますか？ [y/N]: y
+    Q4. スタイル ID は？ [13]:
+    Q5. 読み上げ速度は？ (0.5-2.0) [1.0]:
+
+    → 推奨コマンドが出力される
 """
 
 from __future__ import annotations

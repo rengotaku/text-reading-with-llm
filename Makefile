@@ -27,19 +27,6 @@ LLM_MODEL ?= gpt-oss:20b
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-# Usage:
-#   $ make guide
-#   ============================================================
-#     text-reading-with-llm セットアップガイド
-#   ============================================================
-#
-#   Q1. 入力 XML ファイルのパスは？ []: input/book.xml
-#   Q2. 出力ディレクトリは？ [output]:
-#   Q3. 対話モードを使いますか？ [y/N]: y
-#   Q4. スタイル ID は？ [13]:
-#   Q5. 読み上げ速度は？ (0.5-2.0) [1.0]:
-#
-#   → 推奨コマンドが出力される
 guide: setup ## Interactive setup guide (recommended for first-time users)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.setup_guide
 
