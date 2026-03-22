@@ -21,12 +21,16 @@ MAX_LENGTH ?= 300
 
 LLM_MODEL ?= gpt-oss:20b
 
-.PHONY: help setup setup-dev setup-voicevox reset-vvm gen-dict clean-text xml-tts run dialogue-convert dialogue-tts dialogue test coverage lint format clean clean-all
+# === Help & Setup ===
+.PHONY: help guide setup setup-dev setup-voicevox reset-vvm
 
 help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-# --- Setup ---
+guide: setup ## Interactive setup guide (recommended for first-time users)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.setup_guide
+
+# === Setup ===
 
 setup: $(VENV)/bin/activate setup-voicevox ## Create venv and install all dependencies
 
@@ -57,7 +61,8 @@ setup-dev: $(VENV)/bin/activate ## Install dev dependencies + pre-commit hooks
 	$(PIP) install -r requirements-dev.txt
 	$(VENV)/bin/pre-commit install
 
-# --- Pipeline (gen-dict → xml-tts) ---
+# === Pipeline (gen-dict → xml-tts) ===
+.PHONY: gen-dict clean-text xml-tts run
 
 gen-dict: ## Generate reading dictionary with LLM (INPUT=file)
 	PYTHONPATH=$(CURDIR) $(PYTHON) src/generate_reading_dict.py "$(INPUT)" --model "$(LLM_MODEL)" --merge
@@ -70,9 +75,12 @@ xml-tts: ## Run XML to TTS pipeline (INPUT=file)
 
 run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → TTS (INPUT=file)
 
+# === Dialogue Pipeline ===
 # Helper to get content hash from INPUT file
 CONTENT_HASH = $(shell PYTHONPATH=$(CURDIR) $(PYTHON) -c "from src.dict_manager import get_xml_content_hash; from pathlib import Path; print(get_xml_content_hash(Path('$(INPUT)')))" 2>/dev/null)
 HASH_DIR = $(OUTPUT)/$(CONTENT_HASH)
+
+.PHONY: dialogue-convert dialogue-split dialogue-tts dialogue
 
 dialogue-convert: ## Convert book XML to dialogue form with LLM (INPUT=file)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_converter -i "$(INPUT)" -o "$(OUTPUT)" --model "$(LLM_MODEL)"
@@ -85,7 +93,8 @@ dialogue-tts: ## Generate multi-speaker TTS from dialogue XML (ACCELERATION_MODE
 
 dialogue: dialogue-convert dialogue-split gen-dict clean-text dialogue-tts ## Run full dialogue pipeline
 
-# --- Quality ---
+# === Quality ===
+.PHONY: test coverage lint format
 
 test: ## Run tests
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m pytest tests/ -v
@@ -102,9 +111,11 @@ format: ## Auto-format code with ruff
 	$(VENV)/bin/ruff check --fix .
 	$(VENV)/bin/ruff format .
 
-# --- Cleanup ---
+# === Cleanup ===
+.PHONY: clean clean-all
 
 clean: ## Remove generated audio files (keep venv and dictionaries)
+	@test -n "$(OUTPUT)" || { echo "Error: OUTPUT is empty, refusing to run find on root"; exit 1; }
 	find $(OUTPUT) -name "*.wav" -delete 2>/dev/null || true
 	find $(OUTPUT) -name "cleaned_text.txt" -delete 2>/dev/null || true
 	find $(OUTPUT) -type d -name "pages" -empty -delete 2>/dev/null || true

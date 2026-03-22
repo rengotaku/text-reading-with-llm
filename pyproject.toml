@@ -75,6 +75,9 @@ pythonpath = ["."]
 [tool.coverage.run]
 source = ["src"]
 relative_files = true
+omit = [
+    "src/setup_guide.py",  # Interactive CLI, not testable
+]
 
 [tool.coverage.report]
 fail_under = 70
