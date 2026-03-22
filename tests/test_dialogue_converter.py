@@ -53,6 +53,8 @@ from src.dialogue_converter import (
     convert_section,
     extract_sections,
     generate_dialogue,
+    load_speakers_config,
+    replace_speaker_names,
     to_dialogue_xml,
 )
 
@@ -996,6 +998,41 @@ class TestEdgeCases:
         # &がエスケープされてパース可能
         root = ET.fromstring(result)
         assert root is not None
+
+    def test_to_dialogue_xml_with_speakers_replaces_names(self):
+        """speakers設定により話者IDが呼称に置換される"""
+        utterances = [
+            Utterance(speaker="A", text="Bはこの概念を知っていますか？"),
+        ]
+        block = DialogueBlock(
+            section_number="1.1",
+            section_title="テスト",
+            introduction="",
+            dialogue=utterances,
+            conclusion="",
+        )
+        speakers = {
+            "A": {"name": "教授", "role": "解説役"},
+            "B": {"name": "助手", "role": "聞き手"},
+        }
+        result = to_dialogue_xml(block, speakers=speakers)
+        assert "助手はこの概念を知っていますか？" in result
+        assert "Bはこの概念を知っていますか？" not in result
+
+    def test_to_dialogue_xml_without_speakers_keeps_original(self):
+        """speakers設定なしの場合は元のテキストを維持"""
+        utterances = [
+            Utterance(speaker="A", text="Bはこの概念を知っていますか？"),
+        ]
+        block = DialogueBlock(
+            section_number="1.1",
+            section_title="テスト",
+            introduction="",
+            dialogue=utterances,
+            conclusion="",
+        )
+        result = to_dialogue_xml(block)
+        assert "Bはこの概念を知っていますか？" in result
 
     # --- 境界値テスト ---
 
@@ -2598,3 +2635,98 @@ def _make_successful_conversion_result() -> ConversionResult:
         input_char_count=100,
         was_split=False,
     )
+
+
+# ============================================================
+# 話者名置換機能のテスト
+# ============================================================
+
+
+class TestReplaceSpeakerNames:
+    """replace_speaker_names関数のテスト"""
+
+    def test_replace_single_speaker(self):
+        """単一の話者IDを置換"""
+        speakers = {"B": {"name": "助手", "role": "聞き手"}}
+        result = replace_speaker_names("Bはこれを知っていますか？", speakers)
+        assert result == "助手はこれを知っていますか？"
+
+    def test_replace_multiple_speakers(self):
+        """複数の話者IDを置換"""
+        speakers = {
+            "A": {"name": "教授", "role": "解説役"},
+            "B": {"name": "助手", "role": "聞き手"},
+        }
+        result = replace_speaker_names("AがBに説明しました", speakers)
+        assert result == "教授が助手に説明しました"
+
+    def test_no_replacement_without_speakers(self):
+        """speakers設定が空の場合は置換しない"""
+        result = replace_speaker_names("Bはこれを知っていますか？", {})
+        assert result == "Bはこれを知っていますか？"
+
+    def test_no_replacement_for_non_matching_text(self):
+        """話者IDが含まれないテキストはそのまま"""
+        speakers = {"B": {"name": "助手", "role": "聞き手"}}
+        result = replace_speaker_names("今日は良い天気です", speakers)
+        assert result == "今日は良い天気です"
+
+    def test_replace_multiple_occurrences(self):
+        """同じ話者IDの複数出現を置換"""
+        speakers = {"B": {"name": "助手", "role": "聞き手"}}
+        result = replace_speaker_names("BはBの資料を見ていますか？", speakers)
+        assert result == "助手は助手の資料を見ていますか？"
+
+    def test_no_replace_within_word(self):
+        """単語内のAやBは置換しない"""
+        speakers = {
+            "A": {"name": "教授", "role": "解説役"},
+            "B": {"name": "助手", "role": "聞き手"},
+        }
+        result = replace_speaker_names("APIやDBについて説明します", speakers)
+        # API, DB内のA, Bは置換されない
+        assert "API" in result
+        assert "DB" in result
+
+
+class TestLoadSpeakersConfig:
+    """load_speakers_config関数のテスト"""
+
+    def test_load_from_default_config(self, tmp_path, monkeypatch):
+        """デフォルト設定ファイルからspeakers設定を読み込む"""
+        config_content = """
+speakers:
+  A:
+    name: "博士"
+    role: "解説者"
+  B:
+    name: "学生"
+    role: "質問者"
+"""
+        config_file = tmp_path / "config.yaml"
+        config_file.write_text(config_content)
+
+        from src.dialogue_converter import load_speakers_config
+
+        result = load_speakers_config(config_file)
+        assert result == {
+            "A": {"name": "博士", "role": "解説者"},
+            "B": {"name": "学生", "role": "質問者"},
+        }
+
+    def test_load_from_missing_file(self, tmp_path):
+        """存在しないファイルの場合は空辞書を返す"""
+        missing_file = tmp_path / "nonexistent.yaml"
+        result = load_speakers_config(missing_file)
+        assert result == {}
+
+    def test_load_from_config_without_speakers(self, tmp_path):
+        """speakers設定がない場合は空辞書を返す"""
+        config_content = """
+output: data
+max_chunk_chars: 500
+"""
+        config_file = tmp_path / "config.yaml"
+        config_file.write_text(config_content)
+        result = load_speakers_config(config_file)
+        assert result == {}
