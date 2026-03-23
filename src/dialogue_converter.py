@@ -425,12 +425,13 @@ def generate_dialogue(
 
     full_context = "\n\n".join(context_parts)
 
-    # speakers設定からキャラクター設定を生成
-    speakers = speakers or {}
-    a_name = speakers.get("A", {}).get("name", "博士")
-    b_name = speakers.get("B", {}).get("name", "助手")
-    a_role = speakers.get("A", {}).get("role", "解説役。専門知識を持ち、丁寧に説明する")
-    b_role = speakers.get("B", {}).get("role", "聞き手。質問し、理解を確認する。丁寧な口調")
+    # speakers設定からキャラクター設定を生成（必須）
+    if not speakers or "A" not in speakers or "B" not in speakers:
+        raise ValueError("speakers設定が必要です（config.yamlにA, Bの設定を追加してください）")
+    a_name = speakers["A"]["name"]
+    b_name = speakers["B"]["name"]
+    a_role = speakers["A"]["role"]
+    b_role = speakers["B"]["role"]
 
     # NOTE: プロンプト変更時は DIALOGUE_STYLE_GUIDE も確認・更新すること
     prompt = f"""以下のテキストを、{a_name}（A）と{b_name}（B）の自然な対話形式に変換してください。
