@@ -390,6 +390,7 @@ def generate_dialogue(
     ollama_chat_func: Callable[..., Any] | None = None,
     introduction: str = "",
     conclusion: str = "",
+    speakers: dict[str, dict[str, str]] | None = None,
 ) -> list[Utterance]:
     """LLMを使用してA/B発話の対話を生成する。
 
@@ -399,6 +400,7 @@ def generate_dialogue(
         ollama_chat_func: Ollama chat API呼び出し関数
         introduction: 導入テキスト（コンテキスト用）
         conclusion: 結論テキスト（コンテキスト用）
+        speakers: speakers設定の辞書（オプション）
 
     Returns:
         Utteranceオブジェクトのリスト
@@ -423,22 +425,28 @@ def generate_dialogue(
 
     full_context = "\n\n".join(context_parts)
 
+    # speakers設定からキャラクター設定を生成（必須）
+    if not speakers or "A" not in speakers or "B" not in speakers:
+        raise ValueError("speakers設定が必要です（config.yamlにA, Bの設定を追加してください）")
+    a_name = speakers["A"]["name"]
+    b_name = speakers["B"]["name"]
+    a_role = speakers["A"]["role"]
+    b_role = speakers["B"]["role"]
+
     # NOTE: プロンプト変更時は DIALOGUE_STYLE_GUIDE も確認・更新すること
-    prompt = f"""以下のテキストを、博士（A）と助手（B）の自然な対話形式に変換してください。
+    prompt = f"""以下のテキストを、{a_name}（A）と{b_name}（B）の自然な対話形式に変換してください。
 
 {full_context}
 
 【キャラクター設定】
-- A（博士）: ベテランエンジニア。知識豊富だが、一方的に説明せず相手に質問も投げかける。
-- B（助手）: 若手エンジニア。好奇心旺盛。遠慮なく割り込んだり、先回りして考えを述べる。
+- A（{a_name}）: {a_role}
+- B（{b_name}）: {b_role}
 
 【自然な会話のルール】※重要
 - 機械的な1問1答にしない。実際の会話のように自然な流れを作る
 - Aも「〇〇って知ってる？」「どう思う？」と質問を投げかける
-- Bは話を遮る（「あ、待って」「その前にさ」）、先回りする、言い淀む（「うーん」「えっと」）
+- Bは相槌を打ちながら理解を確認する（「なるほど」「つまり〇〇ということですね」）
 - 一つの話題で複数回やりとりしてから次へ進む
-- 相槌だけの短いターン（「なるほど」「そうなんだ」）も自然に入れる
-- Bの発話には感嘆符（！）や感情表現を入れてポップに
 - 同じ人が連続で話すのも自然ならOK（例: 思いついて付け足す、自分で補足する）
 
 以下の形式で出力してください（各行は「A:」または「B:」で始める）:
@@ -663,6 +671,7 @@ def convert_section(
     section: Section,
     model: str = DEFAULT_MODEL,
     ollama_chat_func: Callable[..., Any] | None = None,
+    speakers: dict[str, dict[str, str]] | None = None,
 ) -> ConversionResult:
     """セクションを対話形式に変換する統合関数。
 
@@ -670,6 +679,7 @@ def convert_section(
         section: 変換対象のSectionオブジェクト
         model: Ollamaモデル名
         ollama_chat_func: Ollama chat API呼び出し関数
+        speakers: speakers設定の辞書（オプション）
 
     Returns:
         ConversionResultオブジェクト
@@ -706,6 +716,7 @@ def convert_section(
             ollama_chat_func=ollama_chat_func,
             introduction=introduction_text,
             conclusion=conclusion_text,
+            speakers=speakers,
         )
 
         dialogue_block = DialogueBlock(
@@ -921,6 +932,7 @@ def main() -> int:
                 section=section,
                 model=args.model,
                 ollama_chat_func=ollama_chat_func,
+                speakers=speakers,
             )
             log_entry: dict[str, Any] = {
                 "section_number": section.number,

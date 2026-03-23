@@ -58,6 +58,12 @@ from src.dialogue_converter import (
     to_dialogue_xml,
 )
 
+# テスト用のデフォルトspeakers設定
+DEFAULT_SPEAKERS = {
+    "A": {"name": "教授", "role": "解説役。専門知識を持ち、丁寧に説明する"},
+    "B": {"name": "助手", "role": "聞き手。質問し、理解を確認する。丁寧な口調"},
+}
+
 # Phase 3 RED: should_split, split_by_heading はまだ未実装
 # ImportErrorが発生した場合はテストをスキップではなくFAILさせる
 try:
@@ -581,6 +587,7 @@ class TestGenerateDialogue:
         result = generate_dialogue(
             dialogue_paragraphs=["本論の段落"],
             ollama_chat_func=mock_ollama,
+            speakers=DEFAULT_SPEAKERS,
         )
         assert isinstance(result, list)
 
@@ -591,6 +598,7 @@ class TestGenerateDialogue:
         result = generate_dialogue(
             dialogue_paragraphs=["段落"],
             ollama_chat_func=mock_ollama,
+            speakers=DEFAULT_SPEAKERS,
         )
         assert len(result) >= 1
         for item in result:
@@ -604,16 +612,17 @@ class TestGenerateDialogue:
         result = generate_dialogue(
             dialogue_paragraphs=["APIの基本概念について説明します。"],
             ollama_chat_func=mock_ollama,
+            speakers=DEFAULT_SPEAKERS,
         )
-        speakers = {u.speaker for u in result}
-        assert "A" in speakers
-        assert "B" in speakers
+        speaker_ids = {u.speaker for u in result}
+        assert "A" in speaker_ids
+        assert "B" in speaker_ids
 
     def test_generate_dialogue_calls_llm(self):
         """LLM（ollama）が呼び出される"""
         mock_ollama = MagicMock()
         mock_ollama.return_value = {"message": {"content": '[{"speaker": "A", "text": "テスト"}]'}}
-        generate_dialogue(dialogue_paragraphs=["テスト"], ollama_chat_func=mock_ollama)
+        generate_dialogue(dialogue_paragraphs=["テスト"], ollama_chat_func=mock_ollama, speakers=DEFAULT_SPEAKERS)
         mock_ollama.assert_called_once()
 
     def test_generate_dialogue_utterance_text_not_empty(self):
@@ -625,6 +634,7 @@ class TestGenerateDialogue:
         result = generate_dialogue(
             dialogue_paragraphs=["段落テキスト"],
             ollama_chat_func=mock_ollama,
+            speakers=DEFAULT_SPEAKERS,
         )
         for utterance in result:
             assert utterance.text.strip() != ""
@@ -637,6 +647,7 @@ class TestGenerateDialogue:
             result = generate_dialogue(
                 dialogue_paragraphs=["テスト"],
                 ollama_chat_func=mock_ollama,
+                speakers=DEFAULT_SPEAKERS,
             )
             # デフォルト値が返る場合
             assert isinstance(result, list)
@@ -651,6 +662,7 @@ class TestGenerateDialogue:
             generate_dialogue(
                 dialogue_paragraphs=["テスト"],
                 ollama_chat_func=mock_ollama,
+                speakers=DEFAULT_SPEAKERS,
             )
             assert False, "ConnectionError should be raised or handled"
         except (ConnectionError, RuntimeError):
@@ -665,6 +677,7 @@ class TestGenerateDialogue:
             introduction="導入テキスト",
             conclusion="結論テキスト",
             ollama_chat_func=mock_ollama,
+            speakers=DEFAULT_SPEAKERS,
         )
         assert isinstance(result, list)
 
@@ -678,6 +691,7 @@ class TestGenerateDialogue:
         result = generate_dialogue(
             dialogue_paragraphs=["段落"],
             ollama_chat_func=mock_ollama,
+            speakers=DEFAULT_SPEAKERS,
         )
         assert result[0].speaker == "A"
         assert result[1].speaker == "B"
@@ -855,15 +869,14 @@ class TestEdgeCases:
         """generate_dialogue()に空リストを渡した場合"""
         mock_ollama = MagicMock()
         mock_ollama.return_value = {"message": {"content": "[]"}}
-        try:
-            result = generate_dialogue(
-                dialogue_paragraphs=[],
-                ollama_chat_func=mock_ollama,
-            )
-            assert isinstance(result, list)
-            assert len(result) == 0
-        except ValueError:
-            assert True
+        # 空リストは早期リターンするのでspeakersチェック前に終了
+        result = generate_dialogue(
+            dialogue_paragraphs=[],
+            ollama_chat_func=mock_ollama,
+            speakers=DEFAULT_SPEAKERS,
+        )
+        assert isinstance(result, list)
+        assert len(result) == 0
 
     # --- 短文テスト ---
 
@@ -884,6 +897,7 @@ class TestEdgeCases:
         result = generate_dialogue(
             dialogue_paragraphs=["短文。"],
             ollama_chat_func=mock_ollama,
+            speakers=DEFAULT_SPEAKERS,
         )
         assert isinstance(result, list)
 
@@ -933,6 +947,7 @@ class TestEdgeCases:
         result = generate_dialogue(
             dialogue_paragraphs=paragraphs,
             ollama_chat_func=mock_ollama,
+            speakers=DEFAULT_SPEAKERS,
         )
         assert isinstance(result, list)
         assert len(result) > 0
@@ -1099,6 +1114,7 @@ class TestEdgeCases:
             result = generate_dialogue(
                 dialogue_paragraphs=["テスト"],
                 ollama_chat_func=mock_ollama,
+                speakers=DEFAULT_SPEAKERS,
             )
             # 不正な話者が除外またはエラーになる
             if len(result) > 0:
@@ -2730,3 +2746,26 @@ max_chunk_chars: 500
         config_file.write_text(config_content)
         result = load_speakers_config(config_file)
         assert result == {}
+
+
+class TestGenerateDialogueWithSpeakers:
+    """generate_dialogue関数のspeakersパラメータのテスト"""
+
+    def test_generate_dialogue_accepts_speakers_parameter(self):
+        """generate_dialogue関数がspeakersパラメータを受け付ける"""
+        # 関数シグネチャにspeakersがあることを確認
+        import inspect
+
+        from src.dialogue_converter import generate_dialogue
+
+        sig = inspect.signature(generate_dialogue)
+        assert "speakers" in sig.parameters
+
+    def test_convert_section_accepts_speakers_parameter(self):
+        """convert_section関数がspeakersパラメータを受け付ける"""
+        import inspect
+
+        from src.dialogue_converter import convert_section
+
+        sig = inspect.signature(convert_section)
+        assert "speakers" in sig.parameters
