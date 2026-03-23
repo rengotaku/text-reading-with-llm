@@ -2730,3 +2730,26 @@ max_chunk_chars: 500
         config_file.write_text(config_content)
         result = load_speakers_config(config_file)
         assert result == {}
+
+
+class TestGenerateDialogueWithSpeakers:
+    """generate_dialogue関数のspeakersパラメータのテスト"""
+
+    def test_generate_dialogue_accepts_speakers_parameter(self):
+        """generate_dialogue関数がspeakersパラメータを受け付ける"""
+        # 関数シグネチャにspeakersがあることを確認
+        import inspect
+
+        from src.dialogue_converter import generate_dialogue
+
+        sig = inspect.signature(generate_dialogue)
+        assert "speakers" in sig.parameters
+
+    def test_convert_section_accepts_speakers_parameter(self):
+        """convert_section関数がspeakersパラメータを受け付ける"""
+        import inspect
+
+        from src.dialogue_converter import convert_section
+
+        sig = inspect.signature(convert_section)
+        assert "speakers" in sig.parameters
