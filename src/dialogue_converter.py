@@ -384,6 +384,109 @@ Markdownテーブル形式で出力してください:
     return {"introduction": [], "dialogue": list(paragraphs), "conclusion": []}
 
 
+def generate_introduction(
+    original_text: str,
+    model: str = DEFAULT_MODEL,
+    ollama_chat_func: Callable[..., Any] | None = None,
+) -> str:
+    """LLMを使用して導入部分のナレーションを生成する。
+
+    Args:
+        original_text: 元のセクションテキスト
+        model: Ollamaモデル名
+        ollama_chat_func: Ollama chat API呼び出し関数
+
+    Returns:
+        導入ナレーションテキスト
+    """
+    if not original_text.strip():
+        return ""
+
+    if ollama_chat_func is None:
+        return ""
+
+    prompt = f"""以下のテキストから、導入部分のナレーションを作成してください。
+
+【テキスト】
+{original_text}
+
+【ルール】
+- 1〜3文程度の簡潔なナレーション
+- このセクションで何について学ぶかを紹介する
+- 聴者の興味を引く内容
+- 「今回は〇〇について見ていきます」のような形式
+
+ナレーションのみを出力してください（説明や前置きは不要）:"""
+
+    system_content = "あなたは技術書のナレーターです。簡潔で分かりやすい導入ナレーションを作成してください。"
+
+    try:
+        response = ollama_chat_func(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        result = response.get("message", {}).get("content", "").strip()
+        logger.info("[generate_introduction] 生成完了: %d文字", len(result))
+        return result
+    except Exception as e:
+        logger.warning("[generate_introduction] 生成失敗: %s", e)
+        return ""
+
+
+def generate_conclusion(
+    original_text: str,
+    model: str = DEFAULT_MODEL,
+    ollama_chat_func: Callable[..., Any] | None = None,
+) -> str:
+    """LLMを使用して結論部分のナレーションを生成する。
+
+    Args:
+        original_text: 元のセクションテキスト
+        model: Ollamaモデル名
+        ollama_chat_func: Ollama chat API呼び出し関数
+
+    Returns:
+        結論ナレーションテキスト
+    """
+    if not original_text.strip():
+        return ""
+
+    if ollama_chat_func is None:
+        return ""
+
+    prompt = f"""以下のテキストから、結論部分のナレーションを作成してください。
+
+【テキスト】
+{original_text}
+
+【ルール】
+- 1〜3文程度の簡潔なナレーション
+- このセクションの要点・学びをまとめる
+- 「このように〇〇が重要です」「ポイントは〇〇でした」のような形式
+
+ナレーションのみを出力してください（説明や前置きは不要）:"""
+
+    system_content = "あなたは技術書のナレーターです。簡潔で分かりやすい結論ナレーションを作成してください。"
+
+    try:
+        response = ollama_chat_func(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        result = response.get("message", {}).get("content", "").strip()
+        logger.info("[generate_conclusion] 生成完了: %d文字", len(result))
+        return result
+    except Exception as e:
+        logger.warning("[generate_conclusion] 生成失敗: %s", e)
+        return ""
+
+
 def generate_dialogue(
     dialogue_paragraphs: list[str],
     model: str = DEFAULT_MODEL,
@@ -418,10 +521,10 @@ def generate_dialogue(
 
     context_parts = []
     if introduction:
-        context_parts.append(f"【導入】\n{introduction}")
+        context_parts.append(f"【導入（ナレーター読み上げ済み）】\n{introduction}")
     context_parts.append(f"【本論（対話に変換する内容）】\n{content_text}")
     if conclusion:
-        context_parts.append(f"【結論】\n{conclusion}")
+        context_parts.append(f"【結論（ナレーターが読み上げる予定）】\n{conclusion}")
 
     full_context = "\n\n".join(context_parts)
 
@@ -448,6 +551,11 @@ def generate_dialogue(
 - Bは相槌を打ちながら理解を確認する（「なるほど」「つまり〇〇ということですね」）
 - 一つの話題で複数回やりとりしてから次へ進む
 - 同じ人が連続で話すのも自然ならOK（例: 思いついて付け足す、自分で補足する）
+
+【導入・結論との連携】※重要
+- 導入で述べた内容は繰り返さない（ナレーターが既に説明済み）
+- 結論につながるよう、本論の議論を展開する
+- 結論で述べる内容を対話内で詳しく議論しておく
 
 以下の形式で出力してください（各行は「A:」または「B:」で始める）:
 A: 発話テキスト
@@ -698,20 +806,26 @@ def convert_section(
         target_section = section
 
     try:
-        # 構造分析
-        structure = analyze_structure(
-            target_section.paragraphs,
+        # 原文テキストを結合
+        original_text = "\n".join(target_section.paragraphs)
+
+        # 導入ナレーション生成
+        introduction_text = generate_introduction(
+            original_text=original_text,
             model=model,
             ollama_chat_func=ollama_chat_func,
         )
 
-        introduction_text = "\n".join(structure.get("introduction", []))
-        conclusion_text = "\n".join(structure.get("conclusion", []))
-        dialogue_paragraphs = structure.get("dialogue", [])
+        # 結論ナレーション生成
+        conclusion_text = generate_conclusion(
+            original_text=original_text,
+            model=model,
+            ollama_chat_func=ollama_chat_func,
+        )
 
-        # 対話生成
+        # 対話生成（intro/conclusionをコンテキストとして渡す）
         utterances = generate_dialogue(
-            dialogue_paragraphs=dialogue_paragraphs,
+            dialogue_paragraphs=target_section.paragraphs,
             model=model,
             ollama_chat_func=ollama_chat_func,
             introduction=introduction_text,
