@@ -17,6 +17,7 @@ from typing import Any, Callable, Literal
 import yaml
 
 from src.dict_manager import get_xml_content_hash
+from src.prompt_loader import load_prompt
 from src.xml_parser import ContentItem, parse_book2_xml
 
 # CI環境判定（ollamaのインポート前に判定）
@@ -269,28 +270,7 @@ def analyze_structure(
 
     paragraphs_text = "\n".join(f"{i + 1}. {p}" for i, p in enumerate(non_empty_paragraphs))
 
-    prompt = f"""以下のセクションの段落を、introduction（導入）、dialogue（本論）、
-conclusion（結論）の3つに分類してください。
-
-段落リスト:
-{paragraphs_text}
-
-分類ルール:
-- introduction: セクションの導入・背景説明（通常は最初の1〜2段落）
-- dialogue: 主要な内容・説明（博士と助手の対話に変換する部分）
-- conclusion: まとめ・結論（通常は最後の1〜2段落）
-
-Markdownテーブル形式で出力してください:
-| 段落番号 | 分類 |
-|----------|------|
-| 1 | introduction |
-| 2 | dialogue |
-
-出力:"""
-
-    system_content = (
-        "あなたは書籍コンテンツの構造分析の専門家です。段落をintroduction/dialogue/conclusionに分類してください。"
-    )
+    system_content, prompt = load_prompt("analyze_structure", paragraphs_text=paragraphs_text)
     messages = [
         {"role": "system", "content": system_content},
         {"role": "user", "content": prompt},
@@ -405,20 +385,7 @@ def generate_introduction(
     if ollama_chat_func is None:
         return ""
 
-    prompt = f"""以下のテキストから、導入部分のナレーションを作成してください。
-
-【テキスト】
-{original_text}
-
-【ルール】
-- 1〜3文程度の簡潔なナレーション
-- このセクションで何について学ぶかを紹介する
-- 聴者の興味を引く内容
-- 「今回は〇〇について見ていきます」のような形式
-
-ナレーションのみを出力してください（説明や前置きは不要）:"""
-
-    system_content = "あなたは技術書のナレーターです。簡潔で分かりやすい導入ナレーションを作成してください。"
+    system_content, prompt = load_prompt("generate_introduction", original_text=original_text)
 
     try:
         response = ollama_chat_func(
@@ -457,19 +424,7 @@ def generate_conclusion(
     if ollama_chat_func is None:
         return ""
 
-    prompt = f"""以下のテキストから、結論部分のナレーションを作成してください。
-
-【テキスト】
-{original_text}
-
-【ルール】
-- 1〜3文程度の簡潔なナレーション
-- このセクションの要点・学びをまとめる
-- 「このように〇〇が重要です」「ポイントは〇〇でした」のような形式
-
-ナレーションのみを出力してください（説明や前置きは不要）:"""
-
-    system_content = "あなたは技術書のナレーターです。簡潔で分かりやすい結論ナレーションを作成してください。"
+    system_content, prompt = load_prompt("generate_conclusion", original_text=original_text)
 
     try:
         response = ollama_chat_func(
@@ -536,39 +491,14 @@ def generate_dialogue(
     a_role = speakers["A"]["role"]
     b_role = speakers["B"]["role"]
 
-    # NOTE: プロンプト変更時は DIALOGUE_STYLE_GUIDE も確認・更新すること
-    prompt = f"""以下のテキストを、{a_name}（A）と{b_name}（B）の自然な対話形式に変換してください。
-
-{full_context}
-
-【キャラクター設定】
-- A（{a_name}）: {a_role}
-- B（{b_name}）: {b_role}
-
-【自然な会話のルール】※重要
-- 機械的な1問1答にしない。実際の会話のように自然な流れを作る
-- Aも「〇〇って知ってる？」「どう思う？」と質問を投げかける
-- Bは相槌を打ちながら理解を確認する（「なるほど」「つまり〇〇ということですね」）
-- 一つの話題で複数回やりとりしてから次へ進む
-- 同じ人が連続で話すのも自然ならOK（例: 思いついて付け足す、自分で補足する）
-
-【導入・結論との連携】※重要
-- 導入で述べた内容は繰り返さない（ナレーターが既に説明済み）
-- 結論につながるよう、本論の議論を展開する
-- 結論で述べる内容を対話内で詳しく議論しておく
-
-以下の形式で出力してください（各行は「A:」または「B:」で始める）:
-A: 発話テキスト
-B: 発話テキスト
-B: 続けて話す（自然な場合のみ）
-A: 発話テキスト
-
-出力:"""
-
-    system_content = (
-        "あなたは技術書をポッドキャスト風の自然な対話に変換する専門家です。"
-        "友人同士が雑談しているような、聞いていて楽しい会話を作ってください。"
-        "機械的な1問1答ではなく、話が自然に流れる対話にしてください。"
+    # NOTE: プロンプト変更時は src/prompts/generate_dialogue.txt も確認・更新すること
+    system_content, prompt = load_prompt(
+        "generate_dialogue",
+        a_name=a_name,
+        b_name=b_name,
+        a_role=a_role,
+        b_role=b_role,
+        full_context=full_context,
     )
     messages = [
         {"role": "system", "content": system_content},

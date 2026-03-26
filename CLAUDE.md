@@ -22,6 +22,13 @@ source .venv/bin/activate
 
 ---
 
+## Git ワークフロー
+
+- **sub-issue 作成**: `/git.create-sub-issue` を使用する
+  - 例: `/git.create-sub-issue 64 "プロンプトの外部ファイル化"`
+
+---
+
 ## Speckit 設定
 
 ### ディレクトリ構成

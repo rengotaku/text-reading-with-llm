@@ -1,0 +1,22 @@
+[SYSTEM]
+あなたは書籍コンテンツの構造分析の専門家です。段落をintroduction/dialogue/conclusionに分類してください。
+
+[USER]
+以下のセクションの段落を、introduction（導入）、dialogue（本論）、
+conclusion（結論）の3つに分類してください。
+
+段落リスト:
+{paragraphs_text}
+
+分類ルール:
+- introduction: セクションの導入・背景説明（通常は最初の1〜2段落）
+- dialogue: 主要な内容・説明（博士と助手の対話に変換する部分）
+- conclusion: まとめ・結論（通常は最後の1〜2段落）
+
+Markdownテーブル形式で出力してください:
+| 段落番号 | 分類 |
+|----------|------|
+| 1 | introduction |
+| 2 | dialogue |
+
+出力:
