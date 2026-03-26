@@ -2769,3 +2769,91 @@ class TestGenerateDialogueWithSpeakers:
 
         sig = inspect.signature(convert_section)
         assert "speakers" in sig.parameters
+
+
+class TestGenerateIntroduction:
+    """generate_introduction関数のテスト"""
+
+    def test_returns_empty_for_empty_text(self):
+        """空テキストの場合は空文字列を返す"""
+        from src.dialogue_converter import generate_introduction
+
+        result = generate_introduction("", ollama_chat_func=None)
+        assert result == ""
+
+    def test_returns_empty_for_whitespace_only(self):
+        """空白のみの場合は空文字列を返す"""
+        from src.dialogue_converter import generate_introduction
+
+        result = generate_introduction("   \n\t  ", ollama_chat_func=None)
+        assert result == ""
+
+    def test_returns_empty_when_no_ollama_func(self):
+        """ollama_chat_funcがNoneの場合は空文字列を返す"""
+        from src.dialogue_converter import generate_introduction
+
+        result = generate_introduction("テストテキスト", ollama_chat_func=None)
+        assert result == ""
+
+    def test_calls_ollama_with_correct_prompt(self):
+        """LLMを正しいプロンプトで呼び出す"""
+        from unittest.mock import MagicMock
+
+        from src.dialogue_converter import generate_introduction
+
+        mock_ollama = MagicMock()
+        mock_ollama.return_value = {"message": {"content": "導入ナレーション"}}
+
+        result = generate_introduction(
+            "テストテキスト",
+            ollama_chat_func=mock_ollama,
+        )
+
+        mock_ollama.assert_called_once()
+        call_args = mock_ollama.call_args
+        assert "導入" in call_args.kwargs["messages"][1]["content"]
+        assert result == "導入ナレーション"
+
+
+class TestGenerateConclusion:
+    """generate_conclusion関数のテスト"""
+
+    def test_returns_empty_for_empty_text(self):
+        """空テキストの場合は空文字列を返す"""
+        from src.dialogue_converter import generate_conclusion
+
+        result = generate_conclusion("", ollama_chat_func=None)
+        assert result == ""
+
+    def test_returns_empty_for_whitespace_only(self):
+        """空白のみの場合は空文字列を返す"""
+        from src.dialogue_converter import generate_conclusion
+
+        result = generate_conclusion("   \n\t  ", ollama_chat_func=None)
+        assert result == ""
+
+    def test_returns_empty_when_no_ollama_func(self):
+        """ollama_chat_funcがNoneの場合は空文字列を返す"""
+        from src.dialogue_converter import generate_conclusion
+
+        result = generate_conclusion("テストテキスト", ollama_chat_func=None)
+        assert result == ""
+
+    def test_calls_ollama_with_correct_prompt(self):
+        """LLMを正しいプロンプトで呼び出す"""
+        from unittest.mock import MagicMock
+
+        from src.dialogue_converter import generate_conclusion
+
+        mock_ollama = MagicMock()
+        mock_ollama.return_value = {"message": {"content": "結論ナレーション"}}
+
+        result = generate_conclusion(
+            "テストテキスト",
+            ollama_chat_func=mock_ollama,
+        )
+
+        mock_ollama.assert_called_once()
+        call_args = mock_ollama.call_args
+        assert "結論" in call_args.kwargs["messages"][1]["content"]
+        assert result == "結論ナレーション"
