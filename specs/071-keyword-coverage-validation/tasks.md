@@ -63,15 +63,15 @@
 
 ### Implementation (GREEN)
 
-- [ ] T013 Read: specs/071-keyword-coverage-validation/red-tests/ph2-test.md
-- [ ] T014 [P] [US1] プロンプトファイルを作成: src/prompts/extract_keywords.txt
-- [ ] T015 [US1] キーワード抽出モジュールを実装: src/keyword_extractor.py（extract_keywords 関数、prompt_loader 使用、ollama 呼び出し）
-- [ ] T016 Verify: `make test` PASS (GREEN)
+- [x] T013 Read: specs/071-keyword-coverage-validation/red-tests/ph2-test.md
+- [x] T014 [P] [US1] プロンプトファイルを作成: src/prompts/extract_keywords.txt
+- [x] T015 [US1] キーワード抽出モジュールを実装: src/keyword_extractor.py（extract_keywords 関数、prompt_loader 使用、ollama 呼び出し）
+- [x] T016 Verify: `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T017 Verify: `make test` で全テストパス（リグレッションなし）
-- [ ] T018 Edit: specs/071-keyword-coverage-validation/tasks/ph2-output.md
+- [x] T017 Verify: `make test` で全テストパス（リグレッションなし）
+- [x] T018 Edit: specs/071-keyword-coverage-validation/tasks/ph2-output.md
 
 **Checkpoint**: キーワード抽出が独立して動作することを確認
 
