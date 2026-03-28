@@ -54,12 +54,12 @@
 
 ### Test Implementation (RED)
 
-- [ ] T007 [P] [US1] プロンプトファイルのテストを実装: tests/test_keyword_extractor.py（extract_keywords.txt が存在し正しい形式であることを確認）
-- [ ] T008 [P] [US1] 基本抽出テストを実装: tests/test_keyword_extractor.py（固有名詞、専門用語、数値を含むテキストからキーワードが抽出される）
-- [ ] T009 [P] [US1] エッジケーステストを実装: tests/test_keyword_extractor.py（空テキスト → 空リスト）
-- [ ] T010 [P] [US1] 出力形式テストを実装: tests/test_keyword_extractor.py（カンマ区切り出力のパース、重複除去、trim）
-- [ ] T011 Verify: `make test` FAIL (RED)
-- [ ] T012 Edit: specs/071-keyword-coverage-validation/red-tests/ph2-test.md
+- [x] T007 [P] [US1] プロンプトファイルのテストを実装: tests/test_keyword_extractor.py（extract_keywords.txt が存在し正しい形式であることを確認）
+- [x] T008 [P] [US1] 基本抽出テストを実装: tests/test_keyword_extractor.py（固有名詞、専門用語、数値を含むテキストからキーワードが抽出される）
+- [x] T009 [P] [US1] エッジケーステストを実装: tests/test_keyword_extractor.py（空テキスト → 空リスト）
+- [x] T010 [P] [US1] 出力形式テストを実装: tests/test_keyword_extractor.py（カンマ区切り出力のパース、重複除去、trim）
+- [x] T011 Verify: `make test` FAIL (RED)
+- [x] T012 Edit: specs/071-keyword-coverage-validation/red-tests/ph2-test.md
 
 ### Implementation (GREEN)
 
