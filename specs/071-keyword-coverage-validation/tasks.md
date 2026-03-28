@@ -90,15 +90,15 @@
 
 ### Test Implementation (RED)
 
-- [ ] T021 [P] [US2] CoverageResult dataclass テストを実装: tests/test_coverage_validator.py（属性、to_dict メソッド）
-- [ ] T022 [P] [US2] 基本検証テストを実装: tests/test_coverage_validator.py（キーワードリストと対話 XML → カバー率計算）
-- [ ] T023 [P] [US2] 全カバーテストを実装: tests/test_coverage_validator.py（全キーワードが含まれる → coverage_rate=1.0）
-- [ ] T024 [P] [US2] 全未カバーテストを実装: tests/test_coverage_validator.py（キーワードが含まれない → coverage_rate=0.0）
-- [ ] T025 [P] [US2] エッジケーステストを実装: tests/test_coverage_validator.py（空キーワードリスト → coverage_rate=1.0、空 XML → coverage_rate=0.0）
-- [ ] T026 [P] [US2] 大文字小文字テストを実装: tests/test_coverage_validator.py（case-insensitive マッチング）
-- [ ] T027 [P] [US3] JSON 出力テストを実装: tests/test_coverage_validator.py（to_dict が正しいスキーマを返す）
-- [ ] T028 Verify: `make test` FAIL (RED)
-- [ ] T029 Edit: specs/071-keyword-coverage-validation/red-tests/ph3-test.md
+- [x] T021 [P] [US2] CoverageResult dataclass テストを実装: tests/test_coverage_validator.py（属性、to_dict メソッド）
+- [x] T022 [P] [US2] 基本検証テストを実装: tests/test_coverage_validator.py（キーワードリストと対話 XML → カバー率計算）
+- [x] T023 [P] [US2] 全カバーテストを実装: tests/test_coverage_validator.py（全キーワードが含まれる → coverage_rate=1.0）
+- [x] T024 [P] [US2] 全未カバーテストを実装: tests/test_coverage_validator.py（キーワードが含まれない → coverage_rate=0.0）
+- [x] T025 [P] [US2] エッジケーステストを実装: tests/test_coverage_validator.py（空キーワードリスト → coverage_rate=1.0、空 XML → coverage_rate=0.0）
+- [x] T026 [P] [US2] 大文字小文字テストを実装: tests/test_coverage_validator.py（case-insensitive マッチング）
+- [x] T027 [P] [US3] JSON 出力テストを実装: tests/test_coverage_validator.py（to_dict が正しいスキーマを返す）
+- [x] T028 Verify: `make test` FAIL (RED)
+- [x] T029 Edit: specs/071-keyword-coverage-validation/red-tests/ph3-test.md
 
 ### Implementation (GREEN)
 
