@@ -19,12 +19,16 @@ from xml.etree import ElementTree
 import numpy as np
 import soundfile as sf
 
+from src.chapter_processor import load_sound
 from src.dict_manager import get_xml_content_hash, load_dict
 from src.llm_reading_generator import apply_llm_readings
 from src.number_normalizer import normalize_numbers
 from src.reading_dict import apply_reading_rules
 
 logger = logging.getLogger(__name__)
+
+# 効果音セグメントの話者ID（実在話者と衝突しない識別子）
+_SOUND_EFFECT_SPEAKER_ID = "__sound_effect__"
 
 # Module-level reading dictionary (set via init_readings)
 _READINGS: dict[str, str] = {}
@@ -447,17 +451,22 @@ def process_dialogue_sections(
     synthesizer: Any,
     output_dir: Path,
     speed_scale: float = 1.0,
+    chapter_sound: np.ndarray | None = None,
+    section_sound: np.ndarray | None = None,
 ) -> list[Path]:
     """対話セクションリストから音声ファイルを生成する統合関数.
 
     各セクションの introduction, utterances, conclusion を合成し、
     チャプター単位でWAVファイルとして保存する。
+    チャプター開始時にチャプター効果音、セクション開始時にセクション効果音を挿入可能。
 
     Args:
         sections: parse_dialogue_xml() が返すセクションリスト
         synthesizer: VoicevoxSynthesizerインスタンス
         output_dir: 音声ファイルの出力ディレクトリ
         speed_scale: 読み上げ速度スケール
+        chapter_sound: チャプター開始時の効果音 (numpy配列, None=なし)
+        section_sound: セクション開始時の効果音 (numpy配列, None=なし)
 
     Returns:
         生成したWAVファイルのパスリスト
@@ -474,6 +483,7 @@ def process_dialogue_sections(
     logger.info("Grouped %d sections into %d chapters", len(sections), len(chapters))
 
     generated: list[Path] = []
+    sample_rate = 24000  # VOICEVOX標準サンプルレート
 
     # チャプター番号順にソートして処理
     for chapter_num in sorted(chapters.keys(), key=lambda x: (int(x) if x.isdigit() else 0, x)):
@@ -486,7 +496,18 @@ def process_dialogue_sections(
 
         # チャプター内の全セクションの音声セグメントを収集
         all_segments: list[tuple[np.ndarray, int, str]] = []
-        for section in chapter_sections:
+
+        # チャプター効果音を挿入
+        if chapter_sound is not None:
+            all_segments.append((chapter_sound, sample_rate, _SOUND_EFFECT_SPEAKER_ID))
+            logger.info("  Inserted chapter sound effect")
+
+        for i, section in enumerate(chapter_sections):
+            # 2番目以降のセクションにセクション効果音を挿入
+            if i > 0 and section_sound is not None:
+                all_segments.append((section_sound, sample_rate, _SOUND_EFFECT_SPEAKER_ID))
+                logger.info("  Inserted section sound effect before section %s", section.get("section_number", ""))
+
             section_segments = _synthesize_section(section, synthesizer, speed_scale)
             all_segments.extend(section_segments)
 
@@ -565,8 +586,40 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="元のXML/MDファイルパス（読み辞書参照用）",
     )
+    parser.add_argument(
+        "--chapter-sound",
+        type=str,
+        default="assets/sounds/chapter.mp3",
+        help="チャプター開始時の効果音ファイル（デフォルト: assets/sounds/chapter.mp3）",
+    )
+    parser.add_argument(
+        "--section-sound",
+        type=str,
+        default="assets/sounds/section.mp3",
+        help="セクション開始時の効果音ファイル（デフォルト: assets/sounds/section.mp3）",
+    )
+    parser.add_argument(
+        "--no-chapter-sound",
+        action="store_true",
+        default=False,
+        help="チャプター効果音を無効化する",
+    )
+    parser.add_argument(
+        "--no-section-sound",
+        action="store_true",
+        default=False,
+        help="セクション効果音を無効化する",
+    )
 
-    return parser.parse_args(args)
+    parsed = parser.parse_args(args)
+
+    # --no-chapter-sound / --no-section-sound が指定された場合はNoneに設定
+    if parsed.no_chapter_sound:
+        parsed.chapter_sound = None
+    if parsed.no_section_sound:
+        parsed.section_sound = None
+
+    return parsed
 
 
 def main() -> int:
@@ -632,6 +685,26 @@ def main() -> int:
         logger.error("Failed to initialize VOICEVOX: %s", e)
         return 2
 
+    # 効果音ファイルの読み込み
+    chapter_sound = None
+    section_sound = None
+
+    if args.chapter_sound:
+        sound_path = Path(args.chapter_sound)
+        if sound_path.exists():
+            chapter_sound = load_sound(sound_path)
+            logger.info("Loaded chapter sound: %s", sound_path)
+        else:
+            logger.warning("Chapter sound file not found: %s", sound_path)
+
+    if args.section_sound:
+        sound_path = Path(args.section_sound)
+        if sound_path.exists():
+            section_sound = load_sound(sound_path)
+            logger.info("Loaded section sound: %s", sound_path)
+        else:
+            logger.warning("Section sound file not found: %s", sound_path)
+
     try:
         # 音声生成
         generated = process_dialogue_sections(
@@ -639,6 +712,8 @@ def main() -> int:
             synthesizer=synthesizer,
             output_dir=output_dir,
             speed_scale=args.speed,
+            chapter_sound=chapter_sound,
+            section_sound=section_sound,
         )
         logger.info("Generated %d audio files in %s", len(generated), output_dir)
     except Exception as e:
