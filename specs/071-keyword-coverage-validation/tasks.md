@@ -123,19 +123,19 @@
 
 ### Input
 
-- [ ] T037 Read: specs/071-keyword-coverage-validation/tasks/ph1-output.md
-- [ ] T038 Read: specs/071-keyword-coverage-validation/tasks/ph3-output.md
+- [x] T037 Read: specs/071-keyword-coverage-validation/tasks/ph1-output.md
+- [x] T038 Read: specs/071-keyword-coverage-validation/tasks/ph3-output.md
 
 ### Implementation
 
-- [ ] T039 quickstart.md の使用例を実際に実行して検証
-- [ ] T040 [P] コード品質チェック: `make lint` でエラーなし
-- [ ] T041 [P] 型チェック: `make mypy` でエラーなし（または既存の除外設定に従う）
+- [x] T039 quickstart.md の使用例を実際に実行して検証
+- [x] T040 [P] コード品質チェック: `make lint` でエラーなし
+- [x] T041 [P] 型チェック: `make mypy` でエラーなし（または既存の除外設定に従う）
 
 ### Verification
 
-- [ ] T042 Verify: `make test` で全テストパス
-- [ ] T043 Edit: specs/071-keyword-coverage-validation/tasks/ph4-output.md
+- [x] T042 Verify: `make test` で全テストパス
+- [x] T043 Edit: specs/071-keyword-coverage-validation/tasks/ph4-output.md
 
 ---
 

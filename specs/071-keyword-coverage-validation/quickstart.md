@@ -41,9 +41,9 @@ dialogue_xml = """
 result = validate_coverage(keywords, dialogue_xml)
 # => CoverageResult(
 #      total_keywords=10,
-#      covered_keywords=6,
-#      coverage_rate=0.6,
-#      missing_keywords=["ハルさん", "A社", "B社", "C社", "自動調整"]
+#      covered_keywords=4,
+#      coverage_rate=0.4,
+#      missing_keywords=["ハルさん", "A社", "B社", "C社", "自動調整", "MVP"]
 #    )
 ```
 
@@ -60,9 +60,9 @@ print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
 ```json
 {
   "total_keywords": 10,
-  "covered_keywords": 6,
-  "coverage_rate": 0.6,
-  "missing_keywords": ["ハルさん", "A社", "B社", "C社", "自動調整"]
+  "covered_keywords": 4,
+  "coverage_rate": 0.4,
+  "missing_keywords": ["ハルさん", "A社", "B社", "C社", "自動調整", "MVP"]
 }
 ```
 
