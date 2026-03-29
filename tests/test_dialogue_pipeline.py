@@ -930,3 +930,178 @@ class TestApplyReadingsToText:
         result = apply_readings_to_text("これはテストです")
         # Plain Japanese should pass through (possibly with punctuation changes)
         assert "テスト" in result
+
+
+# ===========================================================================
+# T057: 効果音挿入テスト (Issue #55)
+# ===========================================================================
+
+
+try:
+    from src.dialogue_pipeline import process_dialogue_sections
+except ImportError:
+    process_dialogue_sections = None  # type: ignore[assignment]
+
+
+SAMPLE_MULTI_CHAPTER_XML = """\
+<dialogue-book>
+  <dialogue-section number="1.1" title="セクション1-1">
+    <introduction speaker="narrator">導入1-1</introduction>
+    <dialogue>
+      <utterance speaker="A">発話A1-1</utterance>
+    </dialogue>
+    <conclusion speaker="narrator">結論1-1</conclusion>
+  </dialogue-section>
+  <dialogue-section number="1.2" title="セクション1-2">
+    <introduction speaker="narrator">導入1-2</introduction>
+    <dialogue>
+      <utterance speaker="A">発話A1-2</utterance>
+    </dialogue>
+    <conclusion speaker="narrator">結論1-2</conclusion>
+  </dialogue-section>
+  <dialogue-section number="2.1" title="セクション2-1">
+    <introduction speaker="narrator">導入2-1</introduction>
+    <dialogue>
+      <utterance speaker="A">発話A2-1</utterance>
+    </dialogue>
+    <conclusion speaker="narrator">結論2-1</conclusion>
+  </dialogue-section>
+</dialogue-book>"""
+
+
+class TestSoundEffectInsertion:
+    """効果音挿入機能のテスト (Issue #55)."""
+
+    def _mock_synthesizer(self) -> MagicMock:
+        """WAVバイト列を返すモックシンセサイザーを生成する。"""
+        mock = MagicMock()
+        sample_rate = 24000
+        samples = np.ones(int(sample_rate * 0.1), dtype=np.float32) * 0.3
+        mock.synthesize.return_value = _create_wav_bytes(samples, sample_rate)
+        return mock
+
+    def _make_sound(self, value: float = 0.5, duration: float = 0.05) -> np.ndarray:
+        """テスト用効果音配列を生成する。"""
+        return np.ones(int(24000 * duration), dtype=np.float32) * value
+
+    def test_chapter_sound_inserted_at_chapter_start(self, tmp_path: Path) -> None:
+        """チャプターの先頭にチャプター効果音が挿入される。"""
+        _require_module()
+        sections = parse_dialogue_xml(SAMPLE_MULTI_CHAPTER_XML)
+        chapter_sound = self._make_sound(0.9)
+
+        generated = process_dialogue_sections(
+            sections=sections,
+            synthesizer=self._mock_synthesizer(),
+            output_dir=tmp_path,
+            chapter_sound=chapter_sound,
+        )
+        # 2チャプター分のファイルが生成される
+        assert len(generated) == 2
+
+    def test_section_sound_inserted_at_non_first_section(self, tmp_path: Path) -> None:
+        """チャプター内の2番目以降のセクションにセクション効果音が挿入される。"""
+        _require_module()
+        sections = parse_dialogue_xml(SAMPLE_MULTI_CHAPTER_XML)
+        section_sound = self._make_sound(0.7)
+
+        generated = process_dialogue_sections(
+            sections=sections,
+            synthesizer=self._mock_synthesizer(),
+            output_dir=tmp_path,
+            section_sound=section_sound,
+        )
+        assert len(generated) == 2
+
+    def test_both_sounds_inserted(self, tmp_path: Path) -> None:
+        """チャプター効果音とセクション効果音が両方挿入される。"""
+        _require_module()
+        sections = parse_dialogue_xml(SAMPLE_MULTI_CHAPTER_XML)
+        chapter_sound = self._make_sound(0.9)
+        section_sound = self._make_sound(0.7)
+
+        generated = process_dialogue_sections(
+            sections=sections,
+            synthesizer=self._mock_synthesizer(),
+            output_dir=tmp_path,
+            chapter_sound=chapter_sound,
+            section_sound=section_sound,
+        )
+        assert len(generated) == 2
+        # 各ファイルが存在し、サイズが0でない
+        for path in generated:
+            assert path.exists()
+            assert path.stat().st_size > 0
+
+    def test_no_sound_backward_compatible(self, tmp_path: Path) -> None:
+        """効果音なしの場合、従来通り動作する（後方互換性）。"""
+        _require_module()
+        sections = parse_dialogue_xml(SAMPLE_MULTI_CHAPTER_XML)
+
+        generated = process_dialogue_sections(
+            sections=sections,
+            synthesizer=self._mock_synthesizer(),
+            output_dir=tmp_path,
+        )
+        assert len(generated) == 2
+
+    def test_parse_args_chapter_sound_default(self) -> None:
+        """--chapter-sound のデフォルトは assets/sounds/chapter.mp3。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml"])
+        assert args.chapter_sound == "assets/sounds/chapter.mp3"
+
+    def test_parse_args_section_sound_default(self) -> None:
+        """--section-sound のデフォルトは assets/sounds/section.mp3。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml"])
+        assert args.section_sound == "assets/sounds/section.mp3"
+
+    def test_parse_args_chapter_sound_custom(self) -> None:
+        """--chapter-sound でカスタムパスを指定できる。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml", "--chapter-sound", "/tmp/ch.mp3"])
+        assert args.chapter_sound == "/tmp/ch.mp3"
+
+    def test_parse_args_section_sound_custom(self) -> None:
+        """--section-sound でカスタムパスを指定できる。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml", "--section-sound", "/tmp/sec.mp3"])
+        assert args.section_sound == "/tmp/sec.mp3"
+
+    def test_parse_args_no_chapter_sound(self) -> None:
+        """--no-chapter-sound でチャプター効果音を無効化できる。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml", "--no-chapter-sound"])
+        assert args.chapter_sound is None
+
+    def test_parse_args_no_section_sound(self) -> None:
+        """--no-section-sound でセクション効果音を無効化できる。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml", "--no-section-sound"])
+        assert args.section_sound is None
+
+    def test_chapter_sound_increases_audio_length(self, tmp_path: Path) -> None:
+        """チャプター効果音挿入により音声ファイルのサイズが増加する。"""
+        _require_module()
+        sections = parse_dialogue_xml(SAMPLE_MULTI_CHAPTER_XML)
+        chapter_sound = self._make_sound(0.9, duration=1.0)
+
+        path_no_sound = tmp_path / "no_sound"
+        path_with_sound = tmp_path / "with_sound"
+
+        process_dialogue_sections(
+            sections,
+            self._mock_synthesizer(),
+            path_no_sound,
+        )
+        process_dialogue_sections(
+            sections,
+            self._mock_synthesizer(),
+            path_with_sound,
+            chapter_sound=chapter_sound,
+        )
+
+        size_no = (path_no_sound / "chapter_001.wav").stat().st_size
+        size_with = (path_with_sound / "chapter_001.wav").stat().st_size
+        assert size_with > size_no
