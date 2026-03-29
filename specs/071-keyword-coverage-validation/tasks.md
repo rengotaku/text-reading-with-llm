@@ -50,7 +50,7 @@
 
 ### Input
 
-- [ ] T006 Read: specs/071-keyword-coverage-validation/tasks/ph1-output.md
+- [x] T006 Read: specs/071-keyword-coverage-validation/tasks/ph1-output.md
 
 ### Test Implementation (RED)
 
@@ -85,8 +85,8 @@
 
 ### Input
 
-- [ ] T019 Read: specs/071-keyword-coverage-validation/tasks/ph1-output.md
-- [ ] T020 Read: specs/071-keyword-coverage-validation/tasks/ph2-output.md
+- [x] T019 Read: specs/071-keyword-coverage-validation/tasks/ph1-output.md
+- [x] T020 Read: specs/071-keyword-coverage-validation/tasks/ph2-output.md
 
 ### Test Implementation (RED)
 
