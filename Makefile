@@ -93,6 +93,12 @@ dialogue-tts: ## Generate multi-speaker TTS from dialogue XML (ACCELERATION_MODE
 
 dialogue: dialogue-convert dialogue-split gen-dict clean-text dialogue-tts ## Run full dialogue pipeline
 
+# === Demo & Verification ===
+.PHONY: demo-coverage
+
+demo-coverage: ## Demo keyword extraction and coverage validation
+	PYTHONPATH=$(CURDIR) $(PYTHON) scripts/demo_coverage.py
+
 # === Quality ===
 .PHONY: test coverage lint format
 

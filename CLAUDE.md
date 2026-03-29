@@ -22,13 +22,6 @@ source .venv/bin/activate
 
 ---
 
-## Git ワークフロー
-
-- **sub-issue 作成**: `/git.create-sub-issue` を使用する
-  - 例: `/git.create-sub-issue 64 "プロンプトの外部ファイル化"`
-
----
-
 ## Speckit 設定
 
 ### ディレクトリ構成
@@ -95,10 +88,10 @@ specs/                       # フィーチャー仕様格納
 - **phase-executor** (sonnet): 実装 → GREEN 確認 → 検証 → `tasks/ph{N}-output.md` 出力
 
 ## Recent Changes
-- 071-keyword-coverage-validation: Added Python 3.10+ + ollama (LLM), pytest (テスト)
-- 041-book-dialogue-conversion: Added Python 3.10+ + ollama (LLM), voicevox_core (TTS), requests, pyyaml, soundfile, numpy
-- 025-rename-test-xml-parser: Added Python 3.10+ + なし（ファイルリネームのみ）
+- 016-dev-env-optimization: Added Python 3.10+ + pytest, pytest-cov（既存）、GitHub Actions
+- 014-mypy-type-checking: Added Python 3.10 + mypy (新規追加)
+- 013-pyproject-ci-setup: Added Python 3.10+ + soundfile, pyyaml, numpy, requests, fugashi, unidic-lite (本番), ruff, pre-commit, pytest, pytest-cov (開発)
 
 ## Active Technologies
-- Python 3.10+ + ollama (LLM), pytest (テスト) (071-keyword-coverage-validation)
-- N/A（メモリ内処理、JSON出力） (071-keyword-coverage-validation)
+- Python 3.10+ + pytest, pytest-cov（既存）、GitHub Actions (016-dev-env-optimization)
+- N/A（設定ファイルのみ） (016-dev-env-optimization)
