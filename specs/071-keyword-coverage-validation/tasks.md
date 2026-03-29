@@ -102,16 +102,16 @@
 
 ### Implementation (GREEN)
 
-- [ ] T030 Read: specs/071-keyword-coverage-validation/red-tests/ph3-test.md
-- [ ] T031 [US2] CoverageResult dataclass を実装: src/coverage_validator.py（total_keywords, covered_keywords, coverage_rate, missing_keywords, to_dict）
-- [ ] T032 [US2] validate_coverage 関数を実装: src/coverage_validator.py（文字列マッチング、case-insensitive）
-- [ ] T033 Verify: `make test` PASS (GREEN)
+- [x] T030 Read: specs/071-keyword-coverage-validation/red-tests/ph3-test.md
+- [x] T031 [US2] CoverageResult dataclass を実装: src/coverage_validator.py（total_keywords, covered_keywords, coverage_rate, missing_keywords, to_dict）
+- [x] T032 [US2] validate_coverage 関数を実装: src/coverage_validator.py（文字列マッチング、case-insensitive）
+- [x] T033 Verify: `make test` PASS (GREEN)
 
 ### Verification
 
-- [ ] T034 Verify: `make test` で全テストパス（US1 含むリグレッションなし）
-- [ ] T035 Verify: `make coverage` ≥80%
-- [ ] T036 Edit: specs/071-keyword-coverage-validation/tasks/ph3-output.md
+- [x] T034 Verify: `make test` で全テストパス（US1 含むリグレッションなし）
+- [x] T035 Verify: `make coverage` ≥80%
+- [x] T036 Edit: specs/071-keyword-coverage-validation/tasks/ph3-output.md
 
 **Checkpoint**: キーワード抽出とカバー率検証が独立して動作することを確認
 
