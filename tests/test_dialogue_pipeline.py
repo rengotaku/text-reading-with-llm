@@ -72,13 +72,13 @@ SAMPLE_DIALOGUE_XML = """\
         この節では、テストについて説明します。
       </introduction>
       <dialogue>
-        <utterance speaker="A">
+        <utterance speaker="SPEAKER_A">
           まず、基本的な概念から説明しましょう。
         </utterance>
-        <utterance speaker="B">
+        <utterance speaker="SPEAKER_B">
           はい、お願いします。テストとは何ですか？
         </utterance>
-        <utterance speaker="A">
+        <utterance speaker="SPEAKER_A">
           テストとは、ソフトウェアの品質を確認する手法です。
         </utterance>
       </dialogue>
@@ -96,16 +96,16 @@ SAMPLE_DIALOGUE_XML_MULTI_SECTION = """\
     <dialogue-section number="1.1" title="セクション1">
       <introduction speaker="narrator">導入1</introduction>
       <dialogue>
-        <utterance speaker="A">発話A1</utterance>
-        <utterance speaker="B">発話B1</utterance>
+        <utterance speaker="SPEAKER_A">発話A1</utterance>
+        <utterance speaker="SPEAKER_B">発話B1</utterance>
       </dialogue>
       <conclusion speaker="narrator">結論1</conclusion>
     </dialogue-section>
     <dialogue-section number="1.2" title="セクション2">
       <introduction speaker="narrator">導入2</introduction>
       <dialogue>
-        <utterance speaker="A">発話A2</utterance>
-        <utterance speaker="B">発話B2</utterance>
+        <utterance speaker="SPEAKER_A">発話A2</utterance>
+        <utterance speaker="SPEAKER_B">発話B2</utterance>
       </dialogue>
       <conclusion speaker="narrator">結論2</conclusion>
     </dialogue-section>
@@ -150,46 +150,46 @@ class TestSpeaker:
         """博士（A）のSpeakerを正しく生成できる。"""
         _require_module()
         speaker = Speaker(
-            id="A",
+            id="SPEAKER_A",
             role="博士（説明役）",
             voicevox_style_id=11,
             character_name="玄野武宏",
         )
-        assert speaker.id == "A"
+        assert speaker.id == "SPEAKER_A"
         assert speaker.voicevox_style_id == 11
 
     def test_speaker_b_creation(self) -> None:
         """助手（B）のSpeakerを正しく生成できる。"""
         _require_module()
         speaker = Speaker(
-            id="B",
+            id="SPEAKER_B",
             role="助手（質問役）",
             voicevox_style_id=2,
             character_name="四国めたん",
         )
-        assert speaker.id == "B"
+        assert speaker.id == "SPEAKER_B"
         assert speaker.voicevox_style_id == 2
         assert speaker.character_name == "四国めたん"
 
     def test_speaker_equality(self) -> None:
         """同じ値のSpeakerは等価である。"""
         _require_module()
-        s1 = Speaker(id="A", role="博士", voicevox_style_id=11, character_name="玄野武宏")
-        s2 = Speaker(id="A", role="博士", voicevox_style_id=11, character_name="玄野武宏")
+        s1 = Speaker(id="SPEAKER_A", role="博士", voicevox_style_id=11, character_name="玄野武宏")
+        s2 = Speaker(id="SPEAKER_A", role="博士", voicevox_style_id=11, character_name="玄野武宏")
         assert s1 == s2
 
     def test_speaker_inequality(self) -> None:
         """異なる値のSpeakerは不等である。"""
         _require_module()
-        s1 = Speaker(id="A", role="博士", voicevox_style_id=11, character_name="玄野武宏")
-        s2 = Speaker(id="B", role="助手", voicevox_style_id=2, character_name="四国めたん")
+        s1 = Speaker(id="SPEAKER_A", role="博士", voicevox_style_id=11, character_name="玄野武宏")
+        s2 = Speaker(id="SPEAKER_B", role="助手", voicevox_style_id=2, character_name="四国めたん")
         assert s1 != s2
 
     def test_speaker_fields_are_required(self) -> None:
         """全フィールドが必須である。"""
         _require_module()
         with pytest.raises(TypeError):
-            Speaker(id="A")  # type: ignore[call-arg]
+            Speaker(id="SPEAKER_A")  # type: ignore[call-arg]
 
     def test_speaker_voicevox_style_id_is_int(self) -> None:
         """voicevox_style_idがint型で保持される。"""
@@ -243,9 +243,9 @@ class TestParseDialogueXml:
         first_section = result[0]
         utterances = first_section["utterances"]
         assert len(utterances) == 3
-        assert utterances[0]["speaker"] == "A"
-        assert utterances[1]["speaker"] == "B"
-        assert utterances[2]["speaker"] == "A"
+        assert utterances[0]["speaker"] == "SPEAKER_A"
+        assert utterances[1]["speaker"] == "SPEAKER_B"
+        assert utterances[2]["speaker"] == "SPEAKER_A"
 
     def test_parse_utterance_text(self) -> None:
         """utteranceのテキストが正しく取得される。"""
@@ -300,7 +300,7 @@ class TestParseDialogueXml:
     <dialogue-section number="1.1" title="Unicode Test">
       <introduction speaker="narrator">日本語テスト</introduction>
       <dialogue>
-        <utterance speaker="A">量子力学の基礎</utterance>
+        <utterance speaker="SPEAKER_A">量子力学の基礎</utterance>
       </dialogue>
       <conclusion speaker="narrator">まとめ</conclusion>
     </dialogue-section>
@@ -318,7 +318,7 @@ class TestParseDialogueXml:
   <chapter number="1">
     <dialogue-section number="1.1" title="No Intro">
       <dialogue>
-        <utterance speaker="A">発話のみ</utterance>
+        <utterance speaker="SPEAKER_A">発話のみ</utterance>
       </dialogue>
       <conclusion speaker="narrator">結論</conclusion>
     </dialogue-section>
@@ -356,20 +356,20 @@ class TestGetStyleId:
     def test_speaker_a_default_style_id(self) -> None:
         """博士（A）のデフォルトスタイルIDは67。"""
         _require_module()
-        assert get_style_id("A") == 11
+        assert get_style_id("SPEAKER_A") == 11
 
     def test_speaker_b_default_style_id(self) -> None:
         """助手（B）のデフォルトスタイルIDは2。"""
         _require_module()
-        assert get_style_id("B") == 2
+        assert get_style_id("SPEAKER_B") == 2
 
     def test_custom_style_id_mapping(self) -> None:
         """カスタムのスタイルIDマッピングを指定できる。"""
         _require_module()
-        custom_mapping = {"narrator": 10, "A": 20, "B": 30}
+        custom_mapping = {"narrator": 10, "SPEAKER_A": 20, "SPEAKER_B": 30}
         assert get_style_id("narrator", style_mapping=custom_mapping) == 10
-        assert get_style_id("A", style_mapping=custom_mapping) == 20
-        assert get_style_id("B", style_mapping=custom_mapping) == 30
+        assert get_style_id("SPEAKER_A", style_mapping=custom_mapping) == 20
+        assert get_style_id("SPEAKER_B", style_mapping=custom_mapping) == 30
 
     def test_unknown_speaker_raises(self) -> None:
         """未知の話者IDでValueErrorが発生する。"""
@@ -499,7 +499,7 @@ class TestSynthesizeUtterance:
         _require_module()
         result = synthesize_utterance(
             text="テストの発話です",
-            speaker_id="A",
+            speaker_id="SPEAKER_A",
             synthesizer=self._mock_synthesizer(),
         )
         assert result is not None
@@ -512,7 +512,7 @@ class TestSynthesizeUtterance:
         """博士（A）のスタイルID=67でVOICEVOXが呼ばれる。"""
         _require_module()
         mock = self._mock_synthesizer()
-        synthesize_utterance(text="テスト", speaker_id="A", synthesizer=mock)
+        synthesize_utterance(text="テスト", speaker_id="SPEAKER_A", synthesizer=mock)
         mock.synthesize.assert_called_once()
         call_args = mock.synthesize.call_args
         # style_id が 67 で呼ばれることを確認
@@ -523,7 +523,7 @@ class TestSynthesizeUtterance:
         """助手（B）のスタイルID=2でVOICEVOXが呼ばれる。"""
         _require_module()
         mock = self._mock_synthesizer()
-        synthesize_utterance(text="テスト", speaker_id="B", synthesizer=mock)
+        synthesize_utterance(text="テスト", speaker_id="SPEAKER_B", synthesizer=mock)
         mock.synthesize.assert_called_once()
         call_args = mock.synthesize.call_args
         style_id_used = call_args.kwargs.get("style_id", call_args.args[1] if len(call_args.args) > 1 else None)
@@ -547,7 +547,7 @@ class TestSynthesizeUtterance:
         with pytest.raises((ValueError, Exception)):
             synthesize_utterance(
                 text="",
-                speaker_id="A",
+                speaker_id="SPEAKER_A",
                 synthesizer=self._mock_synthesizer(),
             )
 
@@ -557,7 +557,7 @@ class TestSynthesizeUtterance:
         with pytest.raises((TypeError, ValueError)):
             synthesize_utterance(
                 text=None,  # type: ignore[arg-type]
-                speaker_id="A",
+                speaker_id="SPEAKER_A",
                 synthesizer=self._mock_synthesizer(),
             )
 
@@ -576,7 +576,7 @@ class TestSynthesizeUtterance:
         _require_module()
         result = synthesize_utterance(
             text="O(n^2)の計算量とは、例えば100要素で10,000回の処理です。",
-            speaker_id="A",
+            speaker_id="SPEAKER_A",
             synthesizer=self._mock_synthesizer(),
         )
         assert result is not None
@@ -587,7 +587,7 @@ class TestSynthesizeUtterance:
         long_text = "テスト文章です。" * 200  # 約1600文字
         result = synthesize_utterance(
             text=long_text,
-            speaker_id="B",
+            speaker_id="SPEAKER_B",
             synthesizer=self._mock_synthesizer(),
         )
         assert result is not None
@@ -597,7 +597,7 @@ class TestSynthesizeUtterance:
         _require_module()
         result = synthesize_utterance(
             text="テスト",
-            speaker_id="A",
+            speaker_id="SPEAKER_A",
             synthesizer=self._mock_synthesizer(),
             speed_scale=1.2,
         )
@@ -617,7 +617,7 @@ class TestConcatenateSectionAudio:
         duration_samples: int = 24000,
         sample_rate: int = 24000,
         amplitude: float = 0.5,
-        speaker: str = "A",
+        speaker: str = "SPEAKER_A",
     ) -> tuple[np.ndarray, int, str]:
         """テスト用音声セグメントを生成する。"""
         return (np.ones(duration_samples, dtype=np.float32) * amplitude, sample_rate, speaker)
@@ -666,8 +666,8 @@ class TestConcatenateSectionAudio:
         """サンプルレートが保持される。"""
         _require_module()
         sr = 44100
-        seg1 = self._make_segment(1000, sr, speaker="A")
-        seg2 = self._make_segment(1000, sr, speaker="B")
+        seg1 = self._make_segment(1000, sr, speaker="SPEAKER_A")
+        seg2 = self._make_segment(1000, sr, speaker="SPEAKER_B")
 
         _, result_sr = concatenate_section_audio([seg1, seg2])
         assert result_sr == sr
@@ -676,8 +676,8 @@ class TestConcatenateSectionAudio:
         """無音間隔の長さを指定できる（話者が異なる場合）。"""
         _require_module()
         sr = 24000
-        seg1 = self._make_segment(1000, sr, speaker="A")
-        seg2 = self._make_segment(1000, sr, speaker="B")
+        seg1 = self._make_segment(1000, sr, speaker="SPEAKER_A")
+        seg2 = self._make_segment(1000, sr, speaker="SPEAKER_B")
 
         result_default, _ = concatenate_section_audio([seg1, seg2])
         result_long, _ = concatenate_section_audio([seg1, seg2], silence_duration=1.0)
@@ -687,7 +687,7 @@ class TestConcatenateSectionAudio:
         """多数のセグメント（交互話者）を結合できる。"""
         _require_module()
         sr = 24000
-        speakers = ["A", "B"] * 8  # 16個の交互セグメント
+        speakers = ["SPEAKER_A", "SPEAKER_B"] * 8  # 16個の交互セグメント
         segments = [self._make_segment(100, sr, i * 0.05, speakers[i]) for i in range(15)]
 
         result_waveform, result_sr = concatenate_section_audio(segments)
@@ -948,21 +948,21 @@ SAMPLE_MULTI_CHAPTER_XML = """\
   <dialogue-section number="1.1" title="セクション1-1">
     <introduction speaker="narrator">導入1-1</introduction>
     <dialogue>
-      <utterance speaker="A">発話A1-1</utterance>
+      <utterance speaker="SPEAKER_A">発話A1-1</utterance>
     </dialogue>
     <conclusion speaker="narrator">結論1-1</conclusion>
   </dialogue-section>
   <dialogue-section number="1.2" title="セクション1-2">
     <introduction speaker="narrator">導入1-2</introduction>
     <dialogue>
-      <utterance speaker="A">発話A1-2</utterance>
+      <utterance speaker="SPEAKER_A">発話A1-2</utterance>
     </dialogue>
     <conclusion speaker="narrator">結論1-2</conclusion>
   </dialogue-section>
   <dialogue-section number="2.1" title="セクション2-1">
     <introduction speaker="narrator">導入2-1</introduction>
     <dialogue>
-      <utterance speaker="A">発話A2-1</utterance>
+      <utterance speaker="SPEAKER_A">発話A2-1</utterance>
     </dialogue>
     <conclusion speaker="narrator">結論2-1</conclusion>
   </dialogue-section>

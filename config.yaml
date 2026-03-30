@@ -34,10 +34,10 @@ voicevox:
 # Speaker Settings (for dialogue conversion)
 # ===========================================
 speakers:
-  A:
+  SPEAKER_A:
     name: "教授"
     role: "解説役。専門知識を持ち、丁寧に説明する"
-  B:
+  SPEAKER_B:
     name: "助手"
     role: "聞き手。質問し、理解を確認する。丁寧な口調"
 
