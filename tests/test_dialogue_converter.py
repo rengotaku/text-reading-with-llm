@@ -60,8 +60,8 @@ from src.dialogue_converter import (
 
 # テスト用のデフォルトspeakers設定
 DEFAULT_SPEAKERS = {
-    "A": {"name": "教授", "role": "解説役。専門知識を持ち、丁寧に説明する"},
-    "B": {"name": "助手", "role": "聞き手。質問し、理解を確認する。丁寧な口調"},
+    "SPEAKER_A": {"name": "教授", "role": "解説役。専門知識を持ち、丁寧に説明する"},
+    "SPEAKER_B": {"name": "助手", "role": "聞き手。質問し、理解を確認する。丁寧な口調"},
 }
 
 # Phase 3 RED: should_split, split_by_heading はまだ未実装
@@ -129,46 +129,46 @@ class TestUtteranceDataclass:
 
     def test_utterance_creation_speaker_a(self):
         """話者A（博士）のUtteranceが正しく生成される"""
-        utterance = Utterance(speaker="A", text="これは説明です。")
-        assert utterance.speaker == "A"
+        utterance = Utterance(speaker="SPEAKER_A", text="これは説明です。")
+        assert utterance.speaker == "SPEAKER_A"
         assert utterance.text == "これは説明です。"
 
     def test_utterance_creation_speaker_b(self):
         """話者B（助手）のUtteranceが正しく生成される"""
-        utterance = Utterance(speaker="B", text="なるほど、教えてください。")
-        assert utterance.speaker == "B"
+        utterance = Utterance(speaker="SPEAKER_B", text="なるほど、教えてください。")
+        assert utterance.speaker == "SPEAKER_B"
         assert utterance.text == "なるほど、教えてください。"
 
     def test_utterance_has_speaker_field(self):
         """Utteranceにspeakerフィールドが存在する"""
-        utterance = Utterance(speaker="A", text="テスト")
+        utterance = Utterance(speaker="SPEAKER_A", text="テスト")
         assert hasattr(utterance, "speaker")
 
     def test_utterance_has_text_field(self):
         """Utteranceにtextフィールドが存在する"""
-        utterance = Utterance(speaker="A", text="テスト")
+        utterance = Utterance(speaker="SPEAKER_A", text="テスト")
         assert hasattr(utterance, "text")
 
     def test_utterance_equality(self):
         """同じ内容のUtteranceが等価である"""
-        u1 = Utterance(speaker="A", text="同じテキスト")
-        u2 = Utterance(speaker="A", text="同じテキスト")
+        u1 = Utterance(speaker="SPEAKER_A", text="同じテキスト")
+        u2 = Utterance(speaker="SPEAKER_A", text="同じテキスト")
         assert u1 == u2
 
     def test_utterance_inequality_different_speaker(self):
         """異なる話者のUtteranceが不等価である"""
-        u1 = Utterance(speaker="A", text="同じテキスト")
-        u2 = Utterance(speaker="B", text="同じテキスト")
+        u1 = Utterance(speaker="SPEAKER_A", text="同じテキスト")
+        u2 = Utterance(speaker="SPEAKER_B", text="同じテキスト")
         assert u1 != u2
 
     def test_utterance_with_unicode_text(self):
         """Unicode（絵文字含む）テキストを保持できる"""
-        utterance = Utterance(speaker="A", text="量子コンピュータの概念")
+        utterance = Utterance(speaker="SPEAKER_A", text="量子コンピュータの概念")
         assert utterance.text == "量子コンピュータの概念"
 
     def test_utterance_with_special_characters(self):
         """特殊文字（引用符、括弧等）を含むテキストを保持できる"""
-        utterance = Utterance(speaker="B", text='「これは"テスト"です」（補足）')
+        utterance = Utterance(speaker="SPEAKER_B", text='「これは"テスト"です」（補足）')
         assert utterance.text == '「これは"テスト"です」（補足）'
 
 
@@ -178,8 +178,8 @@ class TestDialogueBlockDataclass:
     def test_dialogue_block_creation(self):
         """DialogueBlockが正しく生成される"""
         utterances = [
-            Utterance(speaker="A", text="説明します。"),
-            Utterance(speaker="B", text="お願いします。"),
+            Utterance(speaker="SPEAKER_A", text="説明します。"),
+            Utterance(speaker="SPEAKER_B", text="お願いします。"),
         ]
         block = DialogueBlock(
             section_number="1.1",
@@ -200,7 +200,7 @@ class TestDialogueBlockDataclass:
             section_number="2.3",
             section_title="タイトル",
             introduction="導入",
-            dialogue=[Utterance(speaker="A", text="テスト")],
+            dialogue=[Utterance(speaker="SPEAKER_A", text="テスト")],
             conclusion="結論",
         )
         assert hasattr(block, "section_number")
@@ -215,7 +215,7 @@ class TestDialogueBlockDataclass:
             section_number="1.1",
             section_title="タイトル",
             introduction="",
-            dialogue=[Utterance(speaker="A", text="テスト")],
+            dialogue=[Utterance(speaker="SPEAKER_A", text="テスト")],
             conclusion="結論",
         )
         assert block.introduction == ""
@@ -226,7 +226,7 @@ class TestDialogueBlockDataclass:
             section_number="1.1",
             section_title="タイトル",
             introduction="導入",
-            dialogue=[Utterance(speaker="A", text="テスト")],
+            dialogue=[Utterance(speaker="SPEAKER_A", text="テスト")],
             conclusion="",
         )
         assert block.conclusion == ""
@@ -234,11 +234,11 @@ class TestDialogueBlockDataclass:
     def test_dialogue_block_with_multiple_utterances(self):
         """複数の発言を含むDialogueBlockが正しく保持される"""
         utterances = [
-            Utterance(speaker="A", text="まず基本から。"),
-            Utterance(speaker="B", text="はい、お願いします。"),
-            Utterance(speaker="A", text="APIとは..."),
-            Utterance(speaker="B", text="なるほど。"),
-            Utterance(speaker="A", text="具体的には..."),
+            Utterance(speaker="SPEAKER_A", text="まず基本から。"),
+            Utterance(speaker="SPEAKER_B", text="はい、お願いします。"),
+            Utterance(speaker="SPEAKER_A", text="APIとは..."),
+            Utterance(speaker="SPEAKER_B", text="なるほど。"),
+            Utterance(speaker="SPEAKER_A", text="具体的には..."),
         ]
         block = DialogueBlock(
             section_number="3.1",
@@ -248,8 +248,8 @@ class TestDialogueBlockDataclass:
             conclusion="以上がAPIの基本でした。",
         )
         assert len(block.dialogue) == 5
-        assert block.dialogue[0].speaker == "A"
-        assert block.dialogue[1].speaker == "B"
+        assert block.dialogue[0].speaker == "SPEAKER_A"
+        assert block.dialogue[1].speaker == "SPEAKER_B"
 
     def test_dialogue_block_section_number_format(self):
         """セクション番号がX.Y形式で保持される"""
@@ -257,7 +257,7 @@ class TestDialogueBlockDataclass:
             section_number="12.34",
             section_title="タイトル",
             introduction="",
-            dialogue=[Utterance(speaker="A", text="テスト")],
+            dialogue=[Utterance(speaker="SPEAKER_A", text="テスト")],
             conclusion="",
         )
         assert block.section_number == "12.34"
@@ -272,7 +272,7 @@ class TestConversionResultDataclass:
             section_number="1.1",
             section_title="テスト",
             introduction="導入",
-            dialogue=[Utterance(speaker="A", text="テスト")],
+            dialogue=[Utterance(speaker="SPEAKER_A", text="テスト")],
             conclusion="結論",
         )
         result = ConversionResult(
@@ -582,7 +582,11 @@ class TestGenerateDialogue:
         """generate_dialogue()がUtteranceのリストを返す"""
         mock_ollama = MagicMock()
         mock_ollama.return_value = {
-            "message": {"content": '[{"speaker": "A", "text": "説明します"}, {"speaker": "B", "text": "お願いします"}]'}
+            "message": {
+                "content": (
+                    '[{"speaker": "SPEAKER_A", "text": "説明します"}, {"speaker": "SPEAKER_B", "text": "お願いします"}]'
+                )
+            }
         }
         result = generate_dialogue(
             dialogue_paragraphs=["本論の段落"],
@@ -594,7 +598,7 @@ class TestGenerateDialogue:
     def test_generate_dialogue_returns_utterance_objects(self):
         """返却リストの各要素がUtteranceインスタンスである"""
         mock_ollama = MagicMock()
-        mock_ollama.return_value = {"message": {"content": '[{"speaker": "A", "text": "テスト"}]'}}
+        mock_ollama.return_value = {"message": {"content": '[{"speaker": "SPEAKER_A", "text": "テスト"}]'}}
         result = generate_dialogue(
             dialogue_paragraphs=["段落"],
             ollama_chat_func=mock_ollama,
@@ -607,7 +611,10 @@ class TestGenerateDialogue:
     def test_generate_dialogue_has_speaker_a_and_b(self):
         """生成された対話にA（博士）とB（助手）の両方が含まれる"""
         mock_ollama = MagicMock()
-        content = '[{"speaker": "A", "text": "概念を説明しましょう"}, {"speaker": "B", "text": "はい、教えてください"}]'
+        content = (
+            '[{"speaker": "SPEAKER_A", "text": "概念を説明しましょう"},'
+            ' {"speaker": "SPEAKER_B", "text": "はい、教えてください"}]'
+        )
         mock_ollama.return_value = {"message": {"content": content}}
         result = generate_dialogue(
             dialogue_paragraphs=["APIの基本概念について説明します。"],
@@ -615,13 +622,13 @@ class TestGenerateDialogue:
             speakers=DEFAULT_SPEAKERS,
         )
         speaker_ids = {u.speaker for u in result}
-        assert "A" in speaker_ids
-        assert "B" in speaker_ids
+        assert "SPEAKER_A" in speaker_ids
+        assert "SPEAKER_B" in speaker_ids
 
     def test_generate_dialogue_calls_llm(self):
         """LLM（ollama）が呼び出される"""
         mock_ollama = MagicMock()
-        mock_ollama.return_value = {"message": {"content": '[{"speaker": "A", "text": "テスト"}]'}}
+        mock_ollama.return_value = {"message": {"content": '[{"speaker": "SPEAKER_A", "text": "テスト"}]'}}
         generate_dialogue(dialogue_paragraphs=["テスト"], ollama_chat_func=mock_ollama, speakers=DEFAULT_SPEAKERS)
         mock_ollama.assert_called_once()
 
@@ -629,7 +636,11 @@ class TestGenerateDialogue:
         """各発話のテキストが空でないことを確認"""
         mock_ollama = MagicMock()
         mock_ollama.return_value = {
-            "message": {"content": '[{"speaker": "A", "text": "内容があります"}, {"speaker": "B", "text": "確認です"}]'}
+            "message": {
+                "content": (
+                    '[{"speaker": "SPEAKER_A", "text": "内容があります"}, {"speaker": "SPEAKER_B", "text": "確認です"}]'
+                )
+            }
         }
         result = generate_dialogue(
             dialogue_paragraphs=["段落テキスト"],
@@ -671,7 +682,7 @@ class TestGenerateDialogue:
     def test_generate_dialogue_with_context_parameters(self):
         """introduction/conclusionのコンテキストが渡せる"""
         mock_ollama = MagicMock()
-        mock_ollama.return_value = {"message": {"content": '[{"speaker": "A", "text": "テスト"}]'}}
+        mock_ollama.return_value = {"message": {"content": '[{"speaker": "SPEAKER_A", "text": "テスト"}]'}}
         result = generate_dialogue(
             dialogue_paragraphs=["本論"],
             introduction="導入テキスト",
@@ -685,7 +696,9 @@ class TestGenerateDialogue:
         """LLMの応答順序で発話が保持される"""
         mock_ollama = MagicMock()
         content = (
-            '[{"speaker": "A", "text": "1番目"}, {"speaker": "B", "text": "2番目"}, {"speaker": "A", "text": "3番目"}]'
+            '[{"speaker": "SPEAKER_A", "text": "1番目"},'
+            ' {"speaker": "SPEAKER_B", "text": "2番目"},'
+            ' {"speaker": "SPEAKER_A", "text": "3番目"}]'
         )
         mock_ollama.return_value = {"message": {"content": content}}
         result = generate_dialogue(
@@ -693,9 +706,9 @@ class TestGenerateDialogue:
             ollama_chat_func=mock_ollama,
             speakers=DEFAULT_SPEAKERS,
         )
-        assert result[0].speaker == "A"
-        assert result[1].speaker == "B"
-        assert result[2].speaker == "A"
+        assert result[0].speaker == "SPEAKER_A"
+        assert result[1].speaker == "SPEAKER_B"
+        assert result[2].speaker == "SPEAKER_A"
 
 
 # =============================================================================
@@ -717,8 +730,8 @@ class TestToDialogueXml:
         """テスト用DialogueBlockを生成するヘルパー"""
         if utterances is None:
             utterances = [
-                Utterance(speaker="A", text="説明します。"),
-                Utterance(speaker="B", text="お願いします。"),
+                Utterance(speaker="SPEAKER_A", text="説明します。"),
+                Utterance(speaker="SPEAKER_B", text="お願いします。"),
             ]
         return DialogueBlock(
             section_number=section_number,
@@ -769,8 +782,8 @@ class TestToDialogueXml:
     def test_to_dialogue_xml_contains_utterances(self):
         """XMLに発話テキストが含まれる"""
         utterances = [
-            Utterance(speaker="A", text="博士の発言です。"),
-            Utterance(speaker="B", text="助手の発言です。"),
+            Utterance(speaker="SPEAKER_A", text="博士の発言です。"),
+            Utterance(speaker="SPEAKER_B", text="助手の発言です。"),
         ]
         block = self._make_block(utterances=utterances)
         result = to_dialogue_xml(block)
@@ -781,8 +794,8 @@ class TestToDialogueXml:
         """XMLにspeaker属性が含まれる"""
         block = self._make_block()
         result = to_dialogue_xml(block)
-        assert 'speaker="A"' in result
-        assert 'speaker="B"' in result
+        assert 'speaker="SPEAKER_A"' in result
+        assert 'speaker="SPEAKER_B"' in result
 
     def test_to_dialogue_xml_contains_narrator_speaker(self):
         """introduction/conclusionにnarrator話者が指定される"""
@@ -808,9 +821,9 @@ class TestToDialogueXml:
     def test_to_dialogue_xml_utterance_elements(self):
         """dialogue配下にutterance要素が正しく生成される"""
         utterances = [
-            Utterance(speaker="A", text="発言1"),
-            Utterance(speaker="B", text="発言2"),
-            Utterance(speaker="A", text="発言3"),
+            Utterance(speaker="SPEAKER_A", text="発言1"),
+            Utterance(speaker="SPEAKER_B", text="発言2"),
+            Utterance(speaker="SPEAKER_A", text="発言3"),
         ]
         block = self._make_block(utterances=utterances)
         result = to_dialogue_xml(block)
@@ -821,7 +834,7 @@ class TestToDialogueXml:
     def test_to_dialogue_xml_with_special_characters(self):
         """XMLの特殊文字（<, >, &）がエスケープされる"""
         utterances = [
-            Utterance(speaker="A", text="A < B & C > D"),
+            Utterance(speaker="SPEAKER_A", text="A < B & C > D"),
         ]
         block = self._make_block(utterances=utterances)
         result = to_dialogue_xml(block)
@@ -893,7 +906,7 @@ class TestEdgeCases:
     def test_generate_dialogue_with_very_short_text(self):
         """非常に短いテキスト（1-2文）からの対話生成"""
         mock_ollama = MagicMock()
-        mock_ollama.return_value = {"message": {"content": '[{"speaker": "A", "text": "短い説明"}]'}}
+        mock_ollama.return_value = {"message": {"content": '[{"speaker": "SPEAKER_A", "text": "短い説明"}]'}}
         result = generate_dialogue(
             dialogue_paragraphs=["短文。"],
             ollama_chat_func=mock_ollama,
@@ -926,7 +939,7 @@ class TestEdgeCases:
                 section_number="1.1",
                 section_title="タイトル",
                 introduction=None,
-                dialogue=[Utterance(speaker="A", text="テスト")],
+                dialogue=[Utterance(speaker="SPEAKER_A", text="テスト")],
                 conclusion="結論",
             )
             # Noneが許容される場合
@@ -939,7 +952,9 @@ class TestEdgeCases:
     def test_generate_dialogue_with_large_paragraph_count(self):
         """多数の段落（50個）を含むセクションの対話生成"""
         mock_ollama = MagicMock()
-        large_response = [{"speaker": "A" if i % 2 == 0 else "B", "text": f"発話{i}"} for i in range(100)]
+        large_response = [
+            {"speaker": "SPEAKER_A" if i % 2 == 0 else "SPEAKER_B", "text": f"発話{i}"} for i in range(100)
+        ]
         import json
 
         mock_ollama.return_value = {"message": {"content": json.dumps(large_response, ensure_ascii=False)}}
@@ -954,7 +969,13 @@ class TestEdgeCases:
 
     def test_to_dialogue_xml_with_many_utterances(self):
         """100個の発話を含むDialogueBlockのXML化"""
-        utterances = [Utterance(speaker="A" if i % 2 == 0 else "B", text=f"発話{i}のテキスト") for i in range(100)]
+        utterances = [
+            Utterance(
+                speaker="SPEAKER_A" if i % 2 == 0 else "SPEAKER_B",
+                text=f"発話{i}のテキスト",
+            )
+            for i in range(100)
+        ]
         block = DialogueBlock(
             section_number="1.1",
             section_title="大量発話テスト",
@@ -971,19 +992,19 @@ class TestEdgeCases:
 
     def test_utterance_with_sql_special_chars(self):
         """SQL特殊文字を含むテキスト"""
-        utterance = Utterance(speaker="A", text="SELECT * FROM table WHERE id = 1; DROP TABLE;")
+        utterance = Utterance(speaker="SPEAKER_A", text="SELECT * FROM table WHERE id = 1; DROP TABLE;")
         assert "DROP TABLE" in utterance.text
 
     def test_utterance_with_html_tags(self):
         """HTMLタグを含むテキスト"""
-        utterance = Utterance(speaker="A", text="<script>alert('xss')</script>")
+        utterance = Utterance(speaker="SPEAKER_A", text="<script>alert('xss')</script>")
         assert "<script>" in utterance.text
 
     def test_to_dialogue_xml_with_unicode_content(self):
         """Unicode文字（漢字、ひらがな、カタカナ混在）のXML化"""
         utterances = [
-            Utterance(speaker="A", text="量子コンピュータは従来の計算機とは異なります。"),
-            Utterance(speaker="B", text="それはどういう意味ですか？"),
+            Utterance(speaker="SPEAKER_A", text="量子コンピュータは従来の計算機とは異なります。"),
+            Utterance(speaker="SPEAKER_B", text="それはどういう意味ですか？"),
         ]
         block = DialogueBlock(
             section_number="5.2",
@@ -1000,7 +1021,7 @@ class TestEdgeCases:
     def test_to_dialogue_xml_with_ampersand_in_text(self):
         """アンパサンド(&)を含むテキストのXML化"""
         utterances = [
-            Utterance(speaker="A", text="A & B の関係について"),
+            Utterance(speaker="SPEAKER_A", text="A & B の関係について"),
         ]
         block = DialogueBlock(
             section_number="1.1",
@@ -1017,7 +1038,7 @@ class TestEdgeCases:
     def test_to_dialogue_xml_with_speakers_replaces_names(self):
         """speakers設定により話者IDが呼称に置換される"""
         utterances = [
-            Utterance(speaker="A", text="Bはこの概念を知っていますか？"),
+            Utterance(speaker="SPEAKER_A", text="SPEAKER_Bはこの概念を知っていますか？"),
         ]
         block = DialogueBlock(
             section_number="1.1",
@@ -1027,17 +1048,17 @@ class TestEdgeCases:
             conclusion="",
         )
         speakers = {
-            "A": {"name": "教授", "role": "解説役"},
-            "B": {"name": "助手", "role": "聞き手"},
+            "SPEAKER_A": {"name": "教授", "role": "解説役"},
+            "SPEAKER_B": {"name": "助手", "role": "聞き手"},
         }
         result = to_dialogue_xml(block, speakers=speakers)
         assert "助手はこの概念を知っていますか？" in result
-        assert "Bはこの概念を知っていますか？" not in result
+        assert "SPEAKER_Bはこの概念を知っていますか？" not in result
 
     def test_to_dialogue_xml_without_speakers_keeps_original(self):
         """speakers設定なしの場合は元のテキストを維持"""
         utterances = [
-            Utterance(speaker="A", text="Bはこの概念を知っていますか？"),
+            Utterance(speaker="SPEAKER_A", text="Bはこの概念を知っていますか？"),
         ]
         block = DialogueBlock(
             section_number="1.1",
@@ -1119,7 +1140,7 @@ class TestEdgeCases:
             # 不正な話者が除外またはエラーになる
             if len(result) > 0:
                 for u in result:
-                    assert u.speaker in ("A", "B")
+                    assert u.speaker in ("SPEAKER_A", "SPEAKER_B")
         except (ValueError, KeyError):
             assert True
 
@@ -1571,7 +1592,7 @@ class TestSplitContextContinuity:
     def test_convert_section_with_split_sets_was_split_flag(self):
         """分割処理を経たconvert_section()の結果でwas_splitがTrueになる"""
         mock_ollama = MagicMock()
-        mock_ollama.return_value = {"message": {"content": '[{"speaker": "A", "text": "テスト"}]'}}
+        mock_ollama.return_value = {"message": {"content": '[{"speaker": "SPEAKER_A", "text": "テスト"}]'}}
         # 4,000文字超のセクション
         paragraphs = ["あ" * 2500, "## 見出し", "い" * 2500]
         section = Section(
@@ -1630,7 +1651,7 @@ class TestSplitContextContinuity:
                 section_number=sub.number,
                 section_title=sub.title,
                 introduction="テスト導入",
-                dialogue=[Utterance(speaker="A", text="テスト発言")],
+                dialogue=[Utterance(speaker="SPEAKER_A", text="テスト発言")],
                 conclusion="テスト結論",
             )
             xml_str = to_dialogue_xml(block)
@@ -1760,7 +1781,7 @@ class TestBoundaryCharacterCount:
     def test_boundary_convert_section_long_with_split(self):
         """4,500文字のセクションをconvert_section()で処理 → was_split=True"""
         mock_ollama = MagicMock()
-        mock_ollama.return_value = {"message": {"content": '[{"speaker": "A", "text": "テスト"}]'}}
+        mock_ollama.return_value = {"message": {"content": '[{"speaker": "SPEAKER_A", "text": "テスト"}]'}}
         paragraphs = ["あ" * 2500, "## 見出し", "い" * 2000]
         section = Section(
             number="1.1",
@@ -2207,8 +2228,8 @@ class TestConverterMainSuccessPath:
                 section_title="テスト",
                 introduction="導入です。",
                 dialogue=[
-                    Utterance(speaker="A", text="説明です。"),
-                    Utterance(speaker="B", text="なるほど。"),
+                    Utterance(speaker="SPEAKER_A", text="説明です。"),
+                    Utterance(speaker="SPEAKER_B", text="なるほど。"),
                 ],
                 conclusion="まとめです。",
             ),
@@ -2641,8 +2662,8 @@ def _make_successful_conversion_result() -> ConversionResult:
             section_title="テスト",
             introduction="導入です。",
             dialogue=[
-                Utterance(speaker="A", text="説明です。"),
-                Utterance(speaker="B", text="なるほど。"),
+                Utterance(speaker="SPEAKER_A", text="説明です。"),
+                Utterance(speaker="SPEAKER_B", text="なるほど。"),
             ],
             conclusion="まとめです。",
         ),
@@ -2663,17 +2684,17 @@ class TestReplaceSpeakerNames:
 
     def test_replace_single_speaker(self):
         """単一の話者IDを置換"""
-        speakers = {"B": {"name": "助手", "role": "聞き手"}}
-        result = replace_speaker_names("Bはこれを知っていますか？", speakers)
+        speakers = {"SPEAKER_B": {"name": "助手", "role": "聞き手"}}
+        result = replace_speaker_names("SPEAKER_Bはこれを知っていますか？", speakers)
         assert result == "助手はこれを知っていますか？"
 
     def test_replace_multiple_speakers(self):
         """複数の話者IDを置換"""
         speakers = {
-            "A": {"name": "教授", "role": "解説役"},
-            "B": {"name": "助手", "role": "聞き手"},
+            "SPEAKER_A": {"name": "教授", "role": "解説役"},
+            "SPEAKER_B": {"name": "助手", "role": "聞き手"},
         }
-        result = replace_speaker_names("AがBに説明しました", speakers)
+        result = replace_speaker_names("SPEAKER_AがSPEAKER_Bに説明しました", speakers)
         assert result == "教授が助手に説明しました"
 
     def test_no_replacement_without_speakers(self):
@@ -2683,26 +2704,46 @@ class TestReplaceSpeakerNames:
 
     def test_no_replacement_for_non_matching_text(self):
         """話者IDが含まれないテキストはそのまま"""
-        speakers = {"B": {"name": "助手", "role": "聞き手"}}
+        speakers = {"SPEAKER_B": {"name": "助手", "role": "聞き手"}}
         result = replace_speaker_names("今日は良い天気です", speakers)
         assert result == "今日は良い天気です"
 
     def test_replace_multiple_occurrences(self):
         """同じ話者IDの複数出現を置換"""
-        speakers = {"B": {"name": "助手", "role": "聞き手"}}
-        result = replace_speaker_names("BはBの資料を見ていますか？", speakers)
+        speakers = {"SPEAKER_B": {"name": "助手", "role": "聞き手"}}
+        result = replace_speaker_names("SPEAKER_BはSPEAKER_Bの資料を見ていますか？", speakers)
         assert result == "助手は助手の資料を見ていますか？"
 
     def test_no_replace_within_word(self):
-        """単語内のAやBは置換しない"""
+        """単語内のSPEAKER_AやSPEAKER_Bは置換しない"""
         speakers = {
-            "A": {"name": "教授", "role": "解説役"},
-            "B": {"name": "助手", "role": "聞き手"},
+            "SPEAKER_A": {"name": "教授", "role": "解説役"},
+            "SPEAKER_B": {"name": "助手", "role": "聞き手"},
         }
         result = replace_speaker_names("APIやDBについて説明します", speakers)
         # API, DB内のA, Bは置換されない
         assert "API" in result
         assert "DB" in result
+
+    def test_no_replace_company_names(self):
+        """固有名詞（A社/B社等）が置換されない（Issue #69）"""
+        speakers = {
+            "SPEAKER_A": {"name": "教授", "role": "解説役"},
+            "SPEAKER_B": {"name": "助手", "role": "聞き手"},
+        }
+        result = replace_speaker_names("A社の作業者は親指の力が出るかどうか", speakers)
+        assert "A社" in result
+        assert "教授社" not in result
+
+    def test_no_replace_b_company(self):
+        """B社も置換されない（Issue #69）"""
+        speakers = {
+            "SPEAKER_A": {"name": "教授", "role": "解説役"},
+            "SPEAKER_B": {"name": "助手", "role": "聞き手"},
+        }
+        result = replace_speaker_names("B社とC社が提携しました", speakers)
+        assert "B社" in result
+        assert "助手社" not in result
 
 
 class TestLoadSpeakersConfig:
@@ -2712,10 +2753,10 @@ class TestLoadSpeakersConfig:
         """デフォルト設定ファイルからspeakers設定を読み込む"""
         config_content = """
 speakers:
-  A:
+  SPEAKER_A:
     name: "博士"
     role: "解説者"
-  B:
+  SPEAKER_B:
     name: "学生"
     role: "質問者"
 """
@@ -2726,8 +2767,8 @@ speakers:
 
         result = load_speakers_config(config_file)
         assert result == {
-            "A": {"name": "博士", "role": "解説者"},
-            "B": {"name": "学生", "role": "質問者"},
+            "SPEAKER_A": {"name": "博士", "role": "解説者"},
+            "SPEAKER_B": {"name": "学生", "role": "質問者"},
         }
 
     def test_load_from_missing_file(self, tmp_path):

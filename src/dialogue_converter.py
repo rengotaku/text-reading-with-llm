@@ -97,11 +97,11 @@ class Utterance:
     """対話内の個々の発言。
 
     Attributes:
-        speaker: 話者ID ("A"=博士, "B"=助手)
+        speaker: 話者ID ("SPEAKER_A"=博士, "SPEAKER_B"=助手)
         text: 発言テキスト
     """
 
-    speaker: Literal["A", "B"]
+    speaker: Literal["SPEAKER_A", "SPEAKER_B"]
     text: str
 
 
@@ -484,12 +484,12 @@ def generate_dialogue(
     full_context = "\n\n".join(context_parts)
 
     # speakers設定からキャラクター設定を生成（必須）
-    if not speakers or "A" not in speakers or "B" not in speakers:
-        raise ValueError("speakers設定が必要です（config.yamlにA, Bの設定を追加してください）")
-    a_name = speakers["A"]["name"]
-    b_name = speakers["B"]["name"]
-    a_role = speakers["A"]["role"]
-    b_role = speakers["B"]["role"]
+    if not speakers or "SPEAKER_A" not in speakers or "SPEAKER_B" not in speakers:
+        raise ValueError("speakers設定が必要です（config.yamlにSPEAKER_A, SPEAKER_Bの設定を追加してください）")
+    a_name = speakers["SPEAKER_A"]["name"]
+    b_name = speakers["SPEAKER_B"]["name"]
+    a_role = speakers["SPEAKER_A"]["role"]
+    b_role = speakers["SPEAKER_B"]["role"]
 
     # NOTE: プロンプト変更時は src/prompts/generate_dialogue.txt も確認・更新すること
     system_content, prompt = load_prompt(
@@ -539,13 +539,13 @@ def generate_dialogue(
 
         utterances: list[Utterance] = []
 
-        # 方式1: 「A:」または「B:」で始まる行をパース（Markdown形式）
-        pattern = re.compile(r"^([AB]):\s*(.+)$", re.MULTILINE)
+        # 方式1: 「SPEAKER_A:」または「SPEAKER_B:」で始まる行をパース（Markdown形式）
+        pattern = re.compile(r"^(SPEAKER_A|SPEAKER_B):\s*(.+)$", re.MULTILINE)
         for match in pattern.finditer(response_text):
             speaker_str = match.group(1)
             text = match.group(2).strip()
-            if text and speaker_str in ("A", "B"):
-                speaker: Literal["A", "B"] = "A" if speaker_str == "A" else "B"
+            if text and speaker_str in ("SPEAKER_A", "SPEAKER_B"):
+                speaker: Literal["SPEAKER_A", "SPEAKER_B"] = "SPEAKER_A" if speaker_str == "SPEAKER_A" else "SPEAKER_B"
                 utterances.append(Utterance(speaker=speaker, text=text))
 
         # 方式2: JSON形式にフォールバック（後方互換性）
@@ -557,8 +557,8 @@ def generate_dialogue(
                     for item in parsed:
                         sp = item.get("speaker", "")
                         tx = item.get("text", "")
-                        if sp in ("A", "B") and tx:
-                            speaker = "A" if sp == "A" else "B"
+                        if sp in ("SPEAKER_A", "SPEAKER_B") and tx:
+                            speaker = "SPEAKER_A" if sp == "SPEAKER_A" else "SPEAKER_B"
                             utterances.append(Utterance(speaker=speaker, text=tx))
                 except json.JSONDecodeError:
                     pass
@@ -583,7 +583,7 @@ def to_dialogue_xml(
     """DialogueBlockをXML文字列にシリアライズする。
 
     data-model.mdで定義された対話XMLスキーマに従う。
-    speakers設定が渡された場合、発言テキスト内の話者ID（A, B）を呼称に置換する。
+    speakers設定が渡された場合、発言テキスト内の話者ID（SPEAKER_A, SPEAKER_B）を呼称に置換する。
 
     Args:
         block: シリアライズするDialogueBlockオブジェクト

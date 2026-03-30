@@ -103,8 +103,8 @@ def is_speakable_text(text: str) -> bool:
 # デフォルト話者スタイルIDマッピング
 DEFAULT_STYLE_MAPPING: dict[str, int] = {
     "narrator": 13,  # 青山龍星
-    "A": 11,  # 玄野武宏（博士）- 67は未対応のため変更
-    "B": 2,  # 四国めたん（助手）
+    "SPEAKER_A": 11,  # 玄野武宏（博士）- 67は未対応のため変更
+    "SPEAKER_B": 2,  # 四国めたん（助手）
 }
 
 
@@ -113,7 +113,7 @@ class Speaker:
     """話者を表すデータクラス.
 
     Attributes:
-        id: 話者識別子 ("narrator", "A", "B")
+        id: 話者識別子 ("narrator", "SPEAKER_A", "SPEAKER_B")
         role: 話者の役割説明
         voicevox_style_id: VOICEVOXのスタイルID
         character_name: キャラクター名
@@ -218,7 +218,7 @@ def get_style_id(
     """話者IDに対応するVOICEVOXスタイルIDを返す.
 
     Args:
-        speaker_id: 話者識別子 ("narrator", "A", "B" など)
+        speaker_id: 話者識別子 ("narrator", "SPEAKER_A", "SPEAKER_B" など)
         style_mapping: カスタムスタイルIDマッピング。Noneの場合はデフォルトを使用。
 
     Returns:
@@ -250,7 +250,7 @@ def synthesize_utterance(
 
     Args:
         text: 発話テキスト
-        speaker_id: 話者識別子 ("narrator", "A", "B")
+        speaker_id: 話者識別子 ("narrator", "SPEAKER_A", "SPEAKER_B")
         synthesizer: VoicevoxSynthesizerインスタンス（またはモック）
         speed_scale: 読み上げ速度スケール（Noneの場合はデフォルト）
 
