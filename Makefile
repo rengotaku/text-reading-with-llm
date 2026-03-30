@@ -12,8 +12,11 @@ VOICEVOX_DOWNLOADER := download-linux-x64
 # Load defaults from config.yaml
 CFG = grep '^$(1):' config.yaml | head -1 | sed 's/^[^:]*: *//' | sed 's/^"//;s/"$$//'
 
-INPUT ?= $(shell $(call CFG,input))
+BOOK_DIR ?= $(shell $(call CFG,book_dir))
 OUTPUT ?= $(shell $(call CFG,output))
+
+# Derive input file path from BOOK_DIR
+BOOK_INPUT := $(BOOK_DIR)/book.xml
 STYLE_ID ?= 13
 SPEED ?= 1.0
 ACCELERATION_MODE ?= AUTO
@@ -64,32 +67,32 @@ setup-dev: $(VENV)/bin/activate ## Install dev dependencies + pre-commit hooks
 # === Pipeline (gen-dict → xml-tts) ===
 .PHONY: gen-dict clean-text xml-tts run
 
-gen-dict: ## Generate reading dictionary with LLM (INPUT=file)
-	PYTHONPATH=$(CURDIR) $(PYTHON) src/generate_reading_dict.py "$(INPUT)" --model "$(LLM_MODEL)" --merge
+gen-dict: ## Generate reading dictionary with LLM (BOOK_DIR=dir)
+	PYTHONPATH=$(CURDIR) $(PYTHON) src/generate_reading_dict.py "$(BOOK_INPUT)" --model "$(LLM_MODEL)" --merge
 
-clean-text: ## Generate cleaned_text.txt from XML (INPUT=file)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.text_cleaner_cli -i "$(INPUT)" -o "$(OUTPUT)"
+clean-text: ## Generate cleaned_text.txt from XML (BOOK_DIR=dir)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.text_cleaner_cli -i "$(BOOK_INPUT)" -o "$(OUTPUT)"
 
-xml-tts: ## Run XML to TTS pipeline (INPUT=file)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i "$(INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
+xml-tts: ## Run XML to TTS pipeline (BOOK_DIR=dir)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i "$(BOOK_INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
 
-run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → TTS (INPUT=file)
+run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → TTS (BOOK_DIR=dir)
 
 # === Dialogue Pipeline ===
-# Helper to get content hash from INPUT file
-CONTENT_HASH = $(shell PYTHONPATH=$(CURDIR) $(PYTHON) -c "from src.dict_manager import get_xml_content_hash; from pathlib import Path; print(get_xml_content_hash(Path('$(INPUT)')))" 2>/dev/null)
+# Helper to get content hash from BOOK_INPUT file
+CONTENT_HASH = $(shell PYTHONPATH=$(CURDIR) $(PYTHON) -c "from src.dict_manager import get_xml_content_hash; from pathlib import Path; print(get_xml_content_hash(Path('$(BOOK_INPUT)')))" 2>/dev/null)
 HASH_DIR = $(OUTPUT)/$(CONTENT_HASH)
 
 .PHONY: dialogue-convert dialogue-split dialogue-tts dialogue
 
-dialogue-convert: ## Convert book XML to dialogue form with LLM (INPUT=file)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_converter -i "$(INPUT)" -o "$(OUTPUT)" --model "$(LLM_MODEL)"
+dialogue-convert: ## Convert book XML to dialogue form with LLM (BOOK_DIR=dir)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_converter -i "$(BOOK_INPUT)" -o "$(OUTPUT)" --model "$(LLM_MODEL)"
 
 dialogue-split: ## Split long texts in dialogue XML for TTS (MAX_LENGTH=300)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_text_splitter -i "$(HASH_DIR)/dialogue_book.xml" --max-length $(MAX_LENGTH)
 
 dialogue-tts: ## Generate multi-speaker TTS from dialogue XML (ACCELERATION_MODE=AUTO|CPU|GPU)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(HASH_DIR)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)" --dict-source "$(INPUT)"
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(HASH_DIR)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)" --dict-source "$(BOOK_INPUT)"
 
 dialogue: dialogue-convert dialogue-split gen-dict clean-text dialogue-tts ## Run full dialogue pipeline
 
