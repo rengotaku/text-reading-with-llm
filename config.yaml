@@ -1,8 +1,8 @@
 # Text Reading with LLM - Default Configuration
 # Override per-run values via CLI args or Makefile variables
 
-# Input
-input: sample/book.xml
+# Input (BOOK_DIR contains book.xml)
+book_dir: sample
 
 # Output base directory (actual output will be in data/{content_hash}/)
 output: data

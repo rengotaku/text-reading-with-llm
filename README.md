@@ -19,7 +19,11 @@ make setup
 
 ```bash
 # 辞書生成 → テキストクリーニング → TTS を順次実行
-make run INPUT=path/to/book.xml
+make run BOOK_DIR=path/to/book_dir
+
+# ebook-ocr 連携: BOOK_DIR 環境変数を使用（パス指定不要）
+export BOOK_DIR=/home/user/ebook-ocr/output/848d29b0
+make run
 ```
 
 #### 1.2 段階的実行（推奨）
@@ -28,14 +32,14 @@ make run INPUT=path/to/book.xml
 
 ```bash
 # Step 1: 読み辞書生成（固有名詞・専門用語の読み方を LLM で生成）
-make gen-dict INPUT=path/to/book.xml
+make gen-dict BOOK_DIR=path/to/book_dir
 
 # Step 2: テキストクリーニング（URL除去、数字変換等）
 # → data/{hash}/cleaned_text.txt が生成される
-make clean-text INPUT=path/to/book.xml
+make clean-text BOOK_DIR=path/to/book_dir
 
 # Step 3: TTS 音声生成（cleaned_text.txt から音声生成）
-make xml-tts INPUT=path/to/book.xml
+make xml-tts BOOK_DIR=path/to/book_dir
 ```
 
 #### 1.3 TTS パラメータ調整時の時短テクニック
@@ -44,11 +48,11 @@ make xml-tts INPUT=path/to/book.xml
 
 ```bash
 # 初回: 全パイプライン実行
-make run INPUT=sample.xml
+make run BOOK_DIR=sample
 
 # 2回目以降: TTS のみ再実行（テキストクリーニングをスキップ）
-make xml-tts INPUT=sample.xml SPEED=1.5
-make xml-tts INPUT=sample.xml STYLE_ID=3  # ずんだもん
+make xml-tts BOOK_DIR=sample SPEED=1.5
+make xml-tts BOOK_DIR=sample STYLE_ID=3  # ずんだもん
 ```
 
 **処理時間**: テキストクリーニングのスキップにより処理時間が約50%短縮されます。
@@ -56,11 +60,11 @@ make xml-tts INPUT=sample.xml STYLE_ID=3  # ずんだもん
 ### 2. Markdown パイプライン（章分割あり）
 
 ```bash
-# config.yamlのinputを使用
+# config.yamlのbook_dirを使用
 make run
 
-# 入力ファイルを指定
-make run INPUT=path/to/book.md
+# BOOK_DIRを指定
+make run BOOK_DIR=path/to/book_dir
 ```
 
 出力構造:
@@ -101,7 +105,7 @@ make organize DATA_DIR=data/72a2534e9e81
 ### config.yaml
 
 ```yaml
-input: sample/book.md
+book_dir: sample
 output: data
 
 voicevox:
@@ -121,7 +125,7 @@ chapters:
 
 | 変数 | デフォルト | 説明 |
 |-----|-----------|------|
-| `INPUT` | config.yaml | 入力Markdownファイル |
+| `BOOK_DIR` | config.yaml | 入力ディレクトリ（`book.xml` を含む） |
 | `OUTPUT` | data | 出力ベースディレクトリ |
 | `STYLE_ID` | 13 | VOICEVOXスタイルID |
 | `SPEED` | 1.0 | 話速 |
@@ -138,7 +142,7 @@ make setup         # 環境構築
 make run           # 全パイプライン実行（辞書生成 → テキストクリーニング → TTS）
 make gen-dict      # 読み辞書生成のみ
 make clean-text    # テキストクリーニングのみ（XML → cleaned_text.txt）
-make xml-tts       # TTS生成のみ（INPUT指定または既存cleaned_text.txt使用）
+make xml-tts       # TTS生成のみ（BOOK_DIR指定または既存cleaned_text.txt使用）
 
 # その他のパイプライン
 make run-simple    # TTS実行（章分割なし）
