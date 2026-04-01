@@ -100,6 +100,13 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         default=2000,
         help="Required GPU memory in MB for GPU mode (default: 2000)",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        dest="dry_run",
+        help="Show target info without TTS generation",
+    )
 
     return parser.parse_args(args)
 
@@ -141,12 +148,24 @@ def main(args: list[str] | None = None) -> None:
 
     # Combine all content text for hash/dict loading
     combined_text = " ".join(item.text for item in content_items)
-    init_for_content(combined_text)
 
     # Generate hash-based output directory
     content_hash = get_content_hash(combined_text)
     output_base = Path(parsed.output)
     output_dir = output_base / content_hash
+
+    # dry-run: show summary and exit
+    if parsed.dry_run:
+        logger.info("DRY-RUN: Input: %s", input_path)
+        logger.info("DRY-RUN: Output: %s", output_dir)
+        logger.info("DRY-RUN: Content items: %d", len(content_items))
+        total_chars = sum(len(item.text) for item in content_items)
+        logger.info("DRY-RUN: Total characters: %d", total_chars)
+        est_chunks = total_chars // parsed.max_chunk_chars + 1
+        logger.info("DRY-RUN: Estimated TTS chunks: ~%d", est_chunks)
+        return
+
+    init_for_content(combined_text)
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Output directory: %s", output_dir)
 

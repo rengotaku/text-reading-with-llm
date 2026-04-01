@@ -55,6 +55,14 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         help="Output directory (default: ./output)",
     )
 
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        dest="dry_run",
+        help="Show target info without writing files",
+    )
+
     return parser.parse_args(args)
 
 
@@ -98,6 +106,14 @@ def main(args: list[str] | None = None) -> None:
     content_hash = get_content_hash(combined_text)
     output_base = Path(parsed.output)
     output_dir = output_base / content_hash
+
+    # dry-run: show summary and exit
+    if parsed.dry_run:
+        logger.info("DRY-RUN: Input: %s", input_path)
+        logger.info("DRY-RUN: Output: %s", output_dir / "cleaned_text.txt")
+        logger.info("DRY-RUN: Content items: %d", len(content_items))
+        return
+
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Output directory: %s", output_dir)
 

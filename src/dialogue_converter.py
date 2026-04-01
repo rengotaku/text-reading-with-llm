@@ -949,9 +949,9 @@ def main() -> int:
 
     # dry-runモード: 変換せずに対象セクションを表示
     if args.dry_run:
-        logger.info("[dry-run] 対象セクション数: %d", len(sections))
+        logger.info("DRY-RUN: 対象セクション数: %d", len(sections))
         for section in sections:
-            logger.info("[dry-run] セクション %s: %s", section.number, section.title)
+            logger.info("DRY-RUN: セクション %s: %s", section.number, section.title)
         return 0
 
     # セクションがない場合は正常終了

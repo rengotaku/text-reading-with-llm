@@ -23,6 +23,10 @@ ACCELERATION_MODE ?= AUTO
 MAX_LENGTH ?= 300
 
 LLM_MODEL ?= gpt-oss:20b
+DRY_RUN ?=
+
+# Convert DRY_RUN to --dry-run flag
+DRY_RUN_FLAG := $(if $(DRY_RUN),--dry-run,)
 
 # === Help & Setup ===
 .PHONY: help guide setup setup-dev setup-voicevox reset-vvm
@@ -68,13 +72,13 @@ setup-dev: $(VENV)/bin/activate ## Install dev dependencies + pre-commit hooks
 .PHONY: gen-dict clean-text xml-tts run
 
 gen-dict: ## Generate reading dictionary with LLM (BOOK_DIR=dir)
-	PYTHONPATH=$(CURDIR) $(PYTHON) src/generate_reading_dict.py "$(BOOK_INPUT)" --model "$(LLM_MODEL)" --merge
+	PYTHONPATH=$(CURDIR) $(PYTHON) src/generate_reading_dict.py "$(BOOK_INPUT)" --model "$(LLM_MODEL)" --merge $(DRY_RUN_FLAG)
 
 clean-text: ## Generate cleaned_text.txt from XML (BOOK_DIR=dir)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.text_cleaner_cli -i "$(BOOK_INPUT)" -o "$(OUTPUT)"
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.text_cleaner_cli -i "$(BOOK_INPUT)" -o "$(OUTPUT)" $(DRY_RUN_FLAG)
 
 xml-tts: ## Run XML to TTS pipeline (BOOK_DIR=dir)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i "$(BOOK_INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.xml_pipeline -i "$(BOOK_INPUT)" -o "$(OUTPUT)" --style-id $(STYLE_ID) --speed $(SPEED) $(DRY_RUN_FLAG)
 
 run: gen-dict clean-text xml-tts ## Run full pipeline: dict → clean-text → TTS (BOOK_DIR=dir)
 
@@ -86,13 +90,13 @@ HASH_DIR = $(OUTPUT)/$(CONTENT_HASH)
 .PHONY: dialogue-convert dialogue-split dialogue-tts dialogue
 
 dialogue-convert: ## Convert book XML to dialogue form with LLM (BOOK_DIR=dir)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_converter -i "$(BOOK_INPUT)" -o "$(OUTPUT)" --model "$(LLM_MODEL)"
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_converter -i "$(BOOK_INPUT)" -o "$(OUTPUT)" --model "$(LLM_MODEL)" $(DRY_RUN_FLAG)
 
 dialogue-split: ## Split long texts in dialogue XML for TTS (MAX_LENGTH=300)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_text_splitter -i "$(HASH_DIR)/dialogue_book.xml" --max-length $(MAX_LENGTH)
 
 dialogue-tts: ## Generate multi-speaker TTS from dialogue XML (ACCELERATION_MODE=AUTO|CPU|GPU)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(HASH_DIR)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)" --dict-source "$(BOOK_INPUT)"
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(HASH_DIR)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)" --dict-source "$(BOOK_INPUT)" $(DRY_RUN_FLAG)
 
 dialogue: dialogue-convert dialogue-split gen-dict clean-text dialogue-tts ## Run full dialogue pipeline
 
