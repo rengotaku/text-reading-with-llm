@@ -869,6 +869,18 @@ class TestParseArgs:
         args = parse_args(["-i", "dialogue.xml", "--dict-source", "book.xml"])
         assert args.dict_source == "book.xml"
 
+    def test_verbose_default(self) -> None:
+        """--verbose のデフォルトは False。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml"])
+        assert args.verbose is False
+
+    def test_verbose_flag(self) -> None:
+        """--verbose フラグで True になる。"""
+        _require_module()
+        args = parse_args(["-i", "dialogue.xml", "--verbose"])
+        assert args.verbose is True
+
 
 # ===========================================================================
 # T055: 読み辞書初期化 init_readings() のテスト

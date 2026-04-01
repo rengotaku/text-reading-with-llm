@@ -10,6 +10,7 @@ import argparse
 import io
 import logging
 import re
+import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,6 +23,7 @@ import soundfile as sf
 from src.chapter_processor import load_sound
 from src.dict_manager import get_xml_content_hash, load_dict
 from src.llm_reading_generator import apply_llm_readings
+from src.logging_config import setup_logging
 from src.number_normalizer import normalize_numbers
 from src.reading_dict import apply_reading_rules
 
@@ -382,7 +384,7 @@ def _synthesize_section(
         intro_text = intro["text"]
         intro_speaker = intro["speaker"]
         if is_speakable_text(intro_text):
-            logger.info(
+            logger.debug(
                 "  [intro] speaker=%s, len=%d: %s",
                 intro_speaker,
                 len(intro_text),
@@ -404,7 +406,7 @@ def _synthesize_section(
             utt_text = utterance["text"]
             utt_speaker = utterance["speaker"]
             if is_speakable_text(utt_text):
-                logger.info(
+                logger.debug(
                     "  [utterance %d] speaker=%s, len=%d: %s",
                     i + 1,
                     utt_speaker,
@@ -427,7 +429,7 @@ def _synthesize_section(
         concl_text = conclusion["text"]
         concl_speaker = conclusion["speaker"]
         if is_speakable_text(concl_text):
-            logger.info(
+            logger.debug(
                 "  [conclusion] speaker=%s, len=%d: %s",
                 concl_speaker,
                 len(concl_text),
@@ -508,8 +510,19 @@ def process_dialogue_sections(
                 all_segments.append((section_sound, sample_rate, _SOUND_EFFECT_SPEAKER_ID))
                 logger.info("  Inserted section sound effect before section %s", section.get("section_number", ""))
 
+            section_start = time.monotonic()
             section_segments = _synthesize_section(section, synthesizer, speed_scale)
+            section_elapsed = time.monotonic() - section_start
             all_segments.extend(section_segments)
+
+            wav_count = len(section_segments)
+            section_num = section.get("section_number", "?")
+            logger.info(
+                "  Section %s completed in %.1fs (%d wav segments)",
+                section_num,
+                section_elapsed,
+                wav_count,
+            )
 
         if all_segments:
             output_path = output_dir / f"chapter_{chapter_num.zfill(3)}.wav"
@@ -611,6 +624,12 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         help="セクション効果音を無効化する",
     )
     parser.add_argument(
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="発話単位の詳細ログを出力する",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         default=False,
@@ -636,9 +655,10 @@ def main() -> int:
         終了コード (0: 成功, 1: 入力エラー, 2: VOICEVOX初期化エラー, 3: 音声生成エラー)
     """
 
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-
     args = parse_args()
+
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    setup_logging(level=log_level)
 
     # 入力ファイル確認
     input_path = Path(args.input)

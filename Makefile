@@ -24,9 +24,11 @@ MAX_LENGTH ?= 300
 
 LLM_MODEL ?= gpt-oss:20b
 DRY_RUN ?=
+VERBOSE ?=
 
 # Convert DRY_RUN to --dry-run flag
 DRY_RUN_FLAG := $(if $(DRY_RUN),--dry-run,)
+VERBOSE_FLAG := $(if $(VERBOSE),--verbose,)
 
 # === Help & Setup ===
 .PHONY: help guide setup setup-dev setup-voicevox reset-vvm
@@ -96,7 +98,7 @@ dialogue-split: ## Split long texts in dialogue XML for TTS (MAX_LENGTH=300)
 	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_text_splitter -i "$(HASH_DIR)/dialogue_book.xml" --max-length $(MAX_LENGTH)
 
 dialogue-tts: ## Generate multi-speaker TTS from dialogue XML (ACCELERATION_MODE=AUTO|CPU|GPU)
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(HASH_DIR)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)" --dict-source "$(BOOK_INPUT)" $(DRY_RUN_FLAG)
+	PYTHONPATH=$(CURDIR) $(PYTHON) -m src.dialogue_pipeline -i "$(HASH_DIR)/dialogue_book.xml" -o "$(OUTPUT)" --acceleration-mode "$(ACCELERATION_MODE)" --dict-source "$(BOOK_INPUT)" $(DRY_RUN_FLAG) $(VERBOSE_FLAG)
 
 dialogue: dialogue-convert dialogue-split gen-dict clean-text dialogue-tts ## Run full dialogue pipeline
 
