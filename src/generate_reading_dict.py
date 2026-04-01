@@ -303,6 +303,9 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=30, help="Terms per LLM request (default: 30)")
     parser.add_argument("--merge", action="store_true", help="Merge with existing dictionary")
     parser.add_argument("--keep-model", action="store_true", help="Keep ollama model loaded after processing")
+    parser.add_argument(
+        "--dry-run", action="store_true", default=False, dest="dry_run", help="Show target info without LLM calls"
+    )
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -379,6 +382,13 @@ def main() -> None:
     # Filter out terms already in dictionary
     new_terms = [t for t in sorted(all_terms) if t not in existing]
     logger.info("New terms to process: %d", len(new_terms))
+
+    # dry-run: show summary and exit
+    if args.dry_run:
+        logger.info("[dry-run] Input: %s", input_path)
+        logger.info("[dry-run] Output: %s", output_path)
+        logger.info("[dry-run] Total terms: %d, Existing: %d, New: %d", len(all_terms), len(existing), len(new_terms))
+        return
 
     if not new_terms:
         logger.info("No new terms to process")

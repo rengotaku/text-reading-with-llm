@@ -610,6 +610,13 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         default=False,
         help="セクション効果音を無効化する",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        dest="dry_run",
+        help="対象情報を表示し、TTS生成をスキップする",
+    )
 
     parsed = parser.parse_args(args)
 
@@ -663,6 +670,24 @@ def main() -> int:
         return 1
     output_base = Path(args.output)
     output_dir = output_base / content_hash
+
+    # dry-run: show summary and exit
+    if args.dry_run:
+        total_utterances = 0
+        speaker_counts: dict[str, int] = {}
+        for section in sections:
+            for utt in section.get("utterances", []):
+                total_utterances += 1
+                sp = utt.get("speaker", "unknown")
+                speaker_counts[sp] = speaker_counts.get(sp, 0) + 1
+        logger.info("[dry-run] Input: %s", input_path)
+        logger.info("[dry-run] Output: %s", output_dir)
+        logger.info("[dry-run] Sections: %d", len(sections))
+        logger.info("[dry-run] Total utterances: %d", total_utterances)
+        for sp, count in sorted(speaker_counts.items()):
+            logger.info("[dry-run]   %s: %d utterances", sp, count)
+        return 0
+
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Output directory: %s", output_dir)
 
