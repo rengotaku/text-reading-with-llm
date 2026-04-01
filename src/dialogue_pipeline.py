@@ -23,6 +23,7 @@ import soundfile as sf
 from src.chapter_processor import load_sound
 from src.dict_manager import get_xml_content_hash, load_dict
 from src.llm_reading_generator import apply_llm_readings
+from src.logging_config import setup_logging
 from src.number_normalizer import normalize_numbers
 from src.reading_dict import apply_reading_rules
 
@@ -514,7 +515,6 @@ def process_dialogue_sections(
             section_elapsed = time.monotonic() - section_start
             all_segments.extend(section_segments)
 
-            # Count wav segments (exclude sound effects)
             wav_count = len(section_segments)
             section_num = section.get("section_number", "?")
             logger.info(
@@ -658,7 +658,7 @@ def main() -> int:
     args = parse_args()
 
     log_level = logging.DEBUG if args.verbose else logging.INFO
-    logging.basicConfig(level=log_level, format="%(levelname)s: %(message)s")
+    setup_logging(level=log_level)
 
     # 入力ファイル確認
     input_path = Path(args.input)
