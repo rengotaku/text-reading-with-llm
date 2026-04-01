@@ -385,9 +385,9 @@ def main() -> None:
 
     # dry-run: show summary and exit
     if args.dry_run:
-        logger.info("[dry-run] Input: %s", input_path)
-        logger.info("[dry-run] Output: %s", output_path)
-        logger.info("[dry-run] Total terms: %d, Existing: %d, New: %d", len(all_terms), len(existing), len(new_terms))
+        logger.info("DRY-RUN: Input: %s", input_path)
+        logger.info("DRY-RUN: Output: %s", output_path)
+        logger.info("DRY-RUN: Total terms: %d, Existing: %d, New: %d", len(all_terms), len(existing), len(new_terms))
         return
 
     if not new_terms:

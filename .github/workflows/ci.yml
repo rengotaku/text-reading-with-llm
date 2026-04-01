@@ -39,6 +39,10 @@ jobs:
         run: PYTHONPATH=. pytest tests/ --forked --tb=short -q
         timeout-minutes: 10
 
+      - name: Run dry-run integration tests
+        run: PYTHONPATH=. pytest tests/test_dry_run_integration.py -v
+        timeout-minutes: 3
+
       - name: Run pytest with coverage
         run: |
           PYTHONPATH=. pytest tests/ --cov=src --cov-report=xml:coverage.xml --cov-report=term-missing -q --timeout=30

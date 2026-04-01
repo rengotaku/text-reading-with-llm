@@ -109,9 +109,9 @@ def main(args: list[str] | None = None) -> None:
 
     # dry-run: show summary and exit
     if parsed.dry_run:
-        logger.info("[dry-run] Input: %s", input_path)
-        logger.info("[dry-run] Output: %s", output_dir / "cleaned_text.txt")
-        logger.info("[dry-run] Content items: %d", len(content_items))
+        logger.info("DRY-RUN: Input: %s", input_path)
+        logger.info("DRY-RUN: Output: %s", output_dir / "cleaned_text.txt")
+        logger.info("DRY-RUN: Content items: %d", len(content_items))
         return
 
     output_dir.mkdir(parents=True, exist_ok=True)

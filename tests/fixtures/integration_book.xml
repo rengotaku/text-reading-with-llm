@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <metadata>
+        <title>Integration Test Book</title>
+    </metadata>
+    <toc begin="1" end="3">
+        <entry level="1" number="1" title="SREの基本" />
+        <entry level="2" number="1.1" title="SLOとSLI" />
+        <entry level="1" number="2" title="オブザーバビリティ" />
+    </toc>
+    <front-matter>
+        <paragraph readAloud="true">はじめに</paragraph>
+    </front-matter>
+    <heading level="1" readAloud="true">SREの基本</heading>
+    <paragraph readAloud="true">SRE（Site Reliability Engineering）はGoogleが提唱した考え方です。</paragraph>
+    <paragraph readAloud="true">SLOとSLIを適切に設定することが重要です。</paragraph>
+    <heading level="2" readAloud="true">SLOとSLI</heading>
+    <paragraph readAloud="true">SLO（Service Level Objective）はサービスの信頼性目標です。</paragraph>
+    <paragraph readAloud="true">Kubernetesやprometheusなどのツールを活用して監視します。</paragraph>
+    <list>
+        <item>モニタリングの設定</item>
+        <item>アラートの運用</item>
+        <item>エラーバジェットの管理</item>
+    </list>
+    <heading level="1" readAloud="true">オブザーバビリティ</heading>
+    <paragraph readAloud="true">オブザーバビリティとはシステムの状態を外部から観測する能力です。</paragraph>
+    <paragraph readAloud="true">OpenTelemetryやGrafanaを使った実装が一般的です。</paragraph>
+    <paragraph readAloud="false">この段落はスキップされます。</paragraph>
+</book>

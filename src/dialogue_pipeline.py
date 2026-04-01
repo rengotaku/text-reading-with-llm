@@ -680,12 +680,12 @@ def main() -> int:
                 total_utterances += 1
                 sp = utt.get("speaker", "unknown")
                 speaker_counts[sp] = speaker_counts.get(sp, 0) + 1
-        logger.info("[dry-run] Input: %s", input_path)
-        logger.info("[dry-run] Output: %s", output_dir)
-        logger.info("[dry-run] Sections: %d", len(sections))
-        logger.info("[dry-run] Total utterances: %d", total_utterances)
+        logger.info("DRY-RUN: Input: %s", input_path)
+        logger.info("DRY-RUN: Output: %s", output_dir)
+        logger.info("DRY-RUN: Sections: %d", len(sections))
+        logger.info("DRY-RUN: Total utterances: %d", total_utterances)
         for sp, count in sorted(speaker_counts.items()):
-            logger.info("[dry-run]   %s: %d utterances", sp, count)
+            logger.info("DRY-RUN:   %s: %d utterances", sp, count)
         return 0
 
     output_dir.mkdir(parents=True, exist_ok=True)

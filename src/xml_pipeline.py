@@ -156,13 +156,13 @@ def main(args: list[str] | None = None) -> None:
 
     # dry-run: show summary and exit
     if parsed.dry_run:
-        logger.info("[dry-run] Input: %s", input_path)
-        logger.info("[dry-run] Output: %s", output_dir)
-        logger.info("[dry-run] Content items: %d", len(content_items))
+        logger.info("DRY-RUN: Input: %s", input_path)
+        logger.info("DRY-RUN: Output: %s", output_dir)
+        logger.info("DRY-RUN: Content items: %d", len(content_items))
         total_chars = sum(len(item.text) for item in content_items)
-        logger.info("[dry-run] Total characters: %d", total_chars)
+        logger.info("DRY-RUN: Total characters: %d", total_chars)
         est_chunks = total_chars // parsed.max_chunk_chars + 1
-        logger.info("[dry-run] Estimated TTS chunks: ~%d", est_chunks)
+        logger.info("DRY-RUN: Estimated TTS chunks: ~%d", est_chunks)
         return
 
     init_for_content(combined_text)
