@@ -48,6 +48,29 @@ speakers:
 max_chunk_chars: 500
 
 # ===========================================
+# LLM Settings (Ollama)
+# ===========================================
+# 用途別（profile）に ollama の生成パラメータを指定する。
+# defaults に profile の値を上書きマージして利用する。
+llm:
+  defaults:
+    temperature: 0.3
+    num_predict: 4096
+  profiles:
+    # 読み辞書生成: 正確性重視で低温度
+    reading_dict:
+      temperature: 0.2
+    # 対話生成: 多様性を上げつつ繰り返しを抑制
+    dialogue:
+      temperature: 0.5
+      repeat_penalty: 1.2
+    # 導入/結論ナレーション: 少し温度を上げて自然な表現に
+    introduction:
+      temperature: 0.4
+    conclusion:
+      temperature: 0.4
+
+# ===========================================
 # Chapter Settings
 # ===========================================
 # Enable chapter-based processing (generates separate audio per chapter)
