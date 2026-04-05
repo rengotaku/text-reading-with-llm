@@ -17,6 +17,7 @@ from typing import Any, Callable, Literal
 import yaml
 
 from src.dict_manager import get_xml_content_hash
+from src.llm_config import load_llm_profile
 from src.prompt_loader import load_prompt
 from src.xml_parser import ContentItem, parse_book2_xml
 
@@ -705,6 +706,38 @@ def split_by_heading(section: Section) -> list[Section]:
     return result
 
 
+def _wrap_with_profile(
+    base_func: Callable[..., Any] | None,
+    profile_name: str,
+) -> Callable[..., Any] | None:
+    """ollama.chat を呼び出す関数に profile の options を注入した wrapper を返す。
+
+    config.yaml の `llm.profiles.<profile_name>` を読み込み、ollama.chat の
+    ``options=`` 引数として渡す。profile が空（未設定）の場合は wrapper を
+    挟まず元の関数をそのまま返す（既存テストのモック呼び出しを壊さないため）。
+
+    Args:
+        base_func: ラップ対象の ollama_chat 関数（None の場合は None を返す）
+        profile_name: 読み込む profile 名（"dialogue", "introduction" 等）
+
+    Returns:
+        options を注入する wrapper、または元の関数（profile 未設定時）
+    """
+    if base_func is None:
+        return None
+
+    options = load_llm_profile(profile_name)
+    if not options:
+        return base_func
+
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
+        # 呼び出し側が既に options を指定している場合はそちらを優先
+        kwargs.setdefault("options", options)
+        return base_func(*args, **kwargs)
+
+    return wrapped
+
+
 def convert_section(
     section: Section,
     model: str = DEFAULT_MODEL,
@@ -739,25 +772,30 @@ def convert_section(
         # 原文テキストを結合
         original_text = "\n".join(target_section.paragraphs)
 
+        # profile ごとの options を ollama_chat_func に注入する wrapper を作成
+        intro_func = _wrap_with_profile(ollama_chat_func, "introduction")
+        conclusion_func = _wrap_with_profile(ollama_chat_func, "conclusion")
+        dialogue_func = _wrap_with_profile(ollama_chat_func, "dialogue")
+
         # 導入ナレーション生成
         introduction_text = generate_introduction(
             original_text=original_text,
             model=model,
-            ollama_chat_func=ollama_chat_func,
+            ollama_chat_func=intro_func,
         )
 
         # 結論ナレーション生成
         conclusion_text = generate_conclusion(
             original_text=original_text,
             model=model,
-            ollama_chat_func=ollama_chat_func,
+            ollama_chat_func=conclusion_func,
         )
 
         # 対話生成（intro/conclusionをコンテキストとして渡す）
         utterances = generate_dialogue(
             dialogue_paragraphs=target_section.paragraphs,
             model=model,
-            ollama_chat_func=ollama_chat_func,
+            ollama_chat_func=dialogue_func,
             introduction=introduction_text,
             conclusion=conclusion_text,
             speakers=speakers,

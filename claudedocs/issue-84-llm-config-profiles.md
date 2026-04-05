@@ -34,9 +34,23 @@ llm:
 
 ## 実装タスク
 
-- [ ] `config.yaml` に `llm` セクション追加
-- [ ] `src/llm_config.py`（新規）に `load_llm_profile(name)` 追加
-- [ ] `src/generate_reading_dict.py:ollama_chat()` に `options` 引数追加
-- [ ] `src/dialogue_converter.py` の呼び出し側で profile を適用
-- [ ] 既存テストが壊れないこと確認
-- [ ] 対話出力で品質改善確認
+- [x] `config.yaml` に `llm` セクション追加
+- [x] `src/llm_config.py`（新規）に `load_llm_profile(name)` 追加
+- [x] `src/generate_reading_dict.py:ollama_chat()` に `options` 引数追加
+- [x] `src/dialogue_converter.py` の呼び出し側で profile を適用
+- [x] 既存テストが壊れないこと確認（998 件パス）
+- [ ] 対話出力で品質改善確認（手動検証）
+
+## 実装メモ
+
+- `load_llm_profile(name)` は `llm.defaults` に `llm.profiles.<name>` を上書きマージ
+  した dict を返す。未設定時は空 dict。
+- `generate_reading_dict.ollama_chat()` の `options` 引数は `None` 時に従来の
+  デフォルト（temperature=0.3, num_predict=4096）を維持（後方互換）。
+- `dialogue_converter.convert_section()` 内で `_wrap_with_profile()` により
+  `ollama.chat` を profile ごとにラップ:
+  - `generate_introduction` → `introduction` profile
+  - `generate_conclusion` → `conclusion` profile
+  - `generate_dialogue` → `dialogue` profile
+- profile が未設定の場合は wrapper を挟まず元関数を返すため、既存モックテストの
+  呼び出しシグネチャは変化しない。
