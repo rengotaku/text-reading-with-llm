@@ -18,6 +18,7 @@ from pathlib import Path
 import requests
 
 from src.dict_manager import get_dict_path, load_dict, save_dict
+from src.llm_config import load_llm_profile
 from src.llm_reading_generator import extract_technical_terms
 from src.logging_config import setup_logging
 from src.text_cleaner import split_into_pages
@@ -28,16 +29,32 @@ logger = logging.getLogger(__name__)
 OLLAMA_API_URL = "http://localhost:11434/api/chat"
 
 
-def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout: int = 300) -> dict:
-    """Call Ollama chat API."""
+def ollama_chat(
+    model: str,
+    messages: list[dict],
+    max_retries: int = 3,
+    timeout: int = 300,
+    options: dict | None = None,
+) -> dict:
+    """Call Ollama chat API.
+
+    Args:
+        model: Ollama model name.
+        messages: Chat messages list.
+        max_retries: Retry count for transient failures.
+        timeout: Request timeout seconds.
+        options: Ollama options dict (temperature, num_predict, repeat_penalty, etc.).
+            When None, defaults to ``{"temperature": 0.3, "num_predict": 4096}``.
+            Callers can pass profile-specific options via ``load_llm_profile()``.
+    """
+    if options is None:
+        options = {"temperature": 0.3, "num_predict": 4096}
+
     payload = {
         "model": model,
         "messages": messages,
         "stream": False,
-        "options": {
-            "temperature": 0.3,  # Low temperature for consistent output
-            "num_predict": 4096,
-        },
+        "options": options,
     }
 
     # Calculate request size
@@ -209,6 +226,9 @@ def generate_readings_batch(
     """
     all_readings = {}
 
+    # Load profile-specific LLM options (falls back to defaults if not configured)
+    options = load_llm_profile("reading_dict") or None
+
     # Warm up model before processing first batch
     _warmup_model(model)
 
@@ -260,7 +280,7 @@ def generate_readings_batch(
 
         for attempt in range(max_retries):
             try:
-                response = ollama_chat(model, messages)
+                response = ollama_chat(model, messages, options=options)
                 response_text = response.get("message", {}).get("content", "")
 
                 batch_readings, table_found = _extract_markdown_table(response_text)
