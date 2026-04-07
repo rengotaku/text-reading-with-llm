@@ -17,6 +17,7 @@ from typing import Any, Callable, Literal
 import yaml
 
 from src.dict_manager import get_xml_content_hash
+from src.llm_config import load_llm_profile
 from src.prompt_loader import load_prompt
 from src.xml_parser import ContentItem, parse_book2_xml
 
@@ -705,33 +706,36 @@ def split_by_heading(section: Section) -> list[Section]:
     return result
 
 
-def _wrap_with_options(
+def _wrap_with_profile(
     base_func: Callable[..., Any] | None,
-    options: dict[str, Any],
+    profile_name: str,
 ) -> Callable[..., Any] | None:
-    """ollama_chat_func に options を注入するラッパーを返す。
+    """ollama.chat を呼び出す関数に profile の options を注入した wrapper を返す。
+
+    config.yaml の `llm.profiles.<profile_name>` を読み込み、ollama.chat の
+    ``options=`` 引数として渡す。profile が空（未設定）の場合は wrapper を
+    挟まず元の関数をそのまま返す（既存テストのモック呼び出しを壊さないため）。
 
     Args:
         base_func: ラップ対象の ollama_chat 関数（None の場合は None を返す）
-        options: 注入する Ollama options dict（temperature, repeat_penalty 等）
+        profile_name: 読み込む profile 名（"dialogue", "introduction" 等）
 
     Returns:
-        options を追加して base_func を呼び出すラッパー関数。base_func が None なら None。
+        options を注入する wrapper、または元の関数（profile 未設定時）
     """
     if base_func is None:
         return None
 
-    def wrapper(**kwargs: Any) -> Any:
-        merged = {**options, **(kwargs.get("options") or {})}
-        kwargs["options"] = merged
-        return base_func(**kwargs)
+    options = load_llm_profile(profile_name)
+    if not options:
+        return base_func
 
-    return wrapper
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
+        # 呼び出し側が既に options を指定している場合はそちらを優先
+        kwargs.setdefault("options", options)
+        return base_func(*args, **kwargs)
 
-
-# 用途別の推奨 LLM options
-_DIALOGUE_OPTIONS: dict[str, Any] = {"temperature": 0.5, "repeat_penalty": 1.2}
-_NARRATION_OPTIONS: dict[str, Any] = {"temperature": 0.4}
+    return wrapped
 
 
 def convert_section(
@@ -768,22 +772,23 @@ def convert_section(
         # 原文テキストを結合
         original_text = "\n".join(target_section.paragraphs)
 
-        # 用途別の ollama_chat_func ラッパーを作成
-        narration_func = _wrap_with_options(ollama_chat_func, _NARRATION_OPTIONS)
-        dialogue_func = _wrap_with_options(ollama_chat_func, _DIALOGUE_OPTIONS)
+        # profile ごとの options を ollama_chat_func に注入する wrapper を作成
+        intro_func = _wrap_with_profile(ollama_chat_func, "introduction")
+        conclusion_func = _wrap_with_profile(ollama_chat_func, "conclusion")
+        dialogue_func = _wrap_with_profile(ollama_chat_func, "dialogue")
 
         # 導入ナレーション生成
         introduction_text = generate_introduction(
             original_text=original_text,
             model=model,
-            ollama_chat_func=narration_func,
+            ollama_chat_func=intro_func,
         )
 
         # 結論ナレーション生成
         conclusion_text = generate_conclusion(
             original_text=original_text,
             model=model,
-            ollama_chat_func=narration_func,
+            ollama_chat_func=conclusion_func,
         )
 
         # 対話生成（intro/conclusionをコンテキストとして渡す）
