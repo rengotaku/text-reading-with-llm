@@ -28,16 +28,29 @@ logger = logging.getLogger(__name__)
 OLLAMA_API_URL = "http://localhost:11434/api/chat"
 
 
-def ollama_chat(model: str, messages: list[dict], max_retries: int = 3, timeout: int = 300) -> dict:
-    """Call Ollama chat API."""
+def ollama_chat(
+    model: str,
+    messages: list[dict],
+    max_retries: int = 3,
+    timeout: int = 300,
+    options: dict | None = None,
+) -> dict:
+    """Call Ollama chat API.
+
+    Args:
+        model: Ollama model name.
+        messages: Chat messages list.
+        max_retries: Retry count for transient failures.
+        timeout: Request timeout seconds.
+        options: Ollama options dict (temperature, num_predict, etc.).
+            When None, defaults to {"temperature": 0.3, "num_predict": 4096}.
+    """
+    default_options = {"temperature": 0.3, "num_predict": 4096}
     payload = {
         "model": model,
         "messages": messages,
         "stream": False,
-        "options": {
-            "temperature": 0.3,  # Low temperature for consistent output
-            "num_predict": 4096,
-        },
+        "options": {**default_options, **(options or {})},
     }
 
     # Calculate request size

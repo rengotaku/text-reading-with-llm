@@ -705,6 +705,35 @@ def split_by_heading(section: Section) -> list[Section]:
     return result
 
 
+def _wrap_with_options(
+    base_func: Callable[..., Any] | None,
+    options: dict[str, Any],
+) -> Callable[..., Any] | None:
+    """ollama_chat_func に options を注入するラッパーを返す。
+
+    Args:
+        base_func: ラップ対象の ollama_chat 関数（None の場合は None を返す）
+        options: 注入する Ollama options dict（temperature, repeat_penalty 等）
+
+    Returns:
+        options を追加して base_func を呼び出すラッパー関数。base_func が None なら None。
+    """
+    if base_func is None:
+        return None
+
+    def wrapper(**kwargs: Any) -> Any:
+        merged = {**options, **(kwargs.get("options") or {})}
+        kwargs["options"] = merged
+        return base_func(**kwargs)
+
+    return wrapper
+
+
+# 用途別の推奨 LLM options
+_DIALOGUE_OPTIONS: dict[str, Any] = {"temperature": 0.5, "repeat_penalty": 1.2}
+_NARRATION_OPTIONS: dict[str, Any] = {"temperature": 0.4}
+
+
 def convert_section(
     section: Section,
     model: str = DEFAULT_MODEL,
@@ -739,25 +768,29 @@ def convert_section(
         # 原文テキストを結合
         original_text = "\n".join(target_section.paragraphs)
 
+        # 用途別の ollama_chat_func ラッパーを作成
+        narration_func = _wrap_with_options(ollama_chat_func, _NARRATION_OPTIONS)
+        dialogue_func = _wrap_with_options(ollama_chat_func, _DIALOGUE_OPTIONS)
+
         # 導入ナレーション生成
         introduction_text = generate_introduction(
             original_text=original_text,
             model=model,
-            ollama_chat_func=ollama_chat_func,
+            ollama_chat_func=narration_func,
         )
 
         # 結論ナレーション生成
         conclusion_text = generate_conclusion(
             original_text=original_text,
             model=model,
-            ollama_chat_func=ollama_chat_func,
+            ollama_chat_func=narration_func,
         )
 
         # 対話生成（intro/conclusionをコンテキストとして渡す）
         utterances = generate_dialogue(
             dialogue_paragraphs=target_section.paragraphs,
             model=model,
-            ollama_chat_func=ollama_chat_func,
+            ollama_chat_func=dialogue_func,
             introduction=introduction_text,
             conclusion=conclusion_text,
             speakers=speakers,
