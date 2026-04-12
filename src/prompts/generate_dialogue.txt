@@ -6,7 +6,9 @@
 [USER]
 以下のテキストを、{a_name}（SPEAKER_A）と{b_name}（SPEAKER_B）の自然な対話形式に変換してください。
 
+```
 {full_context}
+```
 
 【キャラクター設定】
 - SPEAKER_A（{a_name}）: {a_role}
