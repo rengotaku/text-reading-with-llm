@@ -347,7 +347,7 @@ def concatenate_section_audio(
     if output_path is not None:
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        sf.write(str(output_path), combined, sample_rate)
+        sf.write(str(output_path), combined, sample_rate, subtype="PCM_16")
         logger.info("Saved combined audio: %s", output_path)
 
     return combined, sample_rate
