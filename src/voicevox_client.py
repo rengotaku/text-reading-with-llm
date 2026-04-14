@@ -377,7 +377,7 @@ def save_audio(waveform: np.ndarray, sample_rate: int, output_path: Path) -> Non
         output_path: 出力パス
     """
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    sf.write(str(output_path), waveform, sample_rate)
+    sf.write(str(output_path), waveform, sample_rate, subtype="PCM_16")
     logger.info("Saved: %s", output_path)
 
 
@@ -419,7 +419,7 @@ def concatenate_audio_files(
 
     combined = np.concatenate(all_audio)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    sf.write(str(output_path), combined, sample_rate)
+    sf.write(str(output_path), combined, sample_rate, subtype="PCM_16")
     logger.info("Saved combined audio: %s", output_path)
 
 
