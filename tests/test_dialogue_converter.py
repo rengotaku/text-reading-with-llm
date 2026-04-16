@@ -849,6 +849,21 @@ class TestToDialogueXml:
         root = ET.fromstring(result)
         assert root is not None
 
+    def test_to_dialogue_xml_includes_chapter_attribute(self):
+        """chapter_numberがある場合、XMLにchapter属性が含まれる"""
+        block = self._make_block()
+        block.chapter_number = 3
+        result = to_dialogue_xml(block)
+        root = ET.fromstring(result)
+        assert root.get("chapter") == "3"
+
+    def test_to_dialogue_xml_no_chapter_attribute_when_none(self):
+        """chapter_numberがNoneの場合、XMLにchapter属性は含まれない"""
+        block = self._make_block()
+        result = to_dialogue_xml(block)
+        root = ET.fromstring(result)
+        assert root.get("chapter") is None
+
 
 # =============================================================================
 # T016: エッジケース（短文、空セクション）のテスト

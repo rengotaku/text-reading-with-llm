@@ -339,6 +339,34 @@ class TestParseDialogueXml:
         result = parse_dialogue_xml(str(xml_file))
         assert len(result) >= 1
 
+    def test_parse_chapter_attribute(self) -> None:
+        """dialogue-sectionのchapter属性をパースできる。"""
+        _require_module()
+        xml = """\
+<dialogue-book>
+  <dialogue-section number="" title="テスト" chapter="3">
+    <dialogue>
+      <utterance speaker="SPEAKER_A">テスト</utterance>
+    </dialogue>
+  </dialogue-section>
+</dialogue-book>"""
+        result = parse_dialogue_xml(xml)
+        assert result[0]["chapter"] == "3"
+
+    def test_parse_missing_chapter_attribute(self) -> None:
+        """chapter属性がない場合は空文字列になる。"""
+        _require_module()
+        xml = """\
+<dialogue-book>
+  <dialogue-section number="1.1" title="テスト">
+    <dialogue>
+      <utterance speaker="SPEAKER_A">テスト</utterance>
+    </dialogue>
+  </dialogue-section>
+</dialogue-book>"""
+        result = parse_dialogue_xml(xml)
+        assert result[0]["chapter"] == ""
+
 
 # ===========================================================================
 # T051: 話者別スタイルID取得 get_style_id() のテスト
@@ -420,9 +448,24 @@ class TestGetChapterNumber:
         assert get_chapter_number("3") == "3"
 
     def test_empty_string_returns_zero(self) -> None:
-        """空文字列の場合は '0' を返す。"""
+        """空文字列でchapter属性もない場合は '0' を返す。"""
         _require_module()
         assert get_chapter_number("") == "0"
+
+    def test_empty_string_with_chapter_attr(self) -> None:
+        """空文字列でもchapter属性があればそちらを使用する。"""
+        _require_module()
+        assert get_chapter_number("", chapter="3") == "3"
+
+    def test_section_number_takes_priority_over_chapter(self) -> None:
+        """section_numberがある場合はchapter属性より優先する。"""
+        _require_module()
+        assert get_chapter_number("2.1", chapter="5") == "2"
+
+    def test_empty_string_with_empty_chapter(self) -> None:
+        """両方空の場合は '0' を返す。"""
+        _require_module()
+        assert get_chapter_number("", chapter="") == "0"
 
     def test_multiple_dots(self) -> None:
         """複数のドットがある場合は最初の部分のみ返す。"""

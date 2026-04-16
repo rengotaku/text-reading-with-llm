@@ -116,6 +116,7 @@ class DialogueBlock:
         introduction: 導入テキスト（narrator用）
         dialogue: 対話発言リスト
         conclusion: 結論テキスト（narrator用）
+        chapter_number: 所属するチャプター番号
     """
 
     section_number: str
@@ -123,6 +124,7 @@ class DialogueBlock:
     introduction: str
     dialogue: list[Utterance]
     conclusion: str
+    chapter_number: int | None = None
 
 
 @dataclass
@@ -599,6 +601,8 @@ def to_dialogue_xml(
     root = ET.Element("dialogue-section")
     root.set("number", block.section_number)
     root.set("title", block.section_title)
+    if block.chapter_number is not None:
+        root.set("chapter", str(block.chapter_number))
 
     # introduction要素
     intro_elem = ET.SubElement(root, "introduction")
@@ -807,6 +811,7 @@ def convert_section(
             introduction=introduction_text,
             dialogue=utterances,
             conclusion=conclusion_text,
+            chapter_number=section.chapter_number,
         )
 
         processing_time = time.time() - start_time
