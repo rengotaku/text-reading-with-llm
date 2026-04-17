@@ -1157,6 +1157,6 @@ class TestSoundEffectInsertion:
             chapter_sound=chapter_sound,
         )
 
-        size_no = (path_no_sound / "chapter_001.wav").stat().st_size
-        size_with = (path_with_sound / "chapter_001.wav").stat().st_size
+        size_no = (path_no_sound / "chapter_001.mp3").stat().st_size
+        size_with = (path_with_sound / "chapter_001.mp3").stat().st_size
         assert size_with > size_no

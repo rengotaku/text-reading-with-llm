@@ -352,9 +352,14 @@ def concatenate_section_audio(
 
     if output_path is not None:
         output_path = Path(output_path)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        sf.write(str(output_path), combined, sample_rate, subtype="PCM_16")
-        logger.info("Saved combined audio: %s", output_path)
+        if output_path.suffix.lower() == ".mp3":
+            from src.audio_encoder import save_as_mp3
+
+            save_as_mp3(combined, sample_rate, output_path)
+        else:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            sf.write(str(output_path), combined, sample_rate, subtype="PCM_16")
+            logger.info("Saved combined audio: %s", output_path)
 
     return combined, sample_rate
 
@@ -531,7 +536,7 @@ def process_dialogue_sections(
             )
 
         if all_segments:
-            output_path = output_dir / f"chapter_{chapter_num.zfill(3)}.wav"
+            output_path = output_dir / f"chapter_{chapter_num.zfill(3)}.mp3"
             concatenate_section_audio(all_segments, output_path=output_path)
             generated.append(output_path)
             logger.info("Generated chapter audio: %s", output_path)

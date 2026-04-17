@@ -256,7 +256,7 @@ class TestProcessChaptersCreatesChapterFiles:
             )
 
         chapters_dir = output_dir / "chapters"
-        wav_files = sorted(chapters_dir.glob("*.wav"))
+        wav_files = sorted(chapters_dir.glob("*.mp3"))
 
         assert len(wav_files) == 2, (
             f"2つの chapter WAV ファイルが作成されるべきだが、{len(wav_files)} 個が見つかった: {wav_files}"
@@ -304,7 +304,7 @@ class TestProcessChaptersCreatesChapterFiles:
             )
 
         chapters_dir = output_dir / "chapters"
-        wav_files = list(chapters_dir.glob("*.wav"))
+        wav_files = list(chapters_dir.glob("*.mp3"))
 
         assert len(wav_files) >= 1, "少なくとも1つの WAV ファイルが作成されるべき"
         filename = wav_files[0].stem  # 拡張子なし
@@ -358,7 +358,7 @@ class TestProcessChaptersCreatesChapterFiles:
             )
 
         chapters_dir = output_dir / "chapters"
-        wav_files = sorted(chapters_dir.glob("*.wav"))
+        wav_files = sorted(chapters_dir.glob("*.mp3"))
 
         assert len(wav_files) == 3, (
             f"3つの chapter WAV ファイルが作成されるべきだが、{len(wav_files)} 個が見つかった: "
@@ -370,14 +370,14 @@ class TestProcessChaptersCreatesChapterFiles:
 
 
 class TestProcessChaptersCreatesBookWav:
-    """T024: process_chapters が全 chapter を結合した book.wav を生成することを検証する。
+    """T024: process_chapters が全 chapter を結合した book.mp3 を生成することを検証する。
 
     US2 要件 (FR-004):
-    - 全 chapter を結合した book.wav も生成される
+    - 全 chapter を結合した book.mp3 も生成される
     """
 
     def test_process_chapters_creates_book_wav(self, tmp_path):
-        """process_chapters が book.wav を生成する"""
+        """process_chapters が book.mp3 を生成する"""
         from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
         from src.xml_pipeline import process_chapters
 
@@ -429,11 +429,11 @@ class TestProcessChaptersCreatesBookWav:
                 section_sound=None,
             )
 
-        book_wav = output_dir / "book.wav"
-        assert book_wav.exists(), f"book.wav が生成されるべきだが、存在しない: {book_wav}"
+        book_wav = output_dir / "book.mp3"
+        assert book_wav.exists(), f"book.mp3 が生成されるべきだが、存在しない: {book_wav}"
 
     def test_process_chapters_book_wav_and_chapter_files_coexist(self, tmp_path):
-        """book.wav と chapters/ の WAV ファイルが両方存在する"""
+        """book.mp3 と chapters/ の WAV ファイルが両方存在する"""
         from src.xml_parser import CHAPTER_MARKER, ContentItem, HeadingInfo
         from src.xml_pipeline import process_chapters
 
@@ -473,12 +473,12 @@ class TestProcessChaptersCreatesBookWav:
                 section_sound=None,
             )
 
-        book_wav = output_dir / "book.wav"
+        book_wav = output_dir / "book.mp3"
         chapters_dir = output_dir / "chapters"
 
-        assert book_wav.exists(), "book.wav が存在するべき"
+        assert book_wav.exists(), "book.mp3 が存在するべき"
         assert chapters_dir.exists(), "chapters/ ディレクトリが存在するべき"
-        assert len(list(chapters_dir.glob("*.wav"))) >= 1, "chapters/ に少なくとも1つの WAV ファイルが存在するべき"
+        assert len(list(chapters_dir.glob("*.mp3"))) >= 1, "chapters/ に少なくとも1つの WAV ファイルが存在するべき"
 
 
 # --- T025: test_process_content_without_chapters_creates_book_wav ---
@@ -490,15 +490,15 @@ class TestProcessChaptersCreatesBookWav:
 
 
 class TestProcessContentWithoutChaptersCreatesBookWav:
-    """T025: chapter_number が全て None の場合に book.wav のみ生成されることを検証する。
+    """T025: chapter_number が全て None の場合に book.mp3 のみ生成されることを検証する。
 
     US2 エッジケース (FR-009):
-    - chapter を含まない XML の場合、全コンテンツを book.wav として出力する
+    - chapter を含まない XML の場合、全コンテンツを book.mp3 として出力する
     - chapters/ ディレクトリは作成されない
     """
 
     def test_no_chapters_creates_only_book_wav(self, tmp_path):
-        """chapter_number が全て None の場合、book.wav のみ生成される"""
+        """chapter_number が全て None の場合、book.mp3 のみ生成される"""
         from src.xml_parser import ContentItem
         from src.xml_pipeline import process_chapters
 
@@ -539,13 +539,13 @@ class TestProcessContentWithoutChaptersCreatesBookWav:
                 section_sound=None,
             )
 
-        book_wav = output_dir / "book.wav"
+        book_wav = output_dir / "book.mp3"
         chapters_dir = output_dir / "chapters"
 
-        assert book_wav.exists(), "chapter がない場合でも book.wav は生成されるべき"
+        assert book_wav.exists(), "chapter がない場合でも book.mp3 は生成されるべき"
         # chapters/ ディレクトリは作成されないか、空である
         if chapters_dir.exists():
-            wav_files = list(chapters_dir.glob("*.wav"))
+            wav_files = list(chapters_dir.glob("*.mp3"))
             assert len(wav_files) == 0, (
                 f"chapter がない場合、chapters/ に WAV ファイルは作成されないべきだが、"
                 f"{len(wav_files)} 個見つかった: {[f.name for f in wav_files]}"
@@ -600,5 +600,5 @@ class TestProcessContentWithoutChaptersCreatesBookWav:
                 section_sound=None,
             )
 
-        book_wav = output_dir / "book.wav"
-        assert book_wav.exists(), "book.wav は常に生成されるべき"
+        book_wav = output_dir / "book.mp3"
+        assert book_wav.exists(), "book.mp3 は常に生成されるべき"
