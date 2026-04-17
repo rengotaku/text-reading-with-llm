@@ -166,6 +166,7 @@ def parse_dialogue_xml(xml_str_or_path: str) -> list[dict[str, Any]]:
     for dialogue_section in root.iter("dialogue-section"):
         section_number = dialogue_section.get("number", "")
         section_title = dialogue_section.get("title", "")
+        chapter = dialogue_section.get("chapter", "")
 
         # introduction パース
         intro_elem = dialogue_section.find("introduction")
@@ -204,6 +205,7 @@ def parse_dialogue_xml(xml_str_or_path: str) -> list[dict[str, Any]]:
             {
                 "section_number": section_number,
                 "section_title": section_title,
+                "chapter": chapter,
                 "introduction": introduction,
                 "utterances": utterances,
                 "conclusion": conclusion,
@@ -290,20 +292,24 @@ def synthesize_utterance(
     return np.asarray(waveform, dtype=np.float32), int(sample_rate)
 
 
-def get_chapter_number(section_number: str) -> str:
-    """セクション番号からチャプター番号を抽出する.
+def get_chapter_number(section_number: str, chapter: str = "") -> str:
+    """セクション番号またはchapter属性からチャプター番号を抽出する.
 
     Args:
         section_number: セクション番号 (例: "2.1", "2.2", "3")
+        chapter: dialogue XMLのchapter属性値 (例: "1", "2")
 
     Returns:
-        チャプター番号 (例: "2", "3")。ドットがない場合はそのまま返す。
-        空文字列の場合は "0" を返す。
+        チャプター番号 (例: "2", "3")。
+        section_numberが空の場合はchapter属性を使用する。
+        どちらも空の場合は "0" を返す。
     """
-    if not section_number:
-        return "0"
-    # "2.1" -> "2", "3" -> "3"
-    return section_number.split(".")[0]
+    if section_number:
+        # "2.1" -> "2", "3" -> "3"
+        return section_number.split(".")[0]
+    if chapter:
+        return chapter
+    return "0"
 
 
 def concatenate_section_audio(
@@ -479,7 +485,7 @@ def process_dialogue_sections(
     # セクションをチャプター番号でグループ化
     chapters: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for section in sections:
-        chapter_num = get_chapter_number(section["section_number"])
+        chapter_num = get_chapter_number(section["section_number"], section.get("chapter", ""))
         chapters[chapter_num].append(section)
 
     logger.info("Grouped %d sections into %d chapters", len(sections), len(chapters))
