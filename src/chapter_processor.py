@@ -205,7 +205,7 @@ def process_chapters(
                 combined = np.concatenate(audio_segments)
 
                 # Generate sanitized filename
-                filename = sanitize_filename(chapter_num, chapter_title) + ".wav"
+                filename = sanitize_filename(chapter_num, chapter_title) + ".mp3"
                 chapter_path = chapters_dir / filename
                 save_audio(combined, sample_rate, chapter_path)
                 chapter_wav_files.append(chapter_path)
@@ -214,7 +214,7 @@ def process_chapters(
 
         # Concatenate all chapters into book.wav
         if chapter_wav_files:
-            book_path = output_dir / "book.wav"
+            book_path = output_dir / "book.mp3"
             concatenate_audio_files(chapter_wav_files, book_path)
             wav_files.append(book_path)
             logger.info("Combined audio: %s", book_path)
@@ -271,7 +271,7 @@ def process_chapters(
         # Save book.wav
         if audio_segments:
             combined = np.concatenate(audio_segments)
-            output_path = output_dir / "book.wav"
+            output_path = output_dir / "book.mp3"
             save_audio(combined, sample_rate, output_path)
             wav_files.append(output_path)
             logger.info("Combined audio: %s", output_path)

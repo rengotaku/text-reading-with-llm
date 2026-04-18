@@ -132,6 +132,7 @@ format: ## Auto-format code with ruff
 clean: ## Remove generated audio files (keep venv and dictionaries)
 	@test -n "$(OUTPUT)" || { echo "Error: OUTPUT is empty, refusing to run find on root"; exit 1; }
 	find $(OUTPUT) -name "*.wav" -delete 2>/dev/null || true
+	find $(OUTPUT) -name "*.mp3" -not -path "*/assets/*" -delete 2>/dev/null || true
 	find $(OUTPUT) -name "cleaned_text.txt" -delete 2>/dev/null || true
 	find $(OUTPUT) -type d -name "pages" -empty -delete 2>/dev/null || true
 
